@@ -1002,44 +1002,129 @@
             }
         }
 
-        // GPS Functions
+        // GPS Functions - MEJORADAS para iOS
         function getGPSLocation() {
             const statusDiv = document.getElementById('gpsStatus');
             statusDiv.innerHTML = '<div class="spinner"></div><p>Obteniendo ubicación...</p>';
             
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        reportData.gps = {
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude,
-                            altitude: position.coords.altitude || 0,
-                            accuracy: position.coords.accuracy
-                        };
-                        showGPSStatus(true);
-                        saveCurrentStep();
-                    },
-                    (error) => {
-                        showGPSStatus(false, error.message);
-                    },
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 0
-                    }
-                );
-            } else {
-                showGPSStatus(false, 'Geolocalización no soportada');
+            if (!navigator.geolocation) {
+                showGPSStatus(false, 'Geolocalización no soportada en este navegador');
+                return;
             }
+
+            // Opciones más compatibles con iOS
+            const options = {
+                enableHighAccuracy: false, // Cambiar a false para iOS
+                timeout: 15000, // Más tiempo
+                maximumAge: 300000 // 5 minutos de cache
+            };
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    reportData.gps = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        altitude: position.coords.altitude || 0,
+                        accuracy: position.coords.accuracy
+                    };
+                    showGPSStatus(true);
+                    saveCurrentStep();
+                },
+                (error) => {
+                    console.error('GPS Error:', error);
+                    let errorMessage = 'Error desconocido';
+                    
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = 'Permisos de ubicación denegados. Ve a Configuración > Safari > Ubicación y actívala.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = 'Ubicación no disponible. Intenta en un área con mejor señal.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = 'Tiempo agotado. Intenta de nuevo.';
+                            break;
+                        default:
+                            errorMessage = `Error de ubicación: ${error.message}`;
+                    }
+                    
+                    showGPSStatus(false, errorMessage);
+                    
+                    // Opción de ubicación manual para iOS
+                    const statusDiv = document.getElementById('gpsStatus');
+                    statusDiv.innerHTML += `
+                        <div style="margin-top: 10px;">
+                            <button class="btn btn-secondary" onclick="showManualGPS()" style="font-size: 14px;">
+                                📍 Ingresar ubicación manualmente
+                            </button>
+                        </div>
+                    `;
+                },
+                options
+            );
+        }
+
+        // Nueva función para GPS manual
+        function showManualGPS() {
+            const statusDiv = document.getElementById('gpsStatus');
+            statusDiv.innerHTML = `
+                <div style="background: #fff3cd; padding: 15px; border-radius: 6px;">
+                    <h4>Ubicación Manual</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0;">
+                        <input type="number" id="manualLat" placeholder="Latitud" step="any" style="padding: 8px;">
+                        <input type="number" id="manualLng" placeholder="Longitud" step="any" style="padding: 8px;">
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-success" onclick="saveManualGPS()" style="font-size: 14px;">
+                            Guardar Ubicación
+                        </button>
+                        <button class="btn btn-secondary" onclick="getGPSLocation()" style="font-size: 14px;">
+                            Reintentar GPS
+                        </button>
+                    </div>
+                    <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                        Puedes usar Google Maps para obtener las coordenadas exactas del sitio.
+                    </p>
+                </div>
+            `;
+        }
+
+        // Función para guardar GPS manual
+        function saveManualGPS() {
+            const lat = document.getElementById('manualLat').value;
+            const lng = document.getElementById('manualLng').value;
+            
+            if (!lat || !lng) {
+                showNotification('Por favor ingresa latitud y longitud', 'error');
+                return;
+            }
+            
+            if (Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+                showNotification('Coordenadas inválidas. Verifica los valores.', 'error');
+                return;
+            }
+            
+            reportData.gps = {
+                latitude: parseFloat(lat),
+                longitude: parseFloat(lng),
+                altitude: 0,
+                accuracy: 0,
+                manual: true
+            };
+            
+            showGPSStatus(true);
+            saveCurrentStep();
+            showNotification('Ubicación manual guardada correctamente', 'success');
         }
 
         function showGPSStatus(success, message = '') {
             const statusDiv = document.getElementById('gpsStatus');
             if (success) {
+                const isManual = reportData.gps.manual ? ' (Manual)' : '';
                 statusDiv.innerHTML = `
                     <div class="gps-status success">
-                        ✓ GPS Capturado: ${reportData.gps.latitude.toFixed(7)}, ${reportData.gps.longitude.toFixed(7)}
-                        <br>Precisión: ±${reportData.gps.accuracy.toFixed(1)}m
+                        ✓ GPS Capturado${isManual}: ${reportData.gps.latitude.toFixed(7)}, ${reportData.gps.longitude.toFixed(7)}
+                        ${!reportData.gps.manual ? `<br>Precisión: ±${reportData.gps.accuracy.toFixed(1)}m` : ''}
                     </div>
                 `;
             } else {
@@ -1313,7 +1398,7 @@
         // Función para enviar a SharePoint via Power Automate
         async function sendToSharePoint(reportData) {
             // URL de Power Automate configurada correctamente
-            const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
+            const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01';
             
             // Preparar datos para enviar
             const dataToSend = {
