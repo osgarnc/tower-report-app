@@ -1228,71 +1228,169 @@
             `;
         }
 
-        // Submit Functions
-        async function submitReport() {
-            const submitBtn = event.target;
-            const statusDiv = document.getElementById('submitStatus');
-            
-            submitBtn.disabled = true;
-            statusDiv.innerHTML = '<div class="spinner"></div><p>Procesando reporte...</p>';
-            
-            try {
-                // Save report locally
-                const reportId = `RPT-${reportData.basic.siteId}-${Date.now()}`;
-                localStorage.setItem(reportId, JSON.stringify(reportData));
-                
-                // Show success message
-                statusDiv.innerHTML = `
-                    <div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: left;">
-                        <h3 style="color: #2e7d32;">✓ Reporte Guardado</h3>
-                        <p>ID: ${reportId}</p>
-                        <p style="margin-top: 15px;"><strong>Nota:</strong> El reporte se guardó en este dispositivo.</p>
-                        <button class="btn btn-primary" onclick="downloadReport('${reportId}')">
-                            Descargar Reporte (JSON)
-                        </button>
-                        <button class="btn btn-success" onclick="startNewReport()" style="margin-left: 10px;">
-                            Nuevo Reporte
-                        </button>
-                    </div>
-                `;
-                
-                submitBtn.disabled = false;
-                
-            } catch (error) {
-                statusDiv.innerHTML = `
-                    <div style="background: #ffebee; padding: 20px; border-radius: 6px;">
-                        <h3 style="color: #c62828;">Error al guardar</h3>
-                        <p>${error.message}</p>
-                    </div>
-                `;
-                submitBtn.disabled = false;
-            }
-        }
+<!-- Reemplaza toda la función submitReport con este código -->
 
-        function downloadReport(reportId) {
-            const data = localStorage.getItem(reportId);
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${reportId}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
+<script>
+// Función para enviar a SharePoint via Power Automate
+async function sendToSharePoint(reportData) {
+    // IMPORTANTE: Reemplaza esta URL con la que te dio Power Automate
+    const POWER_AUTOMATE_URL = 'PEGA_AQUI_TU_URL_DE_POWER_AUTOMATE';
+    
+    // Preparar datos para enviar
+    const dataToSend = {
+        submittedBy: reportData.basic.submittedBy || 'Field Technician',
+        submissionTimestamp: new Date().toISOString(),
+        siteId: reportData.basic.siteId,
+        siteName: reportData.basic.siteName,
+        customerSiteId: reportData.basic.customerSiteId,
+        customerSiteName: reportData.basic.customerSiteName,
+        radiosInstalled: reportData.basic.radiosInstalled,
+        antennasInstalled: reportData.basic.antennasInstalled,
+        teamLeader: reportData.basic.teamLeader,
+        towerTop: reportData.basic.towerTop,
+        completionDate: reportData.basic.completionDate,
+        tpTenant: reportData.basic.tpTenant,
+        latitude: reportData.gps.latitude || 0,
+        longitude: reportData.gps.longitude || 0
+    };
+    
+    try {
+        const response = await fetch(POWER_AUTOMATE_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dataToSend)
+        });
+        
+        if (response.ok) {
+            return true;
+        } else {
+            console.error('SharePoint response:', response.status);
+            return false;
         }
+    } catch (error) {
+        console.error('Error sending to SharePoint:', error);
+        return false;
+    }
+}
 
-        function startNewReport() {
-            if (confirm('¿Crear un nuevo reporte? Se borrarán los datos actuales.')) {
-                localStorage.removeItem('towerReport');
-                reportData = {
-                    basic: {},
-                    gps: {},
-                    appurtenances: [],
-                    photos: {}
-                };
-                location.reload();
-            }
+// Submit Functions - ACTUALIZADA
+async function submitReport() {
+    const submitBtn = event.target;
+    const statusDiv = document.getElementById('submitStatus');
+    
+    submitBtn.disabled = true;
+    statusDiv.innerHTML = '<div class="spinner"></div><p>Enviando reporte a SharePoint...</p>';
+    
+    try {
+        // Save report locally first
+        const reportId = `RPT-${reportData.basic.siteId}-${Date.now()}`;
+        localStorage.setItem(reportId, JSON.stringify(reportData));
+        
+        // Enviar a SharePoint
+        const sentToSharePoint = await sendToSharePoint(reportData);
+        
+        if (sentToSharePoint) {
+            // Éxito - enviado a SharePoint
+            statusDiv.innerHTML = `
+                <div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: left;">
+                    <h3 style="color: #2e7d32;">✓ Reporte Enviado a SharePoint</h3>
+                    <p>ID: ${reportId}</p>
+                    <p style="margin-top: 15px;">
+                        <strong>✓ Guardado localmente</strong><br>
+                        <strong>✓ Enviado a SharePoint</strong>
+                    </p>
+                    <button class="btn btn-success" onclick="startNewReport()" style="margin-top: 10px;">
+                        Crear Nuevo Reporte
+                    </button>
+                </div>
+            `;
+        } else {
+            // Fallo al enviar a SharePoint - pero guardado localmente
+            statusDiv.innerHTML = `
+                <div style="background: #fff3cd; padding: 20px; border-radius: 6px; text-align: left;">
+                    <h3 style="color: #856404;">⚠️ Guardado Solo Localmente</h3>
+                    <p>ID: ${reportId}</p>
+                    <p style="margin-top: 15px;">
+                        El reporte se guardó en el dispositivo pero no se pudo enviar a SharePoint.
+                    </p>
+                    <button class="btn btn-primary" onclick="retrySharePoint('${reportId}')">
+                        🔄 Reintentar Envío
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadReport('${reportId}')" style="margin-left: 10px;">
+                        📥 Descargar JSON
+                    </button>
+                    <button class="btn btn-success" onclick="startNewReport()" style="margin-left: 10px;">
+                        ➕ Nuevo Reporte
+                    </button>
+                </div>
+            `;
         }
+        
+        submitBtn.disabled = false;
+        
+    } catch (error) {
+        statusDiv.innerHTML = `
+            <div style="background: #ffebee; padding: 20px; border-radius: 6px;">
+                <h3 style="color: #c62828;">Error al guardar</h3>
+                <p>${error.message}</p>
+                <button class="btn btn-primary" onclick="location.reload()">
+                    Recargar Página
+                </button>
+            </div>
+        `;
+        submitBtn.disabled = false;
+    }
+}
 
+// Función para reintentar envío a SharePoint
+async function retrySharePoint(reportId) {
+    const savedData = localStorage.getItem(reportId);
+    if (savedData) {
+        const data = JSON.parse(savedData);
+        const statusDiv = document.getElementById('submitStatus');
+        
+        statusDiv.innerHTML = '<div class="spinner"></div><p>Reintentando envío...</p>';
+        
+        const sent = await sendToSharePoint(data);
+        
+        if (sent) {
+            statusDiv.innerHTML = `
+                <div style="background: #e8f5e9; padding: 20px; border-radius: 6px;">
+                    <h3 style="color: #2e7d32;">✓ Enviado Exitosamente</h3>
+                    <p>El reporte se envió a SharePoint.</p>
+                    <button class="btn btn-success" onclick="startNewReport()">
+                        Crear Nuevo Reporte
+                    </button>
+                </div>
+            `;
+        } else {
+            statusDiv.innerHTML = `
+                <div style="background: #ffebee; padding: 20px; border-radius: 6px;">
+                    <h3 style="color: #c62828;">Error al enviar</h3>
+                    <p>No se pudo conectar con SharePoint. Verifique su conexión.</p>
+                    <button class="btn btn-primary" onclick="retrySharePoint('${reportId}')">
+                        Reintentar
+                    </button>
+                </div>
+            `;
+        }
+    }
+}
+
+// La función downloadReport se mantiene igual
+function downloadReport(reportId) {
+    const data = localStorage.getItem(reportId);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${reportId}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+</script>
         // Add skip validation function for testing
         function skipPhotoValidation() {
             // Add dummy photos for testing
