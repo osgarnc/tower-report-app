@@ -1395,25 +1395,25 @@
             `;
         }
 
-        // Función para enviar a SharePoint via Power Automate
+        // Función para enviar a SharePoint via Power Automate - MEJORADA
         async function sendToSharePoint(reportData) {
-            // URL de Power Automate ACTUALIZADA con la correcta
+            // URL de Power Automate ACTUALIZADA
             const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
             
-            // Preparar datos para enviar
+            // Preparar datos para enviar - simplificados
             const dataToSend = {
                 submittedBy: reportData.basic.submittedBy || 'Field Technician',
                 submissionTimestamp: new Date().toISOString(),
-                siteId: reportData.basic.siteId,
-                siteName: reportData.basic.siteName,
-                customerSiteId: reportData.basic.customerSiteId,
-                customerSiteName: reportData.basic.customerSiteName,
-                radiosInstalled: reportData.basic.radiosInstalled,
-                antennasInstalled: reportData.basic.antennasInstalled,
-                teamLeader: reportData.basic.teamLeader,
-                towerTop: reportData.basic.towerTop,
-                completionDate: reportData.basic.completionDate,
-                tpTenant: reportData.basic.tpTenant,
+                siteId: reportData.basic.siteId || '',
+                siteName: reportData.basic.siteName || '',
+                customerSiteId: reportData.basic.customerSiteId || '',
+                customerSiteName: reportData.basic.customerSiteName || '',
+                radiosInstalled: reportData.basic.radiosInstalled || '0',
+                antennasInstalled: reportData.basic.antennasInstalled || '0',
+                teamLeader: reportData.basic.teamLeader || '',
+                towerTop: reportData.basic.towerTop || 'no',
+                completionDate: reportData.basic.completionDate || '',
+                tpTenant: reportData.basic.tpTenant || '',
                 latitude: reportData.gps.latitude || 0,
                 longitude: reportData.gps.longitude || 0
             };
@@ -1421,34 +1421,45 @@
             try {
                 console.log('🚀 Enviando a Power Automate...');
                 console.log('📍 URL:', POWER_AUTOMATE_URL);
-                console.log('📦 Datos:', dataToSend);
+                console.log('📦 Datos a enviar:', dataToSend);
                 
                 const response = await fetch(POWER_AUTOMATE_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify(dataToSend)
                 });
                 
                 console.log('📊 Response status:', response.status);
+                console.log('📊 Response headers:', response.headers);
                 console.log('✅ Response ok:', response.ok);
                 
                 if (response.ok) {
+                    const responseText = await response.text();
+                    console.log('✅ Response body:', responseText);
                     console.log('✅ Enviado exitosamente a SharePoint');
                     return true;
-                } else if (response.status === 401) {
-                    console.error('❌ Error 401: Flow requiere autenticación. Desactiva OAuth en Power Automate.');
-                    showNotification('Flow requiere autenticación. Desactiva OAuth en Power Automate.', 'error');
-                    return false;
                 } else {
                     const errorText = await response.text();
                     console.error('❌ Error response:', response.status, response.statusText);
-                    console.error('❌ Error details:', errorText);
+                    console.error('❌ Error body:', errorText);
+                    
+                    if (response.status === 401) {
+                        console.error('❌ Error 401: Problema de autenticación');
+                        showNotification('Error 401: Verifica la configuración del flow en Power Automate', 'error');
+                    } else if (response.status === 400) {
+                        console.error('❌ Error 400: Datos mal formateados');
+                        showNotification('Error 400: Problema con el formato de datos', 'error');
+                    } else {
+                        showNotification(`Error ${response.status}: ${response.statusText}`, 'error');
+                    }
                     return false;
                 }
             } catch (error) {
                 console.error('❌ Network/Connection error:', error);
+                showNotification('Error de conexión. Verifica tu internet.', 'error');
                 return false;
             }
         }
