@@ -436,6 +436,16 @@
         <div class="form-section active" id="section1">
             <h2>Información Básica</h2>
             
+            <!-- Storage management -->
+            <div style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Espacio usado: <span id="storageIndicator">calculando...</span></span>
+                    <button class="btn btn-secondary" onclick="clearAllData()" style="font-size: 12px; padding: 5px 10px;">
+                        Limpiar datos
+                    </button>
+                </div>
+            </div>
+            
             <div class="form-group">
                 <label>Tower Provider Site ID <span class="required">*</span></label>
                 <input type="text" id="siteId" placeholder="ej: 10028307" required>
@@ -683,7 +693,39 @@
             
             // Load saved data if exists
             loadSavedData();
+            
+            // Update storage indicator
+            updateStorageIndicator();
         };
+
+        // Update storage indicator
+        function updateStorageIndicator() {
+            const indicator = document.getElementById('storageIndicator');
+            if (indicator) {
+                const usedMB = checkStorageSpace();
+                indicator.textContent = `${usedMB} MB`;
+                if (parseFloat(usedMB) > 4) {
+                    indicator.style.color = 'red';
+                    indicator.textContent += ' (casi lleno)';
+                }
+            }
+        }
+
+        // Clear all data function
+        function clearAllData() {
+            if (confirm('¿Eliminar todos los datos guardados? Esto borrará reportes anteriores.')) {
+                localStorage.clear();
+                reportData = {
+                    basic: {},
+                    gps: {},
+                    appurtenances: [],
+                    photos: {}
+                };
+                showNotification('Datos eliminados correctamente', 'success');
+                updateStorageIndicator();
+                location.reload();
+            }
+        }
 
         // Navigation functions
         function nextStep() {
@@ -799,29 +841,80 @@
             }
         }
 
-        // Save functions
+        // Save functions with error handling
         function saveCurrentStep() {
-            switch(currentStep) {
-                case 1:
-                    reportData.basic = {
-                        siteId: document.getElementById('siteId').value,
-                        siteName: document.getElementById('siteName').value,
-                        customerSiteId: document.getElementById('customerSiteId').value,
-                        customerSiteName: document.getElementById('customerSiteName').value,
-                        radiosInstalled: document.getElementById('radiosInstalled').value,
-                        antennasInstalled: document.getElementById('antennasInstalled').value,
-                        teamLeader: document.getElementById('teamLeader').value,
-                        towerTop: document.getElementById('towerTop').value,
-                        completionDate: document.getElementById('completionDate').value,
-                        tpTenant: document.getElementById('tpTenant').value,
-                        submittedBy: 'Field Technician',
-                        submissionTimestamp: new Date().toISOString()
-                    };
-                    break;
+            try {
+                switch(currentStep) {
+                    case 1:
+                        reportData.basic = {
+                            siteId: document.getElementById('siteId').value,
+                            siteName: document.getElementById('siteName').value,
+                            customerSiteId: document.getElementById('customerSiteId').value,
+                            customerSiteName: document.getElementById('customerSiteName').value,
+                            radiosInstalled: document.getElementById('radiosInstalled').value,
+                            antennasInstalled: document.getElementById('antennasInstalled').value,
+                            teamLeader: document.getElementById('teamLeader').value,
+                            towerTop: document.getElementById('towerTop').value,
+                            completionDate: document.getElementById('completionDate').value,
+                            tpTenant: document.getElementById('tpTenant').value,
+                            submittedBy: 'Field Technician',
+                            submissionTimestamp: new Date().toISOString()
+                        };
+                        break;
+                }
+                
+                // Try to save to localStorage
+                try {
+                    localStorage.setItem('towerReport', JSON.stringify(reportData));
+                } catch (e) {
+                    if (e.name === 'QuotaExceededError') {
+                        // If storage is full, clear old reports
+                        clearOldReports();
+                        // Try again
+                        try {
+                            localStorage.setItem('towerReport', JSON.stringify(reportData));
+                        } catch (e2) {
+                            showNotification('Almacenamiento lleno. Algunas fotos no se guardaron.', 'error');
+                            // Save without photos as last resort
+                            const minimalData = {
+                                basic: reportData.basic,
+                                gps: reportData.gps,
+                                appurtenances: reportData.appurtenances,
+                                photos: {} // Empty photos to save space
+                            };
+                            localStorage.setItem('towerReport', JSON.stringify(minimalData));
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error saving data:', error);
+                showNotification('Error al guardar. Continuando sin guardar.', 'error');
             }
-            
-            // Save to localStorage
-            localStorage.setItem('towerReport', JSON.stringify(reportData));
+        }
+
+        // Clear old reports to free space
+        function clearOldReports() {
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('RPT-')) {
+                    keysToRemove.push(key);
+                }
+            }
+            // Remove old reports
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            showNotification('Se limpiaron reportes antiguos para liberar espacio', 'info');
+        }
+
+        // Add storage indicator
+        function checkStorageSpace() {
+            try {
+                const used = new Blob(Object.values(localStorage)).size;
+                const usedMB = (used / 1024 / 1024).toFixed(2);
+                return usedMB;
+            } catch (e) {
+                return 'Unknown';
+            }
         }
 
         function loadSavedData() {
@@ -994,19 +1087,49 @@
             }
             
             files.forEach(file => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
+                // Compress image before saving
+                compressImage(file, 800, 0.7, (compressedDataUrl) => {
                     reportData.photos[typeId].push({
-                        data: e.target.result,
+                        data: compressedDataUrl,
                         timestamp: new Date().toISOString(),
                         name: file.name
                     });
                     updatePhotoPreview(typeId);
                     updatePhotoCounts();
                     saveCurrentStep();
-                };
-                reader.readAsDataURL(file);
+                });
             });
+        }
+
+        // Image compression function
+        function compressImage(file, maxWidth, quality, callback) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // Calculate new dimensions
+                    if (width > maxWidth) {
+                        height = (maxWidth / width) * height;
+                        width = maxWidth;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Convert to compressed base64
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    callback(compressedDataUrl);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
         }
 
         function updatePhotoPreview(typeId) {
