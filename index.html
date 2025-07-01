@@ -6,9 +6,6 @@
     <meta name="theme-color" content="#0066cc">
     <title>Tower Report Mobile</title>
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiVG93ZXIgUmVwb3J0IE1vYmlsZSIsInNob3J0X25hbWUiOiJUb3dlclJlcG9ydCIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwic3RhcnRfdXJsIjoiLiIsImJhY2tncm91bmRfY29sb3IiOiIjZmZmZmZmIiwidGhlbWVfY29sb3IiOiIjMDA2NmNjIn0=">
-    
     <style>
         * {
             margin: 0;
@@ -293,6 +290,7 @@
         .photo-preview {
             margin-top: 10px;
             max-width: 100%;
+            max-height: 200px;
             border-radius: 6px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
@@ -799,7 +797,7 @@
                         towerTop: document.getElementById('towerTop').value,
                         completionDate: document.getElementById('completionDate').value,
                         tpTenant: document.getElementById('tpTenant').value,
-                        submittedBy: localStorage.getItem('userName') || 'Field Technician',
+                        submittedBy: 'Field Technician',
                         submissionTimestamp: new Date().toISOString()
                     };
                     break;
@@ -836,7 +834,7 @@
         // GPS Functions
         function getGPSLocation() {
             const statusDiv = document.getElementById('gpsStatus');
-            statusDiv.innerHTML = '<div class="spinner"></div>';
+            statusDiv.innerHTML = '<div class="spinner"></div><p>Obteniendo ubicación...</p>';
             
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -954,7 +952,7 @@
                                id="photo_${type.id}"
                                onchange="handlePhotoCapture('${type.id}', this)">
                         <label for="photo_${type.id}" class="camera-btn">
-                            📷 Tomar Foto
+                            📷 Tomar Foto (${type.required} requeridas)
                         </label>
                     </div>
                     <div id="preview_${type.id}"></div>
@@ -999,7 +997,7 @@
             const photos = reportData.photos[typeId] || [];
             
             previewDiv.innerHTML = photos.map((photo, index) => `
-                <img src="${photo.data}" class="photo-preview" alt="Photo ${index + 1}">
+                <img src="${photo.data}" class="photo-preview" alt="Photo ${index + 1}" style="width: 100px; height: 100px; object-fit: cover; margin: 5px;">
             `).join('');
         }
 
@@ -1032,19 +1030,19 @@
             siteReview.innerHTML = `
                 <div class="review-item">
                     <span class="review-label">Site ID:</span>
-                    <span class="review-value">${reportData.basic.siteId}</span>
+                    <span class="review-value">${reportData.basic.siteId || 'N/A'}</span>
                 </div>
                 <div class="review-item">
                     <span class="review-label">Site Name:</span>
-                    <span class="review-value">${reportData.basic.siteName}</span>
+                    <span class="review-value">${reportData.basic.siteName || 'N/A'}</span>
                 </div>
                 <div class="review-item">
                     <span class="review-label">Team Leader:</span>
-                    <span class="review-value">${reportData.basic.teamLeader}</span>
+                    <span class="review-value">${reportData.basic.teamLeader || 'N/A'}</span>
                 </div>
                 <div class="review-item">
                     <span class="review-label">GPS Location:</span>
-                    <span class="review-value">${reportData.gps.latitude?.toFixed(6)}, ${reportData.gps.longitude?.toFixed(6)}</span>
+                    <span class="review-value">${reportData.gps.latitude ? `${reportData.gps.latitude.toFixed(6)}, ${reportData.gps.longitude.toFixed(6)}` : 'N/A'}</span>
                 </div>
             `;
             
@@ -1053,11 +1051,11 @@
             equipmentReview.innerHTML = `
                 <div class="review-item">
                     <span class="review-label">Radios:</span>
-                    <span class="review-value">${reportData.basic.radiosInstalled}</span>
+                    <span class="review-value">${reportData.basic.radiosInstalled || 'N/A'}</span>
                 </div>
                 <div class="review-item">
                     <span class="review-label">Antennas:</span>
-                    <span class="review-value">${reportData.basic.antennasInstalled}</span>
+                    <span class="review-value">${reportData.basic.antennasInstalled || 'N/A'}</span>
                 </div>
                 <div class="review-item">
                     <span class="review-label">Equipment Items:</span>
@@ -1099,76 +1097,47 @@
             statusDiv.innerHTML = '<div class="spinner"></div><p>Procesando reporte...</p>';
             
             try {
-                // If backend is configured
-                if (window.BACKEND_URL) {
-                    const formData = new FormData();
-                    formData.append('reportData', JSON.stringify({
-                        basic: reportData.basic,
-                        gps: reportData.gps,
-                        appurtenances: reportData.appurtenances
-                    }));
-                    
-                    // Add all photos
-                    for (const [typeId, photos] of Object.entries(reportData.photos)) {
-                        photos.forEach((photo, index) => {
-                            const blob = dataURLtoBlob(photo.data);
-                            formData.append('photos', blob, `${typeId}_${index}.jpg`);
-                        });
-                    }
-                    
-                    const response = await fetch(`${window.BACKEND_URL}/api/reports`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        showSuccess();
-                    } else {
-                        throw new Error(result.error);
-                    }
-                } else {
-                    // Fallback: Save locally and show instructions
-                    const reportId = `RPT-${reportData.basic.siteId}-${Date.now()}`;
-                    localStorage.setItem(reportId, JSON.stringify(reportData));
-                    
-                    statusDiv.innerHTML = `
-                        <div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: left;">
-                            <h3 style="color: #2e7d32;">✓ Reporte Guardado Localmente</h3>
-                            <p>ID: ${reportId}</p>
-                            <p style="margin-top: 15px;"><strong>Nota:</strong> El reporte se guardó en este dispositivo. 
-                            Para enviar por email, necesitas configurar el servidor backend.</p>
-                            <button class="btn btn-primary" onclick="downloadLocalReport('${reportId}')">
-                                Descargar Datos (JSON)
-                            </button>
-                        </div>
-                    `;
-                    
-                    submitBtn.disabled = false;
-                }
+                // Save report locally
+                const reportId = `RPT-${reportData.basic.siteId}-${Date.now()}`;
+                localStorage.setItem(reportId, JSON.stringify(reportData));
+                
+                // Show success message
+                statusDiv.innerHTML = `
+                    <div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: left;">
+                        <h3 style="color: #2e7d32;">✓ Reporte Guardado</h3>
+                        <p>ID: ${reportId}</p>
+                        <p style="margin-top: 15px;"><strong>Nota:</strong> El reporte se guardó en este dispositivo.</p>
+                        <button class="btn btn-primary" onclick="downloadReport('${reportId}')">
+                            Descargar Reporte (JSON)
+                        </button>
+                        <button class="btn btn-success" onclick="startNewReport()" style="margin-left: 10px;">
+                            Nuevo Reporte
+                        </button>
+                    </div>
+                `;
+                
+                submitBtn.disabled = false;
+                
             } catch (error) {
                 statusDiv.innerHTML = `
                     <div style="background: #ffebee; padding: 20px; border-radius: 6px;">
-                        <h3 style="color: #c62828;">Error al enviar</h3>
+                        <h3 style="color: #c62828;">Error al guardar</h3>
                         <p>${error.message}</p>
-                        <button class="btn btn-primary" onclick="retrySubmit()">Reintentar</button>
                     </div>
                 `;
                 submitBtn.disabled = false;
             }
         }
 
-        function showSuccess() {
-            document.getElementById('submitStatus').innerHTML = `
-                <div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: center;">
-                    <h2 style="color: #2e7d32;">✓ ¡Reporte Enviado!</h2>
-                    <p>El PDF fue generado y enviado a accounting@newcomm2000.com</p>
-                    <button class="btn btn-primary" onclick="startNewReport()">
-                        Crear Nuevo Reporte
-                    </button>
-                </div>
-            `;
+        function downloadReport(reportId) {
+            const data = localStorage.getItem(reportId);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${reportId}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         function startNewReport() {
@@ -1184,34 +1153,14 @@
             }
         }
 
-        function downloadLocalReport(reportId) {
-            const data = localStorage.getItem(reportId);
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${reportId}.json`;
-            a.click();
-        }
-
-        function dataURLtoBlob(dataURL) {
-            const arr = dataURL.split(',');
-            const mime = arr[0].match(/:(.*?);/)[1];
-            const bstr = atob(arr[1]);
-            let n = bstr.length;
-            const u8arr = new Uint8Array(n);
-            while (n--) {
-                u8arr[n] = bstr.charCodeAt(n);
-            }
-            return new Blob([u8arr], { type: mime });
-        }
-
-        function retrySubmit() {
-            submitReport();
-        }
-
         // Notification function
         function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existing = document.querySelector('.notification');
+            if (existing) {
+                existing.remove();
+            }
+            
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.textContent = message;
@@ -1221,6 +1170,6 @@
                 notification.remove();
             }, 3000);
         }
-
-        // Configuration for backend (optional)
-        window.BACKEND_URL = ''; // Set this to your backend URL when ready
+    </script>
+</body>
+</html>
