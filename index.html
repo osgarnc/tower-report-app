@@ -1312,8 +1312,15 @@
 
         // Función para enviar a SharePoint via Power Automate
         async function sendToSharePoint(reportData) {
-            // IMPORTANTE: Reemplaza esta URL con la que te dio Power Automate
+            // ⚠️ IMPORTANTE: Reemplaza esta URL con la de TU Power Automate
             const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01';
+            
+            // Si no tienes la URL configurada, mostrar mensaje
+            if (POWER_AUTOMATE_URL.includes('TU_FIRMA_AQUI')) {
+                console.log('⚠️ Debes actualizar la URL de Power Automate');
+                showNotification('Configura la URL de Power Automate en el código', 'error');
+                return false;
+            }
             
             // Preparar datos para enviar
             const dataToSend = {
@@ -1334,6 +1341,10 @@
             };
             
             try {
+                console.log('🚀 Enviando a Power Automate...');
+                console.log('📍 URL:', POWER_AUTOMATE_URL);
+                console.log('📦 Datos:', dataToSend);
+                
                 const response = await fetch(POWER_AUTOMATE_URL, {
                     method: 'POST',
                     headers: {
@@ -1342,70 +1353,58 @@
                     body: JSON.stringify(dataToSend)
                 });
                 
+                console.log('📊 Response status:', response.status);
+                console.log('✅ Response ok:', response.ok);
+                
                 if (response.ok) {
+                    console.log('✅ Enviado exitosamente');
                     return true;
                 } else {
-                    console.error('SharePoint response:', response.status);
+                    const errorText = await response.text();
+                    console.error('❌ Error response:', response.status, response.statusText);
+                    console.error('❌ Error details:', errorText);
                     return false;
                 }
             } catch (error) {
-                console.error('Error sending to SharePoint:', error);
+                console.error('❌ Network/Connection error:', error);
                 return false;
             }
         }
 
-        // Submit Functions - ACTUALIZADA
+        // Submit Functions - VERSION SIN SHAREPOINT para pruebas
         async function submitReport() {
             const submitBtn = event.target;
             const statusDiv = document.getElementById('submitStatus');
             
             submitBtn.disabled = true;
-            statusDiv.innerHTML = '<div class="spinner"></div><p>Enviando reporte a SharePoint...</p>';
+            statusDiv.innerHTML = '<div class="spinner"></div><p>Guardando reporte...</p>';
             
             try {
                 // Save report locally first
                 const reportId = `RPT-${reportData.basic.siteId}-${Date.now()}`;
                 localStorage.setItem(reportId, JSON.stringify(reportData));
                 
-                // Enviar a SharePoint
-                const sentToSharePoint = await sendToSharePoint(reportData);
+                // Simular envío (para pruebas sin SharePoint)
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 
-                if (sentToSharePoint) {
-                    // Éxito - enviado a SharePoint
-                    statusDiv.innerHTML = `
-                        <div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: left;">
-                            <h3 style="color: #2e7d32;">✓ Reporte Enviado a SharePoint</h3>
-                            <p>ID: ${reportId}</p>
-                            <p style="margin-top: 15px;">
-                                <strong>✓ Guardado localmente</strong><br>
-                                <strong>✓ Enviado a SharePoint</strong>
-                            </p>
-                            <button class="btn btn-success" onclick="startNewReport()" style="margin-top: 10px;">
-                                Crear Nuevo Reporte
-                            </button>
-                        </div>
-                    `;
-                } else {
-                    // Fallo al enviar a SharePoint - pero guardado localmente
-                    statusDiv.innerHTML = `
-                        <div style="background: #fff3cd; padding: 20px; border-radius: 6px; text-align: left;">
-                            <h3 style="color: #856404;">⚠️ Guardado Solo Localmente</h3>
-                            <p>ID: ${reportId}</p>
-                            <p style="margin-top: 15px;">
-                                El reporte se guardó en el dispositivo pero no se pudo enviar a SharePoint.
-                            </p>
-                            <button class="btn btn-primary" onclick="retrySharePoint('${reportId}')">
-                                🔄 Reintentar Envío
-                            </button>
-                            <button class="btn btn-secondary" onclick="downloadReport('${reportId}')" style="margin-left: 10px;">
-                                📥 Descargar JSON
-                            </button>
-                            <button class="btn btn-success" onclick="startNewReport()" style="margin-left: 10px;">
-                                ➕ Nuevo Reporte
-                            </button>
-                        </div>
-                    `;
-                }
+                // Por ahora, siempre "exitoso" para pruebas
+                statusDiv.innerHTML = `
+                    <div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: left;">
+                        <h3 style="color: #2e7d32;">✓ Reporte Guardado</h3>
+                        <p>ID: ${reportId}</p>
+                        <p style="margin-top: 15px;">
+                            <strong>✓ Guardado localmente</strong><br>
+                            <strong>⚠️ SharePoint no configurado</strong><br>
+                            <em>Para enviar a SharePoint, configure Power Automate</em>
+                        </p>
+                        <button class="btn btn-secondary" onclick="downloadReport('${reportId}')" style="margin-top: 10px;">
+                            📥 Descargar JSON
+                        </button>
+                        <button class="btn btn-success" onclick="startNewReport()" style="margin-left: 10px;">
+                            ➕ Nuevo Reporte
+                        </button>
+                    </div>
+                `;
                 
                 submitBtn.disabled = false;
                 
