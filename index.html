@@ -1313,7 +1313,7 @@
         // Función para enviar a SharePoint via Power Automate
         async function sendToSharePoint(reportData) {
             // URL de Power Automate configurada correctamente
-            const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01';
+            const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
             
             // Preparar datos para enviar
             const dataToSend = {
@@ -1352,6 +1352,10 @@
                 if (response.ok) {
                     console.log('✅ Enviado exitosamente a SharePoint');
                     return true;
+                } else if (response.status === 401) {
+                    console.error('❌ Error 401: Flow requiere autenticación. Desactiva OAuth en Power Automate.');
+                    showNotification('Flow requiere autenticación. Desactiva OAuth en Power Automate.', 'error');
+                    return false;
                 } else {
                     const errorText = await response.text();
                     console.error('❌ Error response:', response.status, response.statusText);
