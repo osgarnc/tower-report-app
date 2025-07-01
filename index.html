@@ -570,10 +570,16 @@
             <div class="photo-requirements">
                 <h3>📸 Fotos Requeridas</h3>
                 <ul>
-                    <li>Todas las fotos deben ser claras y enfocadas</li>
-                    <li>Incluir etiquetas visibles cuando aplique</li>
-                    <li>Capturar múltiples ángulos según se indica</li>
+                    <li>Tome al menos 5 fotos en total para continuar</li>
+                    <li>Puede tomar múltiples fotos por categoría</li>
+                    <li>Las fotos se guardan automáticamente</li>
                 </ul>
+                <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px;">
+                    <strong>Modo Demo:</strong> 
+                    <button class="btn btn-secondary" onclick="skipPhotoValidation()" style="margin-left: 10px;">
+                        Saltar validación de fotos
+                    </button>
+                </div>
             </div>
 
             <div class="photo-grid" id="photoGrid">
@@ -654,27 +660,17 @@
             photos: {}
         };
 
-        // Photo types configuration
+        // Photo types configuration - Simplified
         const photoTypes = [
-            { id: 'equipment_room', name: 'Post Equipment Room or Pad', required: 4 },
-            { id: 'cabinet_open', name: 'Cabinet or Shelter Door Open', required: 1 },
-            { id: 'cabinet_close', name: 'Cabinet or Shelter Door Close', required: 1 },
-            { id: 'safety_top', name: 'Safety Line Top Assembly', required: 1 },
-            { id: 'safety_sector', name: 'Safety Line on Sector', required: 1 },
-            { id: 'safety_up', name: 'Safety Line Looking Up', required: 1 },
-            { id: 'safety_bottom', name: 'Safety Line Bottom Assembly', required: 1 },
-            { id: 'compound_post', name: 'Compound Post Picture', required: 4 },
-            { id: 'sector1_ground', name: 'Sector 1 from Ground', required: 1 },
-            { id: 'sector2_ground', name: 'Sector 2 from Ground', required: 1 },
-            { id: 'sector3_ground', name: 'Sector 3 from Ground', required: 1 },
-            { id: 'antenna_labels', name: 'Antenna Labels', required: 6 },
-            { id: 'radio_labels', name: 'Radio Labels', required: 3 },
-            { id: 'sector1_post', name: 'Sector 1 Post Pictures', required: 5 },
-            { id: 'sector2_post', name: 'Sector 2 Post Pictures', required: 5 },
-            { id: 'sector3_post', name: 'Sector 3 Post Pictures', required: 5 },
-            { id: 'tower_tape', name: 'Tower Tape Drop', required: 2 },
-            { id: 'tallest_point', name: 'Tallest Point Tape Drop', required: 2 },
-            { id: 'beacon', name: 'Beacon', required: 2 }
+            { id: 'equipment_room', name: 'Equipment Room / Pad', required: 2 },
+            { id: 'cabinet_doors', name: 'Cabinet Doors (Open & Close)', required: 2 },
+            { id: 'safety_lines', name: 'Safety Lines (All)', required: 2 },
+            { id: 'sectors_ground', name: 'Sectors from Ground (1,2,3)', required: 3 },
+            { id: 'antenna_labels', name: 'Antenna Labels', required: 2 },
+            { id: 'radio_labels', name: 'Radio Labels', required: 2 },
+            { id: 'sector_posts', name: 'Sector Post Pictures', required: 3 },
+            { id: 'tape_measurements', name: 'Tape Drop Measurements', required: 2 },
+            { id: 'general_site', name: 'General Site Photos', required: 2 }
         ];
 
         // Initialize app
@@ -691,12 +687,19 @@
 
         // Navigation functions
         function nextStep() {
+            console.log('NextStep called. Current step:', currentStep);
+            
             if (validateCurrentStep()) {
                 saveCurrentStep();
                 if (currentStep < 5) {
                     currentStep++;
+                    console.log('Moving to step:', currentStep);
                     showStep(currentStep);
+                } else {
+                    console.log('Already at last step');
                 }
+            } else {
+                console.log('Validation failed for step:', currentStep);
             }
         }
 
@@ -763,18 +766,32 @@
                     return true;
                     
                 case 3:
-                    // Check if all required photos are taken
-                    let missingPhotos = [];
+                    // Check if at least some photos are taken
+                    let totalPhotos = 0;
+                    Object.values(reportData.photos).forEach(photoArray => {
+                        totalPhotos += photoArray.length;
+                    });
+                    
+                    if (totalPhotos < 5) {
+                        showNotification('Por favor tome al menos 5 fotos para continuar', 'error');
+                        return false;
+                    }
+                    
+                    // Optional: Show warning if not all photos are taken
+                    let missingCount = 0;
                     photoTypes.forEach(type => {
                         const photos = reportData.photos[type.id] || [];
                         if (photos.length < type.required) {
-                            missingPhotos.push(`${type.name} (faltan ${type.required - photos.length})`);
+                            missingCount += type.required - photos.length;
                         }
                     });
-                    if (missingPhotos.length > 0) {
-                        showNotification('Fotos faltantes: ' + missingPhotos[0], 'error');
-                        return false;
+                    
+                    if (missingCount > 0 && totalPhotos < 20) {
+                        if (!confirm(`Faltan ${missingCount} fotos. ¿Desea continuar de todos modos?`)) {
+                            return false;
+                        }
                     }
+                    
                     return true;
                     
                 default:
@@ -1151,6 +1168,26 @@
                 };
                 location.reload();
             }
+        }
+
+        // Add skip validation function for testing
+        function skipPhotoValidation() {
+            // Add dummy photos for testing
+            photoTypes.forEach(type => {
+                if (!reportData.photos[type.id]) {
+                    reportData.photos[type.id] = [];
+                }
+                // Add dummy photo data
+                reportData.photos[type.id].push({
+                    data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+                    timestamp: new Date().toISOString(),
+                    name: 'demo_photo.png'
+                });
+            });
+            
+            updatePhotoCounts();
+            saveCurrentStep();
+            showNotification('Fotos de demostración agregadas. Ahora puede continuar.', 'success');
         }
 
         // Notification function
