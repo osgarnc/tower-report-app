@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0066cc">
+    <title>Tower Report Mobile</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiVG93ZXIgUmVwb3J0IE1vYmlsZSIsInNob3J0X25hbWUiOiJUb3dlclJlcG9ydCIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwic3RhcnRfdXJsIjoiLiIsImJhY2tncm91bmRfY29sb3IiOiIjZmZmZmZmIiwidGhlbWVfY29sb3IiOiIjMDA2NmNjIn0=">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Header */
+        .header {
+            background-color: #0066cc;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            gap: 10px;
+        }
+
+        .step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .step.active {
+            background-color: #0066cc;
+            color: white;
+        }
+
+        .step.completed {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        /* Form Sections */
+        .form-section {
+            display: none;
+            padding: 20px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        .required {
+            color: #f44336;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: #0066cc;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0052a3;
+        }
+
+        .btn-success {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #757575;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-block {
+            width: 100%;
+            display: block;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        /* GPS Status */
+        .gps-status {
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .gps-status.success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .gps-status.error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        /* Appurtenance List */
+        .appurtenance-list {
+            margin-top: 20px;
+        }
+
+        .appurtenance-item {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .appurtenance-info h4 {
+            margin: 0 0 5px 0;
+            color: #0066cc;
+        }
+
+        .appurtenance-info p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Photo Section */
+        .photo-requirements {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .photo-requirements h3 {
+            margin-bottom: 10px;
+            color: #1565c0;
+        }
+
+        .photo-requirements ul {
+            margin-left: 20px;
+        }
+
+        .photo-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .photo-item {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .photo-item h4 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .photo-capture {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .camera-input {
+            display: none;
+        }
+
+        .camera-btn {
+            background-color: #0066cc;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .camera-btn:hover {
+            background-color: #0052a3;
+        }
+
+        .photo-preview {
+            margin-top: 10px;
+            max-width: 100%;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .photo-count {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .photo-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .photo-status.complete {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .photo-status.pending {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        /* Review Section */
+        .review-section {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .review-section h3 {
+            margin-bottom: 10px;
+            color: #0066cc;
+        }
+
+        .review-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .review-item:last-child {
+            border-bottom: none;
+        }
+
+        .review-label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .review-value {
+            color: #333;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0066cc;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 20px;
+            border-radius: 6px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        .notification.success {
+            background-color: #4caf50;
+        }
+
+        .notification.error {
+            background-color: #f44336;
+        }
+
+        .notification.info {
+            background-color: #2196f3;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 18px;
+            }
+            
+            .btn {
+                font-size: 14px;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>Tower Provider Report</h1>
+        </header>
+
+        <div class="step-indicator">
+            <div class="step active" id="step1">1</div>
+            <div class="step" id="step2">2</div>
+            <div class="step" id="step3">3</div>
+            <div class="step" id="step4">4</div>
+            <div class="step" id="step5">5</div>
+        </div>
+
+        <!-- Step 1: Basic Information -->
+        <div class="form-section active" id="section1">
+            <h2>Información Básica</h2>
+            
+            <div class="form-group">
+                <label>Tower Provider Site ID <span class="required">*</span></label>
+                <input type="text" id="siteId" placeholder="ej: 10028307" required>
+            </div>
+
+            <div class="form-group">
+                <label>Tower Provider Site Name <span class="required">*</span></label>
+                <input type="text" id="siteName" placeholder="ej: Vega Baja DT" required>
+            </div>
+
+            <div class="form-group">
+                <label>Customer Site ID <span class="required">*</span></label>
+                <input type="text" id="customerSiteId" placeholder="ej: 10028307" required>
+            </div>
+
+            <div class="form-group">
+                <label>Customer Site Name <span class="required">*</span></label>
+                <input type="text" id="customerSiteName" placeholder="ej: Vega Baja DT" required>
+            </div>
+
+            <div class="form-group">
+                <label>Radios Installed <span class="required">*</span></label>
+                <input type="number" id="radiosInstalled" min="0" placeholder="3" required>
+            </div>
+
+            <div class="form-group">
+                <label>Antennas Installed <span class="required">*</span></label>
+                <input type="number" id="antennasInstalled" min="0" placeholder="6" required>
+            </div>
+
+            <div class="form-group">
+                <label>Team Leader <span class="required">*</span></label>
+                <input type="text" id="teamLeader" placeholder="ej: Christopher Rodriguez" required>
+            </div>
+
+            <div class="form-group">
+                <label>Tower Top Installation <span class="required">*</span></label>
+                <select id="towerTop" required>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Completion Date <span class="required">*</span></label>
+                <input type="date" id="completionDate" required>
+            </div>
+
+            <div class="form-group">
+                <label>TP Tenant <span class="required">*</span></label>
+                <input type="text" id="tpTenant" placeholder="ej: Liberty" required>
+            </div>
+
+            <div class="form-group">
+                <button class="btn btn-success btn-block" onclick="getGPSLocation()">
+                    📍 Obtener Ubicación GPS
+                </button>
+                <div id="gpsStatus"></div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="nextStep()" style="margin-left: auto;">
+                    Siguiente →
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: Appurtenance Information -->
+        <div class="form-section" id="section2">
+            <h2>Información de Equipos</h2>
+            
+            <button class="btn btn-primary btn-block" onclick="showAppurtenanceForm()">
+                + Agregar Equipo
+            </button>
+
+            <div id="appurtenanceForm" style="display: none; margin-top: 20px;">
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="appType">
+                        <option value="Antenna">Antenna</option>
+                        <option value="RRU">RRU</option>
+                        <option value="Cable">Cable</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Rad Center</label>
+                    <input type="text" id="appRadCenter" placeholder="50">
+                </div>
+
+                <div class="form-group">
+                    <label>Manufacturer</label>
+                    <input type="text" id="appManufacturer" placeholder="ej: Ericsson">
+                </div>
+
+                <div class="form-group">
+                    <label>Model</label>
+                    <input type="text" id="appModel" placeholder="ej: 840590003">
+                </div>
+
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" id="appQuantity" min="1" value="1">
+                </div>
+
+                <div class="form-group">
+                    <label>Coax Size (if applicable)</label>
+                    <input type="text" id="appCoaxSize" placeholder="Optional">
+                </div>
+
+                <button class="btn btn-success" onclick="addAppurtenance()">Guardar</button>
+                <button class="btn btn-secondary" onclick="cancelAppurtenance()">Cancelar</button>
+            </div>
+
+            <div class="appurtenance-list" id="appurtenanceList"></div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="previousStep()">
+                    ← Anterior
+                </button>
+                <button class="btn btn-primary" onclick="nextStep()">
+                    Siguiente →
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 3: Photo Documentation -->
+        <div class="form-section" id="section3">
+            <h2>Documentación Fotográfica</h2>
+            
+            <div class="photo-requirements">
+                <h3>📸 Fotos Requeridas</h3>
+                <ul>
+                    <li>Todas las fotos deben ser claras y enfocadas</li>
+                    <li>Incluir etiquetas visibles cuando aplique</li>
+                    <li>Capturar múltiples ángulos según se indica</li>
+                </ul>
+            </div>
+
+            <div class="photo-grid" id="photoGrid">
+                <!-- Photo items will be generated by JavaScript -->
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="previousStep()">
+                    ← Anterior
+                </button>
+                <button class="btn btn-primary" onclick="nextStep()">
+                    Siguiente →
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 4: Review -->
+        <div class="form-section" id="section4">
+            <h2>Revisar Información</h2>
+            
+            <div class="review-section">
+                <h3>Información del Sitio</h3>
+                <div id="siteReview"></div>
+            </div>
+
+            <div class="review-section">
+                <h3>Equipos Instalados</h3>
+                <div id="equipmentReview"></div>
+            </div>
+
+            <div class="review-section">
+                <h3>Documentación Fotográfica</h3>
+                <div id="photoReview"></div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="previousStep()">
+                    ← Anterior
+                </button>
+                <button class="btn btn-primary" onclick="nextStep()">
+                    Siguiente →
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 5: Submit -->
+        <div class="form-section" id="section5">
+            <h2>Enviar Reporte</h2>
+            
+            <div style="text-align: center; padding: 40px 20px;">
+                <h3>¿Está listo para enviar el reporte?</h3>
+                <p style="margin: 20px 0; color: #666;">
+                    Al enviar, se generará un PDF y se enviará automáticamente a accounting@newcomm2000.com
+                </p>
+                
+                <button class="btn btn-success btn-block" onclick="submitReport()" style="font-size: 18px; padding: 15px;">
+                    ✓ Enviar Reporte
+                </button>
+                
+                <div id="submitStatus" style="margin-top: 20px;"></div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="previousStep()">
+                    ← Anterior
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentStep = 1;
+        let reportData = {
+            basic: {},
+            gps: {},
+            appurtenances: [],
+            photos: {}
+        };
+
+        // Photo types configuration
+        const photoTypes = [
+            { id: 'equipment_room', name: 'Post Equipment Room or Pad', required: 4 },
+            { id: 'cabinet_open', name: 'Cabinet or Shelter Door Open', required: 1 },
+            { id: 'cabinet_close', name: 'Cabinet or Shelter Door Close', required: 1 },
+            { id: 'safety_top', name: 'Safety Line Top Assembly', required: 1 },
+            { id: 'safety_sector', name: 'Safety Line on Sector', required: 1 },
+            { id: 'safety_up', name: 'Safety Line Looking Up', required: 1 },
+            { id: 'safety_bottom', name: 'Safety Line Bottom Assembly', required: 1 },
+            { id: 'compound_post', name: 'Compound Post Picture', required: 4 },
+            { id: 'sector1_ground', name: 'Sector 1 from Ground', required: 1 },
+            { id: 'sector2_ground', name: 'Sector 2 from Ground', required: 1 },
+            { id: 'sector3_ground', name: 'Sector 3 from Ground', required: 1 },
+            { id: 'antenna_labels', name: 'Antenna Labels', required: 6 },
+            { id: 'radio_labels', name: 'Radio Labels', required: 3 },
+            { id: 'sector1_post', name: 'Sector 1 Post Pictures', required: 5 },
+            { id: 'sector2_post', name: 'Sector 2 Post Pictures', required: 5 },
+            { id: 'sector3_post', name: 'Sector 3 Post Pictures', required: 5 },
+            { id: 'tower_tape', name: 'Tower Tape Drop', required: 2 },
+            { id: 'tallest_point', name: 'Tallest Point Tape Drop', required: 2 },
+            { id: 'beacon', name: 'Beacon', required: 2 }
+        ];
+
+        // Initialize app
+        window.onload = function() {
+            // Set today's date as default
+            document.getElementById('completionDate').value = new Date().toISOString().split('T')[0];
+            
+            // Generate photo grid
+            generatePhotoGrid();
+            
+            // Load saved data if exists
+            loadSavedData();
+        };
+
+        // Navigation functions
+        function nextStep() {
+            if (validateCurrentStep()) {
+                saveCurrentStep();
+                if (currentStep < 5) {
+                    currentStep++;
+                    showStep(currentStep);
+                }
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }
+
+        function showStep(step) {
+            // Hide all sections
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show current section
+            document.getElementById('section' + step).classList.add('active');
+            
+            // Update step indicators
+            document.querySelectorAll('.step').forEach((stepEl, index) => {
+                stepEl.classList.remove('active', 'completed');
+                if (index + 1 < step) {
+                    stepEl.classList.add('completed');
+                } else if (index + 1 === step) {
+                    stepEl.classList.add('active');
+                }
+            });
+            
+            // Update review section if on step 4
+            if (step === 4) {
+                updateReview();
+            }
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // Validation functions
+        function validateCurrentStep() {
+            switch(currentStep) {
+                case 1:
+                    const requiredFields = ['siteId', 'siteName', 'customerSiteId', 'customerSiteName', 
+                                          'radiosInstalled', 'antennasInstalled', 'teamLeader', 
+                                          'completionDate', 'tpTenant'];
+                    for (let field of requiredFields) {
+                        if (!document.getElementById(field).value) {
+                            showNotification('Por favor complete todos los campos requeridos', 'error');
+                            document.getElementById(field).focus();
+                            return false;
+                        }
+                    }
+                    if (!reportData.gps.latitude) {
+                        showNotification('Por favor capture la ubicación GPS', 'error');
+                        return false;
+                    }
+                    return true;
+                    
+                case 2:
+                    if (reportData.appurtenances.length === 0) {
+                        showNotification('Por favor agregue al menos un equipo', 'error');
+                        return false;
+                    }
+                    return true;
+                    
+                case 3:
+                    // Check if all required photos are taken
+                    let missingPhotos = [];
+                    photoTypes.forEach(type => {
+                        const photos = reportData.photos[type.id] || [];
+                        if (photos.length < type.required) {
+                            missingPhotos.push(`${type.name} (faltan ${type.required - photos.length})`);
+                        }
+                    });
+                    if (missingPhotos.length > 0) {
+                        showNotification('Fotos faltantes: ' + missingPhotos[0], 'error');
+                        return false;
+                    }
+                    return true;
+                    
+                default:
+                    return true;
+            }
+        }
+
+        // Save functions
+        function saveCurrentStep() {
+            switch(currentStep) {
+                case 1:
+                    reportData.basic = {
+                        siteId: document.getElementById('siteId').value,
+                        siteName: document.getElementById('siteName').value,
+                        customerSiteId: document.getElementById('customerSiteId').value,
+                        customerSiteName: document.getElementById('customerSiteName').value,
+                        radiosInstalled: document.getElementById('radiosInstalled').value,
+                        antennasInstalled: document.getElementById('antennasInstalled').value,
+                        teamLeader: document.getElementById('teamLeader').value,
+                        towerTop: document.getElementById('towerTop').value,
+                        completionDate: document.getElementById('completionDate').value,
+                        tpTenant: document.getElementById('tpTenant').value,
+                        submittedBy: localStorage.getItem('userName') || 'Field Technician',
+                        submissionTimestamp: new Date().toISOString()
+                    };
+                    break;
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('towerReport', JSON.stringify(reportData));
+        }
+
+        function loadSavedData() {
+            const saved = localStorage.getItem('towerReport');
+            if (saved) {
+                reportData = JSON.parse(saved);
+                // Restore form values
+                if (reportData.basic) {
+                    Object.keys(reportData.basic).forEach(key => {
+                        const element = document.getElementById(key);
+                        if (element) {
+                            element.value = reportData.basic[key];
+                        }
+                    });
+                }
+                // Restore GPS status
+                if (reportData.gps.latitude) {
+                    showGPSStatus(true);
+                }
+                // Restore appurtenances
+                updateAppurtenanceList();
+                // Update photo counts
+                updatePhotoCounts();
+            }
+        }
+
+        // GPS Functions
+        function getGPSLocation() {
+            const statusDiv = document.getElementById('gpsStatus');
+            statusDiv.innerHTML = '<div class="spinner"></div>';
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        reportData.gps = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            altitude: position.coords.altitude || 0,
+                            accuracy: position.coords.accuracy
+                        };
+                        showGPSStatus(true);
+                        saveCurrentStep();
+                    },
+                    (error) => {
+                        showGPSStatus(false, error.message);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                showGPSStatus(false, 'Geolocalización no soportada');
+            }
+        }
+
+        function showGPSStatus(success, message = '') {
+            const statusDiv = document.getElementById('gpsStatus');
+            if (success) {
+                statusDiv.innerHTML = `
+                    <div class="gps-status success">
+                        ✓ GPS Capturado: ${reportData.gps.latitude.toFixed(7)}, ${reportData.gps.longitude.toFixed(7)}
+                        <br>Precisión: ±${reportData.gps.accuracy.toFixed(1)}m
+                    </div>
+                `;
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="gps-status error">
+                        ✗ Error: ${message}
+                    </div>
+                `;
+            }
+        }
+
+        // Appurtenance Functions
+        function showAppurtenanceForm() {
+            document.getElementById('appurtenanceForm').style.display = 'block';
+        }
+
+        function cancelAppurtenance() {
+            document.getElementById('appurtenanceForm').style.display = 'none';
+            // Clear form
+            ['appType', 'appRadCenter', 'appManufacturer', 'appModel', 'appQuantity', 'appCoaxSize'].forEach(id => {
+                document.getElementById(id).value = id === 'appQuantity' ? '1' : '';
+            });
+        }
+
+        function addAppurtenance() {
+            const appurtenance = {
+                type: document.getElementById('appType').value,
+                radCenter: document.getElementById('appRadCenter').value,
+                manufacturer: document.getElementById('appManufacturer').value,
+                model: document.getElementById('appModel').value,
+                quantity: document.getElementById('appQuantity').value,
+                coaxSize: document.getElementById('appCoaxSize').value
+            };
+            
+            reportData.appurtenances.push(appurtenance);
+            updateAppurtenanceList();
+            cancelAppurtenance();
+            saveCurrentStep();
+        }
+
+        function updateAppurtenanceList() {
+            const listDiv = document.getElementById('appurtenanceList');
+            listDiv.innerHTML = '';
+            
+            reportData.appurtenances.forEach((app, index) => {
+                const item = document.createElement('div');
+                item.className = 'appurtenance-item';
+                item.innerHTML = `
+                    <div class="appurtenance-info">
+                        <h4>${app.type} - ${app.manufacturer}</h4>
+                        <p>Model: ${app.model} | Qty: ${app.quantity} | Rad: ${app.radCenter}</p>
+                    </div>
+                    <button class="btn btn-danger" onclick="removeAppurtenance(${index})">×</button>
+                `;
+                listDiv.appendChild(item);
+            });
+        }
+
+        function removeAppurtenance(index) {
+            reportData.appurtenances.splice(index, 1);
+            updateAppurtenanceList();
+            saveCurrentStep();
+        }
+
+        // Photo Functions
+        function generatePhotoGrid() {
+            const grid = document.getElementById('photoGrid');
+            grid.innerHTML = '';
+            
+            photoTypes.forEach(type => {
+                const photoItem = document.createElement('div');
+                photoItem.className = 'photo-item';
+                photoItem.innerHTML = `
+                    <h4>${type.name}</h4>
+                    <div class="photo-capture">
+                        <input type="file" 
+                               accept="image/*" 
+                               capture="environment" 
+                               multiple
+                               class="camera-input" 
+                               id="photo_${type.id}"
+                               onchange="handlePhotoCapture('${type.id}', this)">
+                        <label for="photo_${type.id}" class="camera-btn">
+                            📷 Tomar Foto
+                        </label>
+                    </div>
+                    <div id="preview_${type.id}"></div>
+                    <div class="photo-count">
+                        <span id="count_${type.id}">0</span> de ${type.required} fotos
+                    </div>
+                    <div class="photo-status ${(reportData.photos[type.id] || []).length >= type.required ? 'complete' : 'pending'}" 
+                         id="status_${type.id}">
+                        ${(reportData.photos[type.id] || []).length >= type.required ? '✓ Completo' : '⏳ Pendiente'}
+                    </div>
+                `;
+                grid.appendChild(photoItem);
+            });
+            
+            updatePhotoCounts();
+        }
+
+        function handlePhotoCapture(typeId, input) {
+            const files = Array.from(input.files);
+            if (!reportData.photos[typeId]) {
+                reportData.photos[typeId] = [];
+            }
+            
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    reportData.photos[typeId].push({
+                        data: e.target.result,
+                        timestamp: new Date().toISOString(),
+                        name: file.name
+                    });
+                    updatePhotoPreview(typeId);
+                    updatePhotoCounts();
+                    saveCurrentStep();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function updatePhotoPreview(typeId) {
+            const previewDiv = document.getElementById(`preview_${typeId}`);
+            const photos = reportData.photos[typeId] || [];
+            
+            previewDiv.innerHTML = photos.map((photo, index) => `
+                <img src="${photo.data}" class="photo-preview" alt="Photo ${index + 1}">
+            `).join('');
+        }
+
+        function updatePhotoCounts() {
+            photoTypes.forEach(type => {
+                const photos = reportData.photos[type.id] || [];
+                const countSpan = document.getElementById(`count_${type.id}`);
+                const statusDiv = document.getElementById(`status_${type.id}`);
+                
+                if (countSpan) {
+                    countSpan.textContent = photos.length;
+                }
+                
+                if (statusDiv) {
+                    if (photos.length >= type.required) {
+                        statusDiv.className = 'photo-status complete';
+                        statusDiv.textContent = '✓ Completo';
+                    } else {
+                        statusDiv.className = 'photo-status pending';
+                        statusDiv.textContent = '⏳ Pendiente';
+                    }
+                }
+            });
+        }
+
+        // Review Functions
+        function updateReview() {
+            // Site Review
+            const siteReview = document.getElementById('siteReview');
+            siteReview.innerHTML = `
+                <div class="review-item">
+                    <span class="review-label">Site ID:</span>
+                    <span class="review-value">${reportData.basic.siteId}</span>
+                </div>
+                <div class="review-item">
+                    <span class="review-label">Site Name:</span>
+                    <span class="review-value">${reportData.basic.siteName}</span>
+                </div>
+                <div class="review-item">
+                    <span class="review-label">Team Leader:</span>
+                    <span class="review-value">${reportData.basic.teamLeader}</span>
+                </div>
+                <div class="review-item">
+                    <span class="review-label">GPS Location:</span>
+                    <span class="review-value">${reportData.gps.latitude?.toFixed(6)}, ${reportData.gps.longitude?.toFixed(6)}</span>
+                </div>
+            `;
+            
+            // Equipment Review
+            const equipmentReview = document.getElementById('equipmentReview');
+            equipmentReview.innerHTML = `
+                <div class="review-item">
+                    <span class="review-label">Radios:</span>
+                    <span class="review-value">${reportData.basic.radiosInstalled}</span>
+                </div>
+                <div class="review-item">
+                    <span class="review-label">Antennas:</span>
+                    <span class="review-value">${reportData.basic.antennasInstalled}</span>
+                </div>
+                <div class="review-item">
+                    <span class="review-label">Equipment Items:</span>
+                    <span class="review-value">${reportData.appurtenances.length} tipos</span>
+                </div>
+            `;
+            
+            // Photo Review
+            const photoReview = document.getElementById('photoReview');
+            let totalPhotos = 0;
+            let completedTypes = 0;
+            
+            photoTypes.forEach(type => {
+                const photos = reportData.photos[type.id] || [];
+                totalPhotos += photos.length;
+                if (photos.length >= type.required) {
+                    completedTypes++;
+                }
+            });
+            
+            photoReview.innerHTML = `
+                <div class="review-item">
+                    <span class="review-label">Total de fotos:</span>
+                    <span class="review-value">${totalPhotos}</span>
+                </div>
+                <div class="review-item">
+                    <span class="review-label">Categorías completas:</span>
+                    <span class="review-value">${completedTypes} de ${photoTypes.length}</span>
+                </div>
+            `;
+        }
+
+        // Submit Functions
+        async function submitReport() {
+            const submitBtn = event.target;
+            const statusDiv = document.getElementById('submitStatus');
+            
+            submitBtn.disabled = true;
+            statusDiv.innerHTML = '<div class="spinner"></div><p>Procesando reporte...</p>';
+            
+            try {
+                // If backend is configured
+                if (window.BACKEND_URL) {
+                    const formData = new FormData();
+                    formData.append('reportData', JSON.stringify({
+                        basic: reportData.basic,
+                        gps: reportData.gps,
+                        appurtenances: reportData.appurtenances
+                    }));
+                    
+                    // Add all photos
+                    for (const [typeId, photos] of Object.entries(reportData.photos)) {
+                        photos.forEach((photo, index) => {
+                            const blob = dataURLtoBlob(photo.data);
+                            formData.append('photos', blob, `${typeId}_${index}.jpg`);
+                        });
+                    }
+                    
+                    const response = await fetch(`${window.BACKEND_URL}/api/reports`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showSuccess();
+                    } else {
+                        throw new Error(result.error);
+                    }
+                } else {
+                    // Fallback: Save locally and show instructions
+                    const reportId = `RPT-${reportData.basic.siteId}-${Date.now()}`;
+                    localStorage.setItem(reportId, JSON.stringify(reportData));
+                    
+                    statusDiv.innerHTML = `
+                        <div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: left;">
+                            <h3 style="color: #2e7d32;">✓ Reporte Guardado Localmente</h3>
+                            <p>ID: ${reportId}</p>
+                            <p style="margin-top: 15px;"><strong>Nota:</strong> El reporte se guardó en este dispositivo. 
+                            Para enviar por email, necesitas configurar el servidor backend.</p>
+                            <button class="btn btn-primary" onclick="downloadLocalReport('${reportId}')">
+                                Descargar Datos (JSON)
+                            </button>
+                        </div>
+                    `;
+                    
+                    submitBtn.disabled = false;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div style="background: #ffebee; padding: 20px; border-radius: 6px;">
+                        <h3 style="color: #c62828;">Error al enviar</h3>
+                        <p>${error.message}</p>
+                        <button class="btn btn-primary" onclick="retrySubmit()">Reintentar</button>
+                    </div>
+                `;
+                submitBtn.disabled = false;
+            }
+        }
+
+        function showSuccess() {
+            document.getElementById('submitStatus').innerHTML = `
+                <div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: center;">
+                    <h2 style="color: #2e7d32;">✓ ¡Reporte Enviado!</h2>
+                    <p>El PDF fue generado y enviado a accounting@newcomm2000.com</p>
+                    <button class="btn btn-primary" onclick="startNewReport()">
+                        Crear Nuevo Reporte
+                    </button>
+                </div>
+            `;
+        }
+
+        function startNewReport() {
+            if (confirm('¿Crear un nuevo reporte? Se borrarán los datos actuales.')) {
+                localStorage.removeItem('towerReport');
+                reportData = {
+                    basic: {},
+                    gps: {},
+                    appurtenances: [],
+                    photos: {}
+                };
+                location.reload();
+            }
+        }
+
+        function downloadLocalReport(reportId) {
+            const data = localStorage.getItem(reportId);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${reportId}.json`;
+            a.click();
+        }
+
+        function dataURLtoBlob(dataURL) {
+            const arr = dataURL.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], { type: mime });
+        }
+
+        function retrySubmit() {
+            submitReport();
+        }
+
+        // Notification function
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Configuration for backend (optional)
+        window.BACKEND_URL = ''; // Set this to your backend URL when ready
