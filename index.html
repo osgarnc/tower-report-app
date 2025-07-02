@@ -507,6 +507,36 @@
                 <div id="gpsStatus"></div>
             </div>
 
+            <!-- Nueva sección de mediciones -->
+            <div style="background: #e3f2fd; padding: 15px; border-radius: 6px; margin-top: 20px;">
+                <h3 style="color: #1565c0; margin-bottom: 15px;">📏 Mediciones de Torre (Opcional)</h3>
+                
+                <div class="form-group">
+                    <label>Tower Height (ft)</label>
+                    <input type="text" id="towerHeight" placeholder="ej: 38.220">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label>Sector 1 Tape Drop</label>
+                        <input type="text" id="sector1TapeDrop" placeholder="ej: 15.5 ft">
+                    </div>
+                    <div class="form-group">
+                        <label>Sector 2 Tape Drop</label>
+                        <input type="text" id="sector2TapeDrop" placeholder="ej: 16.2 ft">
+                    </div>
+                    <div class="form-group">
+                        <label>Sector 3 Tape Drop</label>
+                        <input type="text" id="sector3TapeDrop" placeholder="ej: 14.8 ft">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Tallest Point Measurement (ft)</label>
+                    <input type="text" id="tallestPoint" placeholder="ej: 15.570">
+                </div>
+            </div>
+
             <div class="btn-group">
                 <button class="btn btn-primary" onclick="nextStep()" style="margin-left: auto;">
                     Siguiente →
@@ -672,20 +702,28 @@
             basic: {},
             gps: {},
             appurtenances: [],
-            photos: {}
+            photos: {},
+            measurements: {}, // Nuevo objeto para mediciones
+            metadata: { // Nuevo objeto para metadata
+                appVersion: '2.0',
+                deviceInfo: navigator.userAgent,
+                createdAt: new Date().toISOString()
+            }
         };
 
-        // Photo types configuration
+        // Photo types configuration - Updated with exact names from knowledge base
         const photoTypes = [
-            { id: 'equipment_room', name: 'Equipment Room / Pad', required: 2 },
-            { id: 'cabinet_doors', name: 'Cabinet Doors (Open & Close)', required: 2 },
-            { id: 'safety_lines', name: 'Safety Lines (All)', required: 2 },
-            { id: 'sectors_ground', name: 'Sectors from Ground (1,2,3)', required: 3 },
-            { id: 'antenna_labels', name: 'Antenna Labels', required: 2 },
-            { id: 'radio_labels', name: 'Radio Labels', required: 2 },
-            { id: 'sector_posts', name: 'Sector Post Pictures', required: 3 },
-            { id: 'tape_measurements', name: 'Tape Drop Measurements', required: 2 },
-            { id: 'general_site', name: 'General Site Photos', required: 2 }
+            { id: 'equipment_room', name: 'Post Equipment Room or Pad', required: 4, description: 'Equipment room/pad photos' },
+            { id: 'cabinet_doors', name: 'Cabinet or Shelter Doors', required: 2, description: 'Open and closed door photos' },
+            { id: 'safety_lines', name: 'Safety Lines', required: 4, description: 'All safety line assemblies' },
+            { id: 'antenna_labels', name: 'Antenna Labels', required: 6, description: 'Labels for all antennas' },
+            { id: 'radio_labels', name: 'Radio Labels', required: 3, description: 'Labels for all radios' },
+            { id: 'compound_post', name: 'Compound Post Pictures', required: 4, description: 'Compound area photos' },
+            { id: 'sectors_ground', name: 'Sectors from Ground', required: 3, description: 'Sectors 1, 2, and 3' },
+            { id: 'sector_posts', name: 'Sector Post Pictures', required: 3, description: 'Detailed sector photos' },
+            { id: 'tape_measurements', name: 'Tape Drop Measurements', required: 6, description: 'All measurement photos' },
+            { id: 'tower_measurements', name: 'Tower Height Measurements', required: 2, description: 'Tower and tallest point' },
+            { id: 'beacon', name: 'Beacon Photos', required: 2, description: 'Beacon and label' }
         ];
 
         // Initialize app
@@ -893,6 +931,15 @@
                             submittedBy: 'Field Technician',
                             submissionTimestamp: new Date().toISOString(),
                             uniqueReportId: `RPT-${timestamp}-${randomNum}`
+                        };
+                        
+                        // Guardar mediciones si existen
+                        reportData.measurements = {
+                            towerHeight: document.getElementById('towerHeight').value || '',
+                            sector1TapeDrop: document.getElementById('sector1TapeDrop').value || '',
+                            sector2TapeDrop: document.getElementById('sector2TapeDrop').value || '',
+                            sector3TapeDrop: document.getElementById('sector3TapeDrop').value || '',
+                            tallestPoint: document.getElementById('tallestPoint').value || ''
                         };
                         break;
                 }
@@ -1373,24 +1420,64 @@
             const timestamp = Date.now();
             const uniqueReportID = `RPT-${reportData.basic.siteId}-${timestamp}`;
             
-            const dataToSend = {
-                submittedBy: reportData.basic.submittedBy || 'Field Technician',
-                submissionTimestamp: new Date().toISOString(),
-                reportID: uniqueReportID,
-                siteId: reportData.basic.siteId || '',
-                siteName: reportData.basic.siteName || '',
-                customerSiteId: reportData.basic.customerSiteId || '',
-                customerSiteName: reportData.basic.customerSiteName || '',
-                radiosInstalled: reportData.basic.radiosInstalled || '0',
-                antennasInstalled: reportData.basic.antennasInstalled || '0',
-                teamLeader: reportData.basic.teamLeader || '',
-                towerTop: reportData.basic.towerTop || 'no',
-                completionDate: reportData.basic.completionDate || '',
-                tpTenant: reportData.basic.tpTenant || '',
-                latitude: reportData.gps.latitude || 0,
-                longitude: reportData.gps.longitude || 0,
+            // Preparar AppurtenanceData con toda la información adicional
+            const appurtenanceDataJSON = {
                 appurtenances: reportData.appurtenances || [],
-                photos: reportData.photos || {}
+                measurements: reportData.measurements || {},
+                gpsDetails: {
+                    latitude: reportData.gps.latitude || 0,
+                    longitude: reportData.gps.longitude || 0,
+                    altitude: reportData.gps.altitude || 0,
+                    accuracy: reportData.gps.accuracy || 0,
+                    method: reportData.gps.manual ? 'manual' : 'auto'
+                },
+                metadata: reportData.metadata || {}
+            };
+            
+            // Preparar PhotoLinks con información detallada de fotos
+            const photoLinksJSON = {
+                totalPhotos: 0,
+                categories: {},
+                photoMetadata: {}
+            };
+            
+            // Contar fotos y organizar por categoría
+            Object.keys(reportData.photos).forEach(category => {
+                const photos = reportData.photos[category] || [];
+                photoLinksJSON.totalPhotos += photos.length;
+                photoLinksJSON.categories[category] = photos.length;
+                
+                // Agregar metadata de cada foto
+                photos.forEach((photo, index) => {
+                    const photoKey = `${category}_${index + 1}`;
+                    photoLinksJSON.photoMetadata[photoKey] = {
+                        timestamp: photo.timestamp,
+                        name: photo.name || photoKey,
+                        category: photoTypes.find(t => t.id === category)?.name || category
+                    };
+                });
+            });
+            
+            const dataToSend = {
+                Title: reportData.basic.teamLeader || 'Field Technician',
+                SubmittedBy: reportData.basic.submittedBy || 'Field Technician',
+                SubmissionTimestamp: new Date().toISOString(),
+                ReportID: uniqueReportID,
+                TowerProviderSiteID: reportData.basic.siteId || '',
+                TowerProviderSiteName: reportData.basic.siteName || '',
+                CustomerSiteID: reportData.basic.customerSiteId || '',
+                CustomerSiteName: reportData.basic.customerSiteName || '',
+                RadiosInstalled: parseInt(reportData.basic.radiosInstalled) || 0,
+                AntennasInstalled: parseInt(reportData.basic.antennasInstalled) || 0,
+                TeamLeader: reportData.basic.teamLeader || '',
+                TowerTopInstallation: reportData.basic.towerTop === 'yes',
+                CompletionDate: reportData.basic.completionDate || new Date().toISOString().split('T')[0],
+                TPTenant: reportData.basic.tpTenant || '',
+                Latitude: reportData.gps.latitude || 0,
+                Longitude: reportData.gps.longitude || 0,
+                AppurtenanceData: JSON.stringify(appurtenanceDataJSON),
+                PhotoLinks: JSON.stringify(photoLinksJSON),
+                ReportStatus: 'DraftSubmittedPDF'
             };
             
             try {
@@ -1583,6 +1670,17 @@
                         <p><strong>Antenas:</strong> ${reportData.basic.antennasInstalled || 0}</p>
                         <p><strong>Equipos registrados:</strong> ${reportData.appurtenances.length}</p>
                     </div>
+                    
+                    ${reportData.measurements && (reportData.measurements.towerHeight || reportData.measurements.sector1TapeDrop) ? `
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="color: #333;">Mediciones</h4>
+                        ${reportData.measurements.towerHeight ? `<p><strong>Tower Height:</strong> ${reportData.measurements.towerHeight}</p>` : ''}
+                        ${reportData.measurements.sector1TapeDrop ? `<p><strong>Sector 1:</strong> ${reportData.measurements.sector1TapeDrop}</p>` : ''}
+                        ${reportData.measurements.sector2TapeDrop ? `<p><strong>Sector 2:</strong> ${reportData.measurements.sector2TapeDrop}</p>` : ''}
+                        ${reportData.measurements.sector3TapeDrop ? `<p><strong>Sector 3:</strong> ${reportData.measurements.sector3TapeDrop}</p>` : ''}
+                        ${reportData.measurements.tallestPoint ? `<p><strong>Tallest Point:</strong> ${reportData.measurements.tallestPoint}</p>` : ''}
+                    </div>
+                    ` : ''}
                     
                     <div>
                         <h4 style="color: #333;">Documentación</h4>
