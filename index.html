@@ -743,6 +743,97 @@
             }
         }
 
+        // Add storage indicator - MEJORADA
+        function checkStorageSpace() {
+            try {
+                let totalSize = 0;
+                for (let key in localStorage) {
+                    if (localStorage.hasOwnProperty(key)) {
+                        totalSize += localStorage[key].length;
+                    }
+                }
+                const usedMB = (totalSize / 1024 / 1024).toFixed(2);
+                return usedMB;
+            } catch (e) {
+                return 'Unknown';
+            }
+        }
+
+        // Función para optimizar almacenamiento automáticamente
+        function optimizeStorage() {
+            const currentSize = parseFloat(checkStorageSpace());
+            
+            if (currentSize > 4) {
+                showNotification('Optimizando almacenamiento...', 'info');
+                
+                // 1. Limpiar reportes antiguos
+                clearOldReports();
+                
+                // 2. Si aún hay problemas, comprimir más las fotos actuales
+                if (parseFloat(checkStorageSpace()) > 3) {
+                    Object.keys(reportData.photos).forEach(photoType => {
+                        const photos = reportData.photos[photoType];
+                        if (photos && photos.length > 2) {
+                            reportData.photos[photoType] = photos.slice(-2);
+                        }
+                    });
+                    updatePhotoCounts();
+                }
+                
+                updateStorageIndicator();
+                showNotification('Almacenamiento optimizado', 'success');
+            }
+        }
+
+        // Clear old reports to free space - MEJORADA
+        function clearOldReports() {
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('RPT-')) {
+                    keysToRemove.push(key);
+                }
+            }
+            // Remove old reports
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            showNotification('Se limpiaron reportes antiguos para liberar espacio', 'info');
+        }
+
+        // Nueva función para limpiar fotos antiguas
+        function clearOldPhotos() {
+            // Limpiar fotos de reportes anteriores
+            clearOldReports();
+            
+            // Si aún hay problemas, reducir fotos del reporte actual
+            if (reportData.photos) {
+                Object.keys(reportData.photos).forEach(photoType => {
+                    const photos = reportData.photos[photoType];
+                    if (photos && photos.length > 3) {
+                        // Mantener solo las 3 fotos más recientes por tipo
+                        reportData.photos[photoType] = photos.slice(-3);
+                    }
+                });
+                updatePhotoCounts();
+                showNotification('Se redujeron fotos para liberar espacio', 'info');
+            }
+        }
+
+        // Clear all data function
+        function clearAllData() {
+            if (confirm('¿Eliminar todos los datos guardados? Esto borrará reportes anteriores.')) {
+                localStorage.clear();
+                reportData = {
+                    basic: {},
+                    gps: {},
+                    appurtenances: [],
+                    photos: {}
+                };
+                showNotification('Datos eliminados correctamente', 'success');
+                updateStorageIndicator();
+                location.reload();
+            }
+        }
+
         // Navigation functions
         function nextStep() {
             console.log('NextStep called. Current step:', currentStep);
