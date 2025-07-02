@@ -1528,8 +1528,8 @@
                                 <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
                                     ➕ Crear Nuevo Reporte
                                 </button>
-                                <button class="btn btn-primary" onclick="location.href='mailto:accounting@newcomm2000.com?subject=Tower Report ${reportId}'" style="flex: 1;">
-                                    📧 Enviar por Email
+                                <button class="btn btn-primary" onclick="sendDetailedEmail('${reportId}')" style="flex: 1;">
+                                    📧 Enviar Email Detallado
                                 </button>
                             </div>
                         </div>
@@ -1704,6 +1704,96 @@
         }
 
         // Esta función ya está implementada arriba, la estoy eliminando para evitar duplicación
+
+        function sendDetailedEmail(reportId) {
+            // Crear un resumen detallado para el email
+            const emailSubject = `Tower Provider Report - ${reportData.basic.siteName || reportId}`;
+            
+            const emailBody = `
+TOWER PROVIDER REPORT
+=====================
+
+SITE INFORMATION:
+- Site ID: ${reportData.basic.siteId || 'N/A'}
+- Site Name: ${reportData.basic.siteName || 'N/A'}
+- Customer Site ID: ${reportData.basic.customerSiteId || 'N/A'}
+- Customer Site Name: ${reportData.basic.customerSiteName || 'N/A'}
+
+INSTALLATION DETAILS:
+- Radios Installed: ${reportData.basic.radiosInstalled || '0'}
+- Antennas Installed: ${reportData.basic.antennasInstalled || '0'}
+- Team Leader: ${reportData.basic.teamLeader || 'N/A'}
+- Tower Top Installation: ${reportData.basic.towerTop || 'N/A'}
+- Completion Date: ${reportData.basic.completionDate || 'N/A'}
+- TP Tenant: ${reportData.basic.tpTenant || 'N/A'}
+
+GPS LOCATION:
+- Latitude: ${reportData.gps.latitude || 'N/A'}
+- Longitude: ${reportData.gps.longitude || 'N/A'}
+- Accuracy: ${reportData.gps.accuracy ? `±${reportData.gps.accuracy.toFixed(1)}m` : 'N/A'}
+
+${reportData.measurements && (reportData.measurements.towerHeight || reportData.measurements.sector1TapeDrop) ? `
+MEASUREMENTS:
+- Tower Height: ${reportData.measurements.towerHeight || 'N/A'}
+- Sector 1 Tape Drop: ${reportData.measurements.sector1TapeDrop || 'N/A'}
+- Sector 2 Tape Drop: ${reportData.measurements.sector2TapeDrop || 'N/A'}
+- Sector 3 Tape Drop: ${reportData.measurements.sector3TapeDrop || 'N/A'}
+- Tallest Point: ${reportData.measurements.tallestPoint || 'N/A'}
+` : ''}
+
+EQUIPMENT INSTALLED (${reportData.appurtenances.length} items):
+${reportData.appurtenances.map((app, i) => 
+`${i + 1}. ${app.type} - ${app.manufacturer} ${app.model} (Qty: ${app.quantity})`
+).join('\n')}
+
+PHOTO DOCUMENTATION:
+- Total Photos: ${Object.values(reportData.photos).reduce((sum, arr) => sum + (arr ? arr.length : 0), 0)}
+${Object.entries(reportData.photos).map(([category, photos]) => {
+    const catName = photoTypes.find(t => t.id === category)?.name || category;
+    return `- ${catName}: ${photos ? photos.length : 0} photos`;
+}).join('\n')}
+
+REPORT DETAILS:
+- Report ID: ${reportId}
+- Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
+- Submission Time: ${new Date().toLocaleString()}
+
+---
+This report has been submitted to SharePoint.
+For the complete PDF report with all photos, please check SharePoint or request it from the system administrator.
+
+Newcomm Management Services Corp.
+PO Box 4116, Vega Baja PR 00694
+Phone: 787-718-2600
+            `.trim();
+            
+            // Codificar el body para URL
+            const encodedBody = encodeURIComponent(emailBody);
+            
+            // Crear el link mailto con body
+            const mailtoLink = `mailto:accounting@newcomm2000.com?subject=${encodeURIComponent(emailSubject)}&body=${encodedBody}`;
+            
+            // Verificar si el link es muy largo (algunos clientes de email tienen límites)
+            if (mailtoLink.length > 2000) {
+                // Si es muy largo, crear una versión resumida
+                const shortBody = `
+Tower Provider Report - ${reportData.basic.siteName || 'N/A'}
+Site ID: ${reportData.basic.siteId || 'N/A'}
+Report ID: ${reportId}
+
+Please check SharePoint for the complete report with all details and photos.
+
+Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
+Date: ${new Date().toLocaleString()}
+                `.trim();
+                
+                window.location.href = `mailto:accounting@newcomm2000.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(shortBody)}`;
+                showNotification('Email abierto con resumen corto (límite de caracteres)', 'info');
+            } else {
+                window.location.href = mailtoLink;
+                showNotification('Email abierto con todos los detalles', 'success');
+            }
+        }
 
         // Notification function
         function showNotification(message, type = 'info') {
