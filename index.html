@@ -28,6 +28,28 @@
             position: relative;
         }
 
+        /* Watermark styling */
+        .form-section {
+            position: relative;
+        }
+
+        .form-section::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 100px;
+            background-image: url('data:image/png;base64,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');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0.08;
+            z-index: 0;
+            pointer-events: none;
+        }
+
         /* Header */
         .header {
             background-color: #0066cc;
@@ -98,6 +120,8 @@
 
         .form-group {
             margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
         }
 
         label {
@@ -118,6 +142,7 @@
             border-radius: 6px;
             font-size: 16px;
             transition: border-color 0.3s;
+            background-color: rgba(255, 255, 255, 0.9);
         }
 
         input:focus,
@@ -142,6 +167,8 @@
             transition: all 0.3s;
             text-align: center;
             display: inline-block;
+            position: relative;
+            z-index: 1;
         }
 
         .btn-primary {
@@ -182,6 +209,8 @@
             display: flex;
             gap: 10px;
             margin-top: 30px;
+            position: relative;
+            z-index: 1;
         }
 
         /* GPS Status */
@@ -190,6 +219,9 @@
             border-radius: 6px;
             margin-top: 10px;
             font-size: 14px;
+            position: relative;
+            z-index: 1;
+            background-color: rgba(255, 255, 255, 0.9);
         }
 
         .gps-status.success {
@@ -205,10 +237,12 @@
         /* Appurtenance List */
         .appurtenance-list {
             margin-top: 20px;
+            position: relative;
+            z-index: 1;
         }
 
         .appurtenance-item {
-            background-color: #f5f5f5;
+            background-color: rgba(245, 245, 245, 0.9);
             padding: 15px;
             border-radius: 6px;
             margin-bottom: 10px;
@@ -230,10 +264,12 @@
 
         /* Photo Section */
         .photo-requirements {
-            background-color: #e3f2fd;
+            background-color: rgba(227, 242, 253, 0.9);
             padding: 15px;
             border-radius: 6px;
             margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
         }
 
         .photo-requirements h3 {
@@ -248,10 +284,12 @@
         .photo-grid {
             display: grid;
             gap: 15px;
+            position: relative;
+            z-index: 1;
         }
 
         .photo-item {
-            background-color: #f5f5f5;
+            background-color: rgba(245, 245, 245, 0.9);
             padding: 15px;
             border-radius: 6px;
             text-align: center;
@@ -321,10 +359,12 @@
 
         /* Review Section */
         .review-section {
-            background-color: #f5f5f5;
+            background-color: rgba(245, 245, 245, 0.9);
             padding: 15px;
             border-radius: 6px;
             margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
         }
 
         .review-section h3 {
@@ -423,7 +463,7 @@
     <div class="app-container">
         <header class="header">
             <h1>Tower Provider Report</h1>
-            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 2.1</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 2.2</div>
         </header>
 
         <div class="step-indicator">
@@ -439,14 +479,14 @@
             <h2>Información Básica</h2>
             
             <!-- Storage management -->
-            <div style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 14px;">
+            <div style="background: rgba(245, 245, 245, 0.9); padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 14px; position: relative; z-index: 1;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span>Espacio usado: <span id="storageIndicator">calculando...</span></span>
                     <button class="btn btn-secondary" onclick="clearAllData()" style="font-size: 12px; padding: 5px 10px;">
                         Limpiar datos
                     </button>
                 </div>
-                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v2.1</div>
+                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v2.2</div>
             </div>
             
             <div class="form-group">
@@ -510,7 +550,7 @@
             </div>
 
             <!-- Nueva sección de mediciones -->
-            <div style="background: #e3f2fd; padding: 15px; border-radius: 6px; margin-top: 20px;">
+            <div style="background: rgba(227, 242, 253, 0.9); padding: 15px; border-radius: 6px; margin-top: 20px; position: relative; z-index: 1;">
                 <h3 style="color: #1565c0; margin-bottom: 15px;">📏 Mediciones de Torre (Opcional)</h3>
                 
                 <div class="form-group">
@@ -554,7 +594,7 @@
                 + Agregar Equipo
             </button>
 
-            <div id="appurtenanceForm" style="display: none; margin-top: 20px;">
+            <div id="appurtenanceForm" style="display: none; margin-top: 20px; position: relative; z-index: 1;">
                 <div class="form-group">
                     <label>Type</label>
                     <select id="appType">
@@ -672,7 +712,7 @@
         <div class="form-section" id="section5">
             <h2>Enviar Reporte</h2>
             
-            <div style="text-align: center; padding: 40px 20px;">
+            <div style="text-align: center; padding: 40px 20px; position: relative; z-index: 1;">
                 <h3>¿Está listo para enviar el reporte?</h3>
                 <p style="margin: 20px 0; color: #666;">
                     Al enviar, se generará un PDF y se enviará automáticamente a accounting@newcomm2000.com
@@ -707,7 +747,7 @@
             photos: {},
             measurements: {}, // Nuevo objeto para mediciones
             metadata: { // Nuevo objeto para metadata
-                appVersion: '2.0',
+                appVersion: '2.2',
                 deviceInfo: navigator.userAgent,
                 createdAt: new Date().toISOString()
             }
@@ -1521,7 +1561,7 @@
                 
                 if (sentToSharePoint) {
                     statusDiv.innerHTML = `
-                        <div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: left;">
+                        <div style="background: rgba(232, 245, 233, 0.9); padding: 20px; border-radius: 6px; text-align: left;">
                             <h3 style="color: #2e7d32;">✓ Reporte Enviado a SharePoint</h3>
                             <p>ID: ${reportId}</p>
                             <p style="margin-top: 15px;">
@@ -1540,7 +1580,7 @@
                     `;
                 } else {
                     statusDiv.innerHTML = `
-                        <div style="background: #fff3cd; padding: 20px; border-radius: 6px; text-align: left;">
+                        <div style="background: rgba(255, 243, 205, 0.9); padding: 20px; border-radius: 6px; text-align: left;">
                             <h3 style="color: #856404;">⚠️ Guardado Solo Localmente</h3>
                             <p>ID: ${reportId}</p>
                             <p style="margin-top: 15px;">
@@ -1562,7 +1602,7 @@
                 
             } catch (error) {
                 statusDiv.innerHTML = `
-                    <div style="background: #ffebee; padding: 20px; border-radius: 6px;">
+                    <div style="background: rgba(255, 235, 238, 0.9); padding: 20px; border-radius: 6px;">
                         <h3 style="color: #c62828;">Error al guardar</h3>
                         <p>${error.message}</p>
                         <button class="btn btn-primary" onclick="location.reload()">
@@ -1586,7 +1626,7 @@
                 
                 if (sent) {
                     statusDiv.innerHTML = `
-                        <div style="background: #e8f5e9; padding: 20px; border-radius: 6px;">
+                        <div style="background: rgba(232, 245, 233, 0.9); padding: 20px; border-radius: 6px;">
                             <h3 style="color: #2e7d32;">✓ Enviado Exitosamente</h3>
                             <p>El reporte se envió a SharePoint.</p>
                             <div style="display: flex; gap: 10px; margin-top: 15px;">
@@ -1601,7 +1641,7 @@
                     `;
                 } else {
                     statusDiv.innerHTML = `
-                        <div style="background: #ffebee; padding: 20px; border-radius: 6px;">
+                        <div style="background: rgba(255, 235, 238, 0.9); padding: 20px; border-radius: 6px;">
                             <h3 style="color: #c62828;">Error al enviar</h3>
                             <p>No se pudo conectar con SharePoint. Verifique su conexión.</p>
                             <div style="display: flex; gap: 10px; margin-top: 15px;">
@@ -1657,7 +1697,7 @@
             });
 
             const summaryHTML = `
-                <div style="background: #f5f5f5; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                <div style="background: rgba(245, 245, 245, 0.9); padding: 20px; border-radius: 6px; margin: 20px 0;">
                     <h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte</h3>
                     
                     <div style="margin-bottom: 15px;">
@@ -1706,8 +1746,6 @@
         function closeReportSummary() {
             document.getElementById('submitStatus').innerHTML = '';
         }
-
-        // Esta función ya está implementada arriba, la estoy eliminando para evitar duplicación
 
         function sendDetailedEmail(reportId) {
             // Crear un resumen detallado para el email
