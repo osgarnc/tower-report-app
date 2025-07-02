@@ -1506,43 +1506,7 @@
             showNotification('Nuevo reporte iniciado', 'success');
         }
 
-        function showReportSummary() {
-            // Calcular el total de fotos
-            let totalPhotos = 0;
-            Object.values(reportData.photos).forEach(photoArray => {
-                totalPhotos += photoArray.length;
-            });
-
-            const summaryHTML = `
-                <div style="background: #f5f5f5; padding: 20px; border-radius: 6px; margin: 20px 0;">
-                    <h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte</h3>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <h4 style="color: #333;">Información del Sitio</h4>
-                        <p><strong>Site ID:</strong> ${reportData.basic.siteId || 'N/A'}</p>
-                        <p><strong>Site Name:</strong> ${reportData.basic.siteName || 'N/A'}</p>
-                        <p><strong>Team Leader:</strong> ${reportData.basic.teamLeader || 'N/A'}</p>
-                        <p><strong>Fecha:</strong> ${reportData.basic.completionDate || 'N/A'}</p>
-                    </div>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <h4 style="color: #333;">Equipos Instalados</h4>
-                        <p><strong>Radios:</strong> ${reportData.basic.radiosInstalled || 0}</p>
-                        <p><strong>Antenas:</strong> ${reportData.basic.antennasInstalled || 0}</p>
-                        <p><strong>Equipos registrados:</strong> ${reportData.appurtenances.length}</p>
-                    </div>
-                    
-                    <div>
-                        <h4 style="color: #333;">Documentación</h4>
-                        <p><strong>Total de fotos:</strong> ${totalPhotos}</p>
-                        <p><strong>GPS:</strong> ${reportData.gps.latitude ? '✓ Capturado' : '✗ No capturado'}</p>
-                    </div>
-                </div>
-            `;
-            
-            const statusDiv = document.getElementById('submitStatus');
-            statusDiv.innerHTML = summaryHTML;
-        }
+        // Esta función ya está implementada arriba, la estoy eliminando para evitar duplicación
 
         // Notification function
         function showNotification(message, type = 'info') {
