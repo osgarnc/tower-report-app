@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<div style="font-size: 11px; color: #666; margin-top: 5px;">App v2.3</div><!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -463,7 +463,7 @@
     <div class="app-container">
         <header class="header">
             <h1>Tower Provider Report</h1>
-            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 2.2</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 2.3</div>
         </header>
 
         <div class="step-indicator">
@@ -486,7 +486,7 @@
                         Limpiar datos
                     </button>
                 </div>
-                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v2.2</div>
+                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v2.3</div>
             </div>
             
             <div class="form-group">
@@ -747,7 +747,7 @@
             photos: {},
             measurements: {}, // Nuevo objeto para mediciones
             metadata: { // Nuevo objeto para metadata
-                appVersion: '2.2',
+                appVersion: '2.3',
                 deviceInfo: navigator.userAgent,
                 createdAt: new Date().toISOString()
             }
@@ -1456,6 +1456,479 @@
         }
 
         // Submit and PDF Functions
+        async function generateReportHTML(reportData) {
+            const currentDate = new Date().toLocaleString();
+            const reportDate = new Date().toISOString().split('T')[0];
+            
+            const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tower Provider Report</title>
+<style>
+    body { 
+        font-family: Arial, sans-serif; 
+        margin: 0;
+        padding: 20px; 
+        background-color: #f8f9fa;
+        line-height: 1.4;
+        position: relative;
+    }
+    
+    /* Watermark for printed report */
+    body::before {
+        content: "";
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 600px;
+        height: 200px;
+        background-image: url('data:image/png;base64,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');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        opacity: 0.1;
+        z-index: -1;
+        pointer-events: none;
+    }
+    
+    .report-container {
+        max-width: 900px;
+        margin: 0 auto;
+        background-color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .header { 
+        background: linear-gradient(135deg, #0066cc, #004499);
+        color: white;
+        padding: 30px 40px;
+        text-align: center;
+        position: relative;
+    }
+    
+    .company-info {
+        font-size: 12px;
+        margin-bottom: 20px;
+        opacity: 0.9;
+    }
+    
+    .title { 
+        font-size: 28px; 
+        font-weight: bold;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .submission-info {
+        background: rgba(255,255,255,0.1);
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        font-size: 12px;
+    }
+    
+    .content {
+        padding: 30px 40px;
+    }
+    
+    .section { 
+        margin-bottom: 40px; 
+        border-left: 4px solid #0066cc;
+        padding-left: 20px;
+        page-break-inside: avoid;
+    }
+    
+    .section-title { 
+        font-size: 18px; 
+        color: #0066cc; 
+        font-weight: bold; 
+        margin-bottom: 20px; 
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #0066cc;
+        padding-bottom: 8px;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin: 20px 0;
+    }
+    
+    .info-row { 
+        background-color: #f8f9fa;
+        padding: 12px 15px;
+        border-radius: 6px;
+        border-left: 3px solid #0066cc;
+    }
+    
+    .label { 
+        font-weight: bold; 
+        color: #333; 
+        display: block;
+        font-size: 12px;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+        opacity: 0.8;
+    }
+    
+    .value {
+        color: #2c3e50;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .map-section {
+        background-color: #e8f4f8;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border: 1px solid #0066cc;
+        text-align: center;
+    }
+    
+    .coordinates-section {
+        background: linear-gradient(135deg, #e8f4f8, #d1ecf1);
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border: 1px solid #0066cc;
+    }
+    
+    .coordinates-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .coordinate-item {
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .appurtenance-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-size: 12px;
+    }
+    
+    .appurtenance-table th {
+        background: #0066cc;
+        color: white;
+        padding: 12px 8px;
+        text-align: left;
+        font-weight: bold;
+    }
+    
+    .appurtenance-table td {
+        padding: 10px 8px;
+        border-bottom: 1px solid #ddd;
+        background: #f9f9f9;
+    }
+    
+    .appurtenance-table tr:nth-child(even) td {
+        background: #f1f1f1;
+    }
+    
+    .photo-section {
+        margin: 30px 0;
+    }
+    
+    .photo-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin: 20px 0;
+    }
+    
+    .photo-item {
+        text-align: center;
+        page-break-inside: avoid;
+    }
+    
+    .photo-placeholder {
+        background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
+                    linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
+                    linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
+                    linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .photo-title {
+        font-weight: bold;
+        color: #0066cc;
+        margin-bottom: 5px;
+        font-size: 14px;
+    }
+    
+    .photo-timestamp {
+        font-size: 11px;
+        color: #666;
+    }
+    
+    .footer { 
+        background-color: #f8f9fa;
+        padding: 25px 40px;
+        border-top: 1px solid #dee2e6;
+        text-align: center;
+    }
+    
+    .contact-info {
+        font-size: 12px; 
+        color: #666; 
+    }
+    
+    .company-name {
+        font-weight: bold;
+        color: #0066cc;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+    
+    .version-info {
+        font-size: 10px;
+        color: #999;
+        margin-top: 10px;
+    }
+    
+    @media print {
+        body {
+            background: white;
+        }
+        
+        .report-container {
+            box-shadow: none;
+        }
+        
+        .section {
+            page-break-inside: avoid;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="header">
+            <div class="company-info">
+                PO Box 4116<br>
+                Vega Baja PR 00694<br>
+                t. 787-718-2600<br>
+                accounting@newcomm2000.com
+            </div>
+            <h1 class="title">Tower Provider Report</h1>
+            <div class="submission-info">
+                <strong>Submitted by:</strong> ${reportData.basic.submittedBy || 'Field Technician'}<br>
+                <strong>Submission timestamp:</strong> ${reportData.basic.submissionTimestamp || new Date().toISOString()}<br>
+                <strong>Report ID:</strong> ${reportData.basic.uniqueReportId || 'N/A'}
+            </div>
+        </div>
+        
+        <div class="content">
+            <!-- SITE INFORMATION -->
+            <div class="section">
+                <div class="section-title">Site Information</div>
+                <div class="info-grid">
+                    <div class="info-row">
+                        <span class="label">Tower Provider Site ID</span>
+                        <div class="value">${reportData.basic.siteId || ''}</div>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Tower Provider Site Name</span>
+                        <div class="value">${reportData.basic.siteName || ''}</div>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Customer Site ID</span>
+                        <div class="value">${reportData.basic.customerSiteId || ''}</div>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Customer Site Name</span>
+                        <div class="value">${reportData.basic.customerSiteName || ''}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSTALLATION DETAILS -->
+            <div class="section">
+                <div class="section-title">Installation Details</div>
+                <div class="info-grid">
+                    <div class="info-row">
+                        <span class="label">Radios Installed</span>
+                        <div class="value">${reportData.basic.radiosInstalled || '0'}</div>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Antennas Installed</span>
+                        <div class="value">${reportData.basic.antennasInstalled || '0'}</div>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Team Leader</span>
+                        <div class="value">${reportData.basic.teamLeader || ''}</div>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Tower Top Installation</span>
+                        <div class="value">${reportData.basic.towerTop || ''}</div>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Completion Date</span>
+                        <div class="value">${reportData.basic.completionDate || ''}</div>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">TP Tenant</span>
+                        <div class="value">${reportData.basic.tpTenant || ''}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GPS LOCATION -->
+            ${reportData.gps.latitude ? `
+            <div class="section">
+                <div class="section-title">🗺️ GPS Location</div>
+                <div class="coordinates-section">
+                    <div class="coordinates-grid">
+                        <div class="coordinate-item">
+                            <div class="label">Latitude</div>
+                            <div class="value" style="font-size: 18px; color: #0066cc;">${reportData.gps.latitude.toFixed(6)}</div>
+                        </div>
+                        <div class="coordinate-item">
+                            <div class="label">Longitude</div>
+                            <div class="value" style="font-size: 18px; color: #0066cc;">${reportData.gps.longitude.toFixed(6)}</div>
+                        </div>
+                        <div class="coordinate-item">
+                            <div class="label">Full Coordinates</div>
+                            <div class="value">${reportData.gps.latitude.toFixed(6)}, ${reportData.gps.longitude.toFixed(6)}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="map-section">
+                    <div style="padding: 20px;">
+                        📍 Google Maps Location<br>
+                        <small>https://www.google.com/maps?q=${reportData.gps.latitude},${reportData.gps.longitude}</small>
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+
+            <!-- MEASUREMENTS -->
+            ${reportData.measurements && (reportData.measurements.towerHeight || reportData.measurements.sector1TapeDrop) ? `
+            <div class="section">
+                <div class="section-title">📏 Tower Measurements</div>
+                <div class="info-grid">
+                    ${reportData.measurements.towerHeight ? `
+                    <div class="info-row">
+                        <span class="label">Tower Height</span>
+                        <div class="value">${reportData.measurements.towerHeight}</div>
+                    </div>` : ''}
+                    ${reportData.measurements.sector1TapeDrop ? `
+                    <div class="info-row">
+                        <span class="label">Sector 1 Tape Drop</span>
+                        <div class="value">${reportData.measurements.sector1TapeDrop}</div>
+                    </div>` : ''}
+                    ${reportData.measurements.sector2TapeDrop ? `
+                    <div class="info-row">
+                        <span class="label">Sector 2 Tape Drop</span>
+                        <div class="value">${reportData.measurements.sector2TapeDrop}</div>
+                    </div>` : ''}
+                    ${reportData.measurements.sector3TapeDrop ? `
+                    <div class="info-row">
+                        <span class="label">Sector 3 Tape Drop</span>
+                        <div class="value">${reportData.measurements.sector3TapeDrop}</div>
+                    </div>` : ''}
+                    ${reportData.measurements.tallestPoint ? `
+                    <div class="info-row">
+                        <span class="label">Tallest Point</span>
+                        <div class="value">${reportData.measurements.tallestPoint}</div>
+                    </div>` : ''}
+                </div>
+            </div>
+            ` : ''}
+
+            <!-- APPURTENANCE INFORMATION -->
+            <div class="section">
+                <div class="section-title">Appurtenance Information</div>
+                <table class="appurtenance-table">
+                    <thead>
+                        <tr>
+                            <th>Appurtenance</th>
+                            <th>Type</th>
+                            <th>Rad Center</th>
+                            <th>Manufacturer</th>
+                            <th>Model</th>
+                            <th>Quantity</th>
+                            <th>Coax Size</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${reportData.appurtenances.map((app, index) => `
+                        <tr>
+                            <td><strong>${index + 1}</strong></td>
+                            <td>${app.type || ''}</td>
+                            <td>${app.radCenter || ''}</td>
+                            <td>${app.manufacturer || ''}</td>
+                            <td>${app.model || ''}</td>
+                            <td>${app.quantity || ''}</td>
+                            <td>${app.coaxSize || ''}</td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PHOTO DOCUMENTATION SUMMARY -->
+            <div class="section">
+                <div class="section-title">📸 Photo Documentation Summary</div>
+                <div class="info-grid">
+                    <div class="info-row">
+                        <span class="label">Total Photos Taken</span>
+                        <div class="value">${Object.values(reportData.photos).reduce((sum, arr) => sum + (arr ? arr.length : 0), 0)}</div>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Categories Completed</span>
+                        <div class="value">${Object.keys(reportData.photos).length} of ${photoTypes.length}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="company-name">Newcomm Management Services Corp.</div>
+            <div class="contact-info">
+                PO Box 4116, Vega Baja PR 00694<br>
+                Phone: 787-718-2600 | Email: accounting@newcomm2000.com<br>
+                <small>Generated: ${currentDate}</small>
+            </div>
+            <div class="version-info">
+                Tower Provider Report App v2.3
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
+            
+            return html;
+        }
+
         async function sendToSharePoint(reportData) {
             const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
             
@@ -1551,11 +2024,22 @@
             const statusDiv = document.getElementById('submitStatus');
             
             submitBtn.disabled = true;
-            statusDiv.innerHTML = '<div class="spinner"></div><p>Enviando reporte a SharePoint...</p>';
+            statusDiv.innerHTML = '<div class="spinner"></div><p>Generando reporte y enviando a SharePoint...</p>';
             
             try {
-                const reportId = `RPT-${Date.now()}-${Math.floor(Math.random() * 100000)}`; // ID único sin siteId
-                localStorage.setItem(reportId, JSON.stringify(reportData));
+                const reportId = `RPT-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+                reportData.basic.uniqueReportId = reportId;
+                
+                // Generar el HTML del reporte
+                const reportHTML = await generateReportHTML(reportData);
+                
+                // Guardar el HTML junto con los datos del reporte
+                const fullReportData = {
+                    ...reportData,
+                    generatedHTML: reportHTML
+                };
+                
+                localStorage.setItem(reportId, JSON.stringify(fullReportData));
                 
                 const sentToSharePoint = await sendToSharePoint(reportData);
                 
@@ -1566,7 +2050,8 @@
                             <p>ID: ${reportId}</p>
                             <p style="margin-top: 15px;">
                                 <strong>✓ Guardado localmente</strong><br>
-                                <strong>✓ Enviado a SharePoint</strong>
+                                <strong>✓ Enviado a SharePoint</strong><br>
+                                <strong>✓ HTML generado con watermark</strong>
                             </p>
                             <div style="display: flex; gap: 10px; margin-top: 20px;">
                                 <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
@@ -1574,6 +2059,9 @@
                                 </button>
                                 <button class="btn btn-primary" onclick="sendDetailedEmail('${reportId}')" style="flex: 1;">
                                     📧 Enviar Email Detallado
+                                </button>
+                                <button class="btn btn-secondary" onclick="downloadReportHTML('${reportId}')" style="flex: 1;">
+                                    📥 Descargar HTML
                                 </button>
                             </div>
                         </div>
@@ -1593,6 +2081,9 @@
                                 <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
                                     ➕ Nuevo Reporte
                                 </button>
+                                <button class="btn btn-secondary" onclick="downloadReportHTML('${reportId}')" style="flex: 1;">
+                                    📥 Descargar HTML
+                                </button>
                             </div>
                         </div>
                     `;
@@ -1611,6 +2102,26 @@
                     </div>
                 `;
                 submitBtn.disabled = false;
+            }
+        }
+
+        function downloadReportHTML(reportId) {
+            const savedData = localStorage.getItem(reportId);
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                const html = data.generatedHTML || generateReportHTML(data);
+                
+                const blob = new Blob([html], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `TowerReport_${reportId}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showNotification('Reporte HTML descargado', 'success');
             }
         }
 
