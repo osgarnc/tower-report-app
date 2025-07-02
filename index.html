@@ -675,7 +675,7 @@
             photos: {}
         };
 
-        // Photo types configuration - Simplified
+        // Photo types configuration
         const photoTypes = [
             { id: 'equipment_room', name: 'Equipment Room / Pad', required: 2 },
             { id: 'cabinet_doors', name: 'Cabinet Doors (Open & Close)', required: 2 },
@@ -690,23 +690,28 @@
 
         // Initialize app
         window.onload = function() {
-            // Set today's date as default
             document.getElementById('completionDate').value = new Date().toISOString().split('T')[0];
-            
-            // Generate photo grid
             generatePhotoGrid();
-            
-            // Load saved data if exists
             loadSavedData();
-            
-            // Update storage indicator
             updateStorageIndicator();
-            
-            // Optimizar almacenamiento automáticamente si es necesario
             optimizeStorage();
         };
 
-        // Update storage indicator - MEJORADA
+        // Storage management functions
+        function checkStorageSpace() {
+            try {
+                let totalSize = 0;
+                for (let key in localStorage) {
+                    if (localStorage.hasOwnProperty(key)) {
+                        totalSize += localStorage[key].length;
+                    }
+                }
+                return (totalSize / 1024 / 1024).toFixed(2);
+            } catch (e) {
+                return 'Unknown';
+            }
+        }
+
         function updateStorageIndicator() {
             const indicator = document.getElementById('storageIndicator');
             if (indicator) {
@@ -727,49 +732,13 @@
             }
         }
 
-        // Clear all data function
-        function clearAllData() {
-            if (confirm('¿Eliminar todos los datos guardados? Esto borrará reportes anteriores.')) {
-                localStorage.clear();
-                reportData = {
-                    basic: {},
-                    gps: {},
-                    appurtenances: [],
-                    photos: {}
-                };
-                showNotification('Datos eliminados correctamente', 'success');
-                updateStorageIndicator();
-                location.reload();
-            }
-        }
-
-        // Add storage indicator - MEJORADA
-        function checkStorageSpace() {
-            try {
-                let totalSize = 0;
-                for (let key in localStorage) {
-                    if (localStorage.hasOwnProperty(key)) {
-                        totalSize += localStorage[key].length;
-                    }
-                }
-                const usedMB = (totalSize / 1024 / 1024).toFixed(2);
-                return usedMB;
-            } catch (e) {
-                return 'Unknown';
-            }
-        }
-
-        // Función para optimizar almacenamiento automáticamente
         function optimizeStorage() {
             const currentSize = parseFloat(checkStorageSpace());
             
             if (currentSize > 4) {
                 showNotification('Optimizando almacenamiento...', 'info');
-                
-                // 1. Limpiar reportes antiguos
                 clearOldReports();
                 
-                // 2. Si aún hay problemas, comprimir más las fotos actuales
                 if (parseFloat(checkStorageSpace()) > 3) {
                     Object.keys(reportData.photos).forEach(photoType => {
                         const photos = reportData.photos[photoType];
@@ -785,7 +754,6 @@
             }
         }
 
-        // Clear old reports to free space - MEJORADA
         function clearOldReports() {
             const keysToRemove = [];
             for (let i = 0; i < localStorage.length; i++) {
@@ -794,31 +762,9 @@
                     keysToRemove.push(key);
                 }
             }
-            // Remove old reports
             keysToRemove.forEach(key => localStorage.removeItem(key));
-            showNotification('Se limpiaron reportes antiguos para liberar espacio', 'info');
         }
 
-        // Nueva función para limpiar fotos antiguas
-        function clearOldPhotos() {
-            // Limpiar fotos de reportes anteriores
-            clearOldReports();
-            
-            // Si aún hay problemas, reducir fotos del reporte actual
-            if (reportData.photos) {
-                Object.keys(reportData.photos).forEach(photoType => {
-                    const photos = reportData.photos[photoType];
-                    if (photos && photos.length > 3) {
-                        // Mantener solo las 3 fotos más recientes por tipo
-                        reportData.photos[photoType] = photos.slice(-3);
-                    }
-                });
-                updatePhotoCounts();
-                showNotification('Se redujeron fotos para liberar espacio', 'info');
-            }
-        }
-
-        // Clear all data function
         function clearAllData() {
             if (confirm('¿Eliminar todos los datos guardados? Esto borrará reportes anteriores.')) {
                 localStorage.clear();
@@ -836,19 +782,12 @@
 
         // Navigation functions
         function nextStep() {
-            console.log('NextStep called. Current step:', currentStep);
-            
             if (validateCurrentStep()) {
                 saveCurrentStep();
                 if (currentStep < 5) {
                     currentStep++;
-                    console.log('Moving to step:', currentStep);
                     showStep(currentStep);
-                } else {
-                    console.log('Already at last step');
                 }
-            } else {
-                console.log('Validation failed for step:', currentStep);
             }
         }
 
@@ -860,15 +799,12 @@
         }
 
         function showStep(step) {
-            // Hide all sections
             document.querySelectorAll('.form-section').forEach(section => {
                 section.classList.remove('active');
             });
             
-            // Show current section
             document.getElementById('section' + step).classList.add('active');
             
-            // Update step indicators
             document.querySelectorAll('.step').forEach((stepEl, index) => {
                 stepEl.classList.remove('active', 'completed');
                 if (index + 1 < step) {
@@ -878,12 +814,10 @@
                 }
             });
             
-            // Update review section if on step 4
             if (step === 4) {
                 updateReview();
             }
             
-            // Scroll to top
             window.scrollTo(0, 0);
         }
 
@@ -915,7 +849,6 @@
                     return true;
                     
                 case 3:
-                    // Check if at least some photos are taken
                     let totalPhotos = 0;
                     Object.values(reportData.photos).forEach(photoArray => {
                         totalPhotos += photoArray.length;
@@ -925,22 +858,6 @@
                         showNotification('Por favor tome al menos 5 fotos para continuar', 'error');
                         return false;
                     }
-                    
-                    // Optional: Show warning if not all photos are taken
-                    let missingCount = 0;
-                    photoTypes.forEach(type => {
-                        const photos = reportData.photos[type.id] || [];
-                        if (photos.length < type.required) {
-                            missingCount += type.required - photos.length;
-                        }
-                    });
-                    
-                    if (missingCount > 0 && totalPhotos < 20) {
-                        if (!confirm(`Faltan ${missingCount} fotos. ¿Desea continuar de todos modos?`)) {
-                            return false;
-                        }
-                    }
-                    
                     return true;
                     
                 default:
@@ -952,7 +869,6 @@
             try {
                 switch(currentStep) {
                     case 1:
-                        // Generar un ID único automáticamente
                         const timestamp = Date.now();
                         const randomNum = Math.floor(Math.random() * 1000);
                         const autoSiteId = document.getElementById('siteId').value || `AUTO-${timestamp}-${randomNum}`;
@@ -970,29 +886,25 @@
                             tpTenant: document.getElementById('tpTenant').value,
                             submittedBy: 'Field Technician',
                             submissionTimestamp: new Date().toISOString(),
-                            uniqueReportId: `RPT-${timestamp}-${randomNum}` // ID único para cada reporte
+                            uniqueReportId: `RPT-${timestamp}-${randomNum}`
                         };
                         break;
                 }
                 
-                // Try to save to localStorage
                 try {
                     localStorage.setItem('towerReport', JSON.stringify(reportData));
                 } catch (e) {
                     if (e.name === 'QuotaExceededError') {
-                        // If storage is full, clear old reports
                         clearOldReports();
-                        // Try again
                         try {
                             localStorage.setItem('towerReport', JSON.stringify(reportData));
                         } catch (e2) {
                             showNotification('Almacenamiento lleno. Algunas fotos no se guardaron.', 'error');
-                            // Save without photos as last resort
                             const minimalData = {
                                 basic: reportData.basic,
                                 gps: reportData.gps,
                                 appurtenances: reportData.appurtenances,
-                                photos: {} // Empty photos to save space
+                                photos: {}
                             };
                             localStorage.setItem('towerReport', JSON.stringify(minimalData));
                         }
@@ -1004,86 +916,10 @@
             }
         }
 
-        // Clear old reports to free space - MEJORADA
-        function clearOldReports() {
-            const keysToRemove = [];
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key && key.startsWith('RPT-')) {
-                    keysToRemove.push(key);
-                }
-            }
-            // Remove old reports
-            keysToRemove.forEach(key => localStorage.removeItem(key));
-            showNotification('Se limpiaron reportes antiguos para liberar espacio', 'info');
-        }
-
-        // Nueva función para limpiar fotos antiguas
-        function clearOldPhotos() {
-            // Limpiar fotos de reportes anteriores
-            clearOldReports();
-            
-            // Si aún hay problemas, reducir fotos del reporte actual
-            if (reportData.photos) {
-                Object.keys(reportData.photos).forEach(photoType => {
-                    const photos = reportData.photos[photoType];
-                    if (photos && photos.length > 3) {
-                        // Mantener solo las 3 fotos más recientes por tipo
-                        reportData.photos[photoType] = photos.slice(-3);
-                    }
-                });
-                updatePhotoCounts();
-                showNotification('Se redujeron fotos para liberar espacio', 'info');
-            }
-        }
-
-        // Add storage indicator - MEJORADA
-        function checkStorageSpace() {
-            try {
-                let totalSize = 0;
-                for (let key in localStorage) {
-                    if (localStorage.hasOwnProperty(key)) {
-                        totalSize += localStorage[key].length;
-                    }
-                }
-                const usedMB = (totalSize / 1024 / 1024).toFixed(2);
-                return usedMB;
-            } catch (e) {
-                return 'Unknown';
-            }
-        }
-
-        // Función para optimizar almacenamiento automáticamente
-        function optimizeStorage() {
-            const currentSize = parseFloat(checkStorageSpace());
-            
-            if (currentSize > 4) {
-                showNotification('Optimizando almacenamiento...', 'info');
-                
-                // 1. Limpiar reportes antiguos
-                clearOldReports();
-                
-                // 2. Si aún hay problemas, comprimir más las fotos actuales
-                if (parseFloat(checkStorageSpace()) > 3) {
-                    Object.keys(reportData.photos).forEach(photoType => {
-                        const photos = reportData.photos[photoType];
-                        if (photos && photos.length > 2) {
-                            reportData.photos[photoType] = photos.slice(-2);
-                        }
-                    });
-                    updatePhotoCounts();
-                }
-                
-                updateStorageIndicator();
-                showNotification('Almacenamiento optimizado', 'success');
-            }
-        }
-
         function loadSavedData() {
             const saved = localStorage.getItem('towerReport');
             if (saved) {
                 reportData = JSON.parse(saved);
-                // Restore form values
                 if (reportData.basic) {
                     Object.keys(reportData.basic).forEach(key => {
                         const element = document.getElementById(key);
@@ -1092,18 +928,15 @@
                         }
                     });
                 }
-                // Restore GPS status
                 if (reportData.gps.latitude) {
                     showGPSStatus(true);
                 }
-                // Restore appurtenances
                 updateAppurtenanceList();
-                // Update photo counts
                 updatePhotoCounts();
             }
         }
 
-        // GPS Functions - MEJORADAS para iOS
+        // GPS Functions
         function getGPSLocation() {
             const statusDiv = document.getElementById('gpsStatus');
             statusDiv.innerHTML = '<div class="spinner"></div><p>Obteniendo ubicación...</p>';
@@ -1113,11 +946,10 @@
                 return;
             }
 
-            // Opciones más compatibles con iOS
             const options = {
-                enableHighAccuracy: false, // Cambiar a false para iOS
-                timeout: 15000, // Más tiempo
-                maximumAge: 300000 // 5 minutos de cache
+                enableHighAccuracy: false,
+                timeout: 15000,
+                maximumAge: 300000
             };
             
             navigator.geolocation.getCurrentPosition(
@@ -1151,7 +983,6 @@
                     
                     showGPSStatus(false, errorMessage);
                     
-                    // Opción de ubicación manual para iOS
                     const statusDiv = document.getElementById('gpsStatus');
                     statusDiv.innerHTML += `
                         <div style="margin-top: 10px;">
@@ -1165,7 +996,6 @@
             );
         }
 
-        // Nueva función para GPS manual
         function showManualGPS() {
             const statusDiv = document.getElementById('gpsStatus');
             statusDiv.innerHTML = `
@@ -1190,141 +1020,6 @@
             `;
         }
 
-        // Función para guardar GPS manual
-        function saveManualGPS() {
-            const lat = document.getElementById('manualLat').value;
-            const lng = document.getElementById('manualLng').value;
-            
-            if (!lat || !lng) {
-                showNotification('Por favor ingresa latitud y longitud', 'error');
-                return;
-            }
-            
-            if (Math.abs(lat) > 90 || Math.abs(lng) > 180) {
-                showNotification('Coordenadas inválidas. Verifica los valores.', 'error');
-                return;
-            }
-            
-            reportData.gps = {
-                latitude: parseFloat(lat),
-                longitude: parseFloat(lng),
-                altitude: 0,
-                accuracy: 0,
-                manual: true
-            };
-            
-            showGPSStatus(true);
-            saveCurrentStep();
-            showNotification('Ubicación manual guardada correctamente', 'success');
-        }
-
-        function showGPSStatus(success, message = '') {
-            const statusDiv = document.getElementById('gpsStatus');
-            if (success) {
-                const isManual = reportData.gps.manual ? ' (Manual)' : '';
-                statusDiv.innerHTML = `
-                    <div class="gps-status success">
-                        ✓ GPS Capturado${isManual}: ${reportData.gps.latitude.toFixed(7)}, ${reportData.gps.longitude.toFixed(7)}
-                        ${!reportData.gps.manual ? `<br>Precisión: ±${reportData.gps.accuracy.toFixed(1)}m` : ''}
-                    </div>
-                `;
-            } else {
-                statusDiv.innerHTML = `
-                    <div class="gps-status error">
-                        ✗ Error: ${message}
-                    </div>
-                `;
-            }
-        }
-
-        // GPS Functions - MEJORADAS para iOS
-        function getGPSLocation() {
-            const statusDiv = document.getElementById('gpsStatus');
-            statusDiv.innerHTML = '<div class="spinner"></div><p>Obteniendo ubicación...</p>';
-            
-            if (!navigator.geolocation) {
-                showGPSStatus(false, 'Geolocalización no soportada en este navegador');
-                return;
-            }
-
-            // Opciones más compatibles con iOS
-            const options = {
-                enableHighAccuracy: false, // Cambiar a false para iOS
-                timeout: 15000, // Más tiempo
-                maximumAge: 300000 // 5 minutos de cache
-            };
-            
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    reportData.gps = {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude,
-                        altitude: position.coords.altitude || 0,
-                        accuracy: position.coords.accuracy
-                    };
-                    showGPSStatus(true);
-                    saveCurrentStep();
-                },
-                (error) => {
-                    console.error('GPS Error:', error);
-                    let errorMessage = 'Error desconocido';
-                    
-                    switch(error.code) {
-                        case error.PERMISSION_DENIED:
-                            errorMessage = 'Permisos de ubicación denegados. Ve a Configuración > Safari > Ubicación y actívala.';
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            errorMessage = 'Ubicación no disponible. Intenta en un área con mejor señal.';
-                            break;
-                        case error.TIMEOUT:
-                            errorMessage = 'Tiempo agotado. Intenta de nuevo.';
-                            break;
-                        default:
-                            errorMessage = `Error de ubicación: ${error.message}`;
-                    }
-                    
-                    showGPSStatus(false, errorMessage);
-                    
-                    // Opción de ubicación manual para iOS
-                    const statusDiv = document.getElementById('gpsStatus');
-                    statusDiv.innerHTML += `
-                        <div style="margin-top: 10px;">
-                            <button class="btn btn-secondary" onclick="showManualGPS()" style="font-size: 14px;">
-                                📍 Ingresar ubicación manualmente
-                            </button>
-                        </div>
-                    `;
-                },
-                options
-            );
-        }
-
-        // Nueva función para GPS manual
-        function showManualGPS() {
-            const statusDiv = document.getElementById('gpsStatus');
-            statusDiv.innerHTML = `
-                <div style="background: #fff3cd; padding: 15px; border-radius: 6px;">
-                    <h4>Ubicación Manual</h4>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0;">
-                        <input type="number" id="manualLat" placeholder="Latitud" step="any" style="padding: 8px;">
-                        <input type="number" id="manualLng" placeholder="Longitud" step="any" style="padding: 8px;">
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn btn-success" onclick="saveManualGPS()" style="font-size: 14px;">
-                            Guardar Ubicación
-                        </button>
-                        <button class="btn btn-secondary" onclick="getGPSLocation()" style="font-size: 14px;">
-                            Reintentar GPS
-                        </button>
-                    </div>
-                    <p style="font-size: 12px; color: #666; margin-top: 10px;">
-                        Puedes usar Google Maps para obtener las coordenadas exactas del sitio.
-                    </p>
-                </div>
-            `;
-        }
-
-        // Función para guardar GPS manual
         function saveManualGPS() {
             const lat = document.getElementById('manualLat').value;
             const lng = document.getElementById('manualLng').value;
@@ -1378,7 +1073,6 @@
 
         function cancelAppurtenance() {
             document.getElementById('appurtenanceForm').style.display = 'none';
-            // Clear form
             ['appType', 'appRadCenter', 'appManufacturer', 'appModel', 'appQuantity', 'appCoaxSize'].forEach(id => {
                 document.getElementById(id).value = id === 'appQuantity' ? '1' : '';
             });
@@ -1468,14 +1162,12 @@
             }
             
             files.forEach(file => {
-                // Verificar espacio antes de agregar foto
                 const currentSize = checkStorageSpace();
                 if (parseFloat(currentSize) > 4.5) {
                     showNotification('Almacenamiento casi lleno. Limpiando fotos antiguas...', 'info');
-                    clearOldPhotos();
+                    clearOldReports();
                 }
                 
-                // Compress image before saving - más agresivo
                 compressImage(file, 400, 0.5, (compressedDataUrl) => {
                     try {
                         reportData.photos[typeId].push({
@@ -1495,7 +1187,6 @@
             });
         }
 
-        // Image compression function - MEJORADA para reducir tamaño
         function compressImage(file, maxWidth, quality, callback) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -1505,8 +1196,7 @@
                     let width = img.width;
                     let height = img.height;
                     
-                    // Reducir más agresivamente el tamaño
-                    const maxSize = 400; // Reducido de 800 a 400
+                    const maxSize = 400;
                     if (width > height) {
                         if (width > maxSize) {
                             height = (maxSize / width) * height;
@@ -1525,8 +1215,7 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    // Comprimir más agresivamente
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5); // Reducido de 0.7 a 0.5
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
                     callback(compressedDataUrl);
                 };
                 img.src = e.target.result;
@@ -1565,9 +1254,25 @@
             });
         }
 
+        function skipPhotoValidation() {
+            photoTypes.forEach(type => {
+                if (!reportData.photos[type.id]) {
+                    reportData.photos[type.id] = [];
+                }
+                reportData.photos[type.id].push({
+                    data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+                    timestamp: new Date().toISOString(),
+                    name: 'demo_photo.png'
+                });
+            });
+            
+            updatePhotoCounts();
+            saveCurrentStep();
+            showNotification('Fotos de demostración agregadas. Ahora puede continuar.', 'success');
+        }
+
         // Review Functions
         function updateReview() {
-            // Site Review
             const siteReview = document.getElementById('siteReview');
             siteReview.innerHTML = `
                 <div class="review-item">
@@ -1588,7 +1293,6 @@
                 </div>
             `;
             
-            // Equipment Review
             const equipmentReview = document.getElementById('equipmentReview');
             equipmentReview.innerHTML = `
                 <div class="review-item">
@@ -1605,7 +1309,6 @@
                 </div>
             `;
             
-            // Photo Review
             const photoReview = document.getElementById('photoReview');
             let totalPhotos = 0;
             let completedTypes = 0;
@@ -1630,16 +1333,13 @@
             `;
         }
 
-        // Función para enviar a SharePoint via Power Automate - CON FOTOS Y APPURTENANCES
+        // Submit and PDF Functions
         async function sendToSharePoint(reportData) {
-            // URL de Power Automate ACTUALIZADA
             const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
             
-            // Generar ID único para este reporte específico
             const timestamp = Date.now();
             const uniqueReportID = `RPT-${reportData.basic.siteId}-${timestamp}`;
             
-            // Preparar datos para enviar - INCLUYENDO FOTOS Y APPURTENANCES
             const dataToSend = {
                 submittedBy: reportData.basic.submittedBy || 'Field Technician',
                 submissionTimestamp: new Date().toISOString(),
@@ -1661,14 +1361,6 @@
             };
             
             try {
-                console.log('🚀 Enviando a Power Automate...');
-                console.log('📍 URL:', POWER_AUTOMATE_URL);
-                console.log('📦 Datos a enviar (sin fotos en log):', {
-                    ...dataToSend,
-                    photos: `${Object.keys(dataToSend.photos).length} categorías de fotos`
-                });
-                console.log('🆔 Report ID único:', uniqueReportID);
-                
                 const response = await fetch(POWER_AUTOMATE_URL, {
                     method: 'POST',
                     headers: {
@@ -1678,37 +1370,18 @@
                     body: JSON.stringify(dataToSend)
                 });
                 
-                console.log('📊 Response status:', response.status);
-                console.log('✅ Response ok:', response.ok);
-                
                 if (response.ok) {
-                    const responseText = await response.text();
-                    console.log('✅ Response body:', responseText);
-                    console.log('✅ Enviado exitosamente a SharePoint');
                     return true;
                 } else {
-                    const errorText = await response.text();
-                    console.error('❌ Error response:', response.status, response.statusText);
-                    console.error('❌ Error body:', errorText);
-                    
-                    if (response.status === 400 && errorText.includes('duplicate')) {
-                        console.error('❌ Error: Campo duplicado detectado');
-                        showNotification('Error: Verifica configuración de campos únicos en SharePoint', 'error');
-                    } else if (response.status === 401) {
-                        showNotification('Error 401: Verifica la configuración del flow', 'error');
-                    } else {
-                        showNotification(`Error ${response.status}: ${response.statusText}`, 'error');
-                    }
+                    console.error('Error response:', response.status, response.statusText);
                     return false;
                 }
             } catch (error) {
-                console.error('❌ Network/Connection error:', error);
-                showNotification('Error de conexión. Verifica tu internet.', 'error');
+                console.error('Network/Connection error:', error);
                 return false;
             }
         }
 
-        // Submit Functions - RESTAURADA para usar SharePoint
         async function submitReport() {
             const submitBtn = event.target;
             const statusDiv = document.getElementById('submitStatus');
@@ -1717,15 +1390,12 @@
             statusDiv.innerHTML = '<div class="spinner"></div><p>Enviando reporte a SharePoint...</p>';
             
             try {
-                // Save report locally first
                 const reportId = `RPT-${reportData.basic.siteId}-${Date.now()}`;
                 localStorage.setItem(reportId, JSON.stringify(reportData));
                 
-                // Enviar a SharePoint
                 const sentToSharePoint = await sendToSharePoint(reportData);
                 
                 if (sentToSharePoint) {
-                    // Éxito - enviado a SharePoint
                     statusDiv.innerHTML = `
                         <div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: left;">
                             <h3 style="color: #2e7d32;">✓ Reporte Enviado a SharePoint</h3>
@@ -1740,20 +1410,15 @@
                         </div>
                     `;
                 } else {
-                    // Fallo al enviar a SharePoint - pero guardado localmente
                     statusDiv.innerHTML = `
                         <div style="background: #fff3cd; padding: 20px; border-radius: 6px; text-align: left;">
                             <h3 style="color: #856404;">⚠️ Guardado Solo Localmente</h3>
                             <p>ID: ${reportId}</p>
                             <p style="margin-top: 15px;">
                                 El reporte se guardó en el dispositivo pero no se pudo enviar a SharePoint.
-                                <br><strong>Revisa la consola del navegador (F12) para más detalles.</strong>
                             </p>
                             <button class="btn btn-primary" onclick="retrySharePoint('${reportId}')">
                                 🔄 Reintentar Envío
-                            </button>
-                            <button class="btn btn-secondary" onclick="downloadReport('${reportId}')" style="margin-left: 10px;">
-                                📥 Descargar JSON
                             </button>
                             <button class="btn btn-success" onclick="startNewReport()" style="margin-left: 10px;">
                                 ➕ Nuevo Reporte
@@ -1778,7 +1443,6 @@
             }
         }
 
-        // Función para reintentar envío a SharePoint
         async function retrySharePoint(reportId) {
             const savedData = localStorage.getItem(reportId);
             if (savedData) {
@@ -1813,21 +1477,7 @@
             }
         }
 
-        // La función downloadReport
-        function downloadReport(reportId) {
-            const data = localStorage.getItem(reportId);
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${reportId}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        // Función para iniciar nuevo reporte
         function startNewReport() {
-            // Clear current report data but keep localStorage for submitted reports
             reportData = {
                 basic: {},
                 gps: {},
@@ -1835,7 +1485,6 @@
                 photos: {}
             };
             
-            // Clear form fields
             document.querySelectorAll('input, select, textarea').forEach(field => {
                 if (field.type === 'date') {
                     field.value = new Date().toISOString().split('T')[0];
@@ -1846,59 +1495,17 @@
                 }
             });
             
-            // Reset to first step
             currentStep = 1;
             showStep(1);
             
-            // Clear status displays
             document.getElementById('gpsStatus').innerHTML = '';
             document.getElementById('appurtenanceList').innerHTML = '';
             
-            // Regenerate photo grid
             generatePhotoGrid();
             
             showNotification('Nuevo reporte iniciado', 'success');
         }
 
-        // Add skip validation function for testing
-        function skipPhotoValidation() {
-            // Add dummy photos for testing
-            photoTypes.forEach(type => {
-                if (!reportData.photos[type.id]) {
-                    reportData.photos[type.id] = [];
-                }
-                // Add dummy photo data
-                reportData.photos[type.id].push({
-                    data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-                    timestamp: new Date().toISOString(),
-                    name: 'demo_photo.png'
-                });
-            });
-            
-            updatePhotoCounts();
-            saveCurrentStep();
-            showNotification('Fotos de demostración agregadas. Ahora puede continuar.', 'success');
-        }
-
-        // Notification function
-        function showNotification(message, type = 'info') {
-            // Remove existing notifications
-            const existing = document.querySelector('.notification');
-            if (existing) {
-                existing.remove();
-            }
-            
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
-
-        // FUNCIÓN PARA GENERAR PDF - NUEVA FUNCIÓN AGREGADA
         async function generateTowerReportPDF() {
             if (!window.jspdf || !reportData) {
                 showNotification('❌ No se puede generar PDF en este momento', 'error');
@@ -1913,7 +1520,7 @@
                 const pageWidth = pdf.internal.pageSize.getWidth();
                 let currentY = 20;
 
-                // Header de la empresa (igual que tu reporte HTML)
+                // Header
                 pdf.setFontSize(10);
                 pdf.setTextColor(100, 100, 100);
                 pdf.text('PO Box 4116', pageWidth - 15, 15, { align: 'right' });
@@ -1921,7 +1528,7 @@
                 pdf.text('t. 787-718-2600', pageWidth - 15, 25, { align: 'right' });
                 pdf.text('accounting@newcomm2000.com', pageWidth - 15, 30, { align: 'right' });
 
-                // Logo NEWCOMM
+                // Logo
                 pdf.setFontSize(24);
                 pdf.setTextColor(0, 102, 204);
                 pdf.setFont(undefined, 'bold');
@@ -1930,7 +1537,7 @@
                 pdf.setFont(undefined, 'normal');
                 pdf.text('MANAGEMENT SERVICES CORP.', pageWidth / 2, 52, { align: 'center' });
 
-                // Título del reporte
+                // Title
                 currentY = 70;
                 pdf.setFontSize(20);
                 pdf.setTextColor(0, 102, 204);
@@ -1939,7 +1546,7 @@
                 
                 currentY += 15;
 
-                // Información de envío
+                // Report info
                 pdf.setFontSize(10);
                 pdf.setTextColor(0, 0, 0);
                 pdf.setFont(undefined, 'normal');
@@ -1951,14 +1558,13 @@
                 
                 currentY += 25;
 
-                // SECCIÓN: SITE INFORMATION
+                // Site Information
                 pdf.setFontSize(14);
                 pdf.setTextColor(0, 102, 204);
                 pdf.setFont(undefined, 'bold');
                 pdf.text('SITE INFORMATION', 15, currentY);
                 currentY += 10;
 
-                // Site Information
                 pdf.setFontSize(9);
                 pdf.setTextColor(0, 0, 0);
                 
@@ -1976,7 +1582,7 @@
                 addInfo('Customer Site ID', basic.customerSiteId, true);
                 addInfo('Customer Site Name', basic.customerSiteName, false);
 
-                // SECCIÓN: INSTALLATION DETAILS
+                // Installation Details
                 currentY += 10;
                 pdf.setFontSize(14);
                 pdf.setTextColor(0, 102, 204);
@@ -1991,13 +1597,13 @@
                 addInfo('Completion Date', basic.completionDate, true);
                 addInfo('TP Tenant', basic.tpTenant, false);
 
-                // SECCIÓN: GPS LOCATION
+                // GPS Location
                 currentY += 10;
                 const gps = reportData.gps || {};
                 pdf.setFontSize(14);
                 pdf.setTextColor(0, 102, 204);
                 pdf.setFont(undefined, 'bold');
-                pdf.text('🗺️ GPS LOCATION', 15, currentY);
+                pdf.text('GPS LOCATION', 15, currentY);
                 currentY += 10;
 
                 pdf.setFontSize(10);
@@ -2005,43 +1611,15 @@
                 pdf.setFont(undefined, 'normal');
                 pdf.text(`Latitude: ${gps.latitude || 0}`, 15, currentY);
                 pdf.text(`Longitude: ${gps.longitude || 0}`, 15, currentY + 5);
-                pdf.text(`Google Maps: https://www.google.com/maps?q=${gps.latitude},${gps.longitude}`, 15, currentY + 10);
                 currentY += 20;
 
-                // SECCIÓN: EQUIPMENT INSTALLED
+                // Equipment
                 if (reportData.appurtenances && reportData.appurtenances.length > 0) {
                     currentY += 10;
                     pdf.setFontSize(14);
                     pdf.setTextColor(0, 102, 204);
                     pdf.setFont(undefined, 'bold');
-                    pdf.text('APPURTENANCE INFORMATION', 15, currentY);
-                    currentY += 10;
-
-                    pdf.setFontSize(9);
-                    pdf.setTextColor(0, 0, 0);
-                    reportData.appurtenances.forEach((app, index) => {
-                        pdf.setFont(undefined, 'bold');
-                        pdf.text(`${index + 1}. ${app.type || 'Equipment'}`, 20, currentY);
-                        pdf.setFont(undefined, 'normal');
-                        pdf.text(`Manufacturer: ${app.manufacturer || 'N/A'}`, 25, currentY + 4);
-                        pdf.text(`Model: ${app.model || 'N/A'}`, 25, currentY + 8);
-                        pdf.text(`Quantity: ${app.quantity || 'N/A'}`, 25, currentY + 12);
-                        currentY += 18;
-                    });
-                }
-
-                // SECCIÓN: PHOTO DOCUMENTATION
-                currentY += 10;
-                if (reportData.photos && Object.keys(reportData.photos).length > 0) {
-                    let totalPhotos = 0;
-                    Object.values(reportData.photos).forEach(photoArray => {
-                        totalPhotos += photoArray.length;
-                    });
-
-                    pdf.setFontSize(14);
-                    pdf.setTextColor(0, 102, 204);
-                    pdf.setFont(undefined, 'bold');
-                    pdf.text(`📸 PHOTO DOCUMENTATION (${totalPhotos} photos captured)`, 15, currentY);
+                    pdf.text(`PHOTO DOCUMENTATION (${totalPhotos} photos captured)`, 15, currentY);
                     currentY += 10;
 
                     pdf.setFontSize(9);
@@ -2071,12 +1649,12 @@
                 pdf.text('PO Box 4116, Vega Baja PR 00694 | Phone: 787-718-2600', pageWidth / 2, currentY + 5, { align: 'center' });
                 pdf.text(`Generated: ${new Date().toLocaleString()}`, pageWidth / 2, currentY + 10, { align: 'center' });
 
-                // Generar nombre del archivo
+                // Generate filename
                 const timestamp = new Date().toISOString().slice(0, 10);
                 const siteId = basic.siteId || 'Site';
                 const filename = `Tower_Report_${siteId}_${timestamp}.pdf`;
 
-                // Guardar PDF
+                // Save PDF
                 pdf.save(filename);
                 
                 showNotification(`✅ PDF generado: ${filename}`, 'success');
@@ -2088,6 +1666,49 @@
                 return false;
             }
         }
+
+        // Notification function
+        function showNotification(message, type = 'info') {
+            const existing = document.querySelector('.notification');
+            if (existing) {
+                existing.remove();
+            }
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
     </script>
 </body>
-</html>
+</html>(undefined, 'bold');
+                    pdf.text('APPURTENANCE INFORMATION', 15, currentY);
+                    currentY += 10;
+
+                    pdf.setFontSize(9);
+                    pdf.setTextColor(0, 0, 0);
+                    reportData.appurtenances.forEach((app, index) => {
+                        pdf.setFont(undefined, 'bold');
+                        pdf.text(`${index + 1}. ${app.type || 'Equipment'}`, 20, currentY);
+                        pdf.setFont(undefined, 'normal');
+                        pdf.text(`Manufacturer: ${app.manufacturer || 'N/A'}`, 25, currentY + 4);
+                        pdf.text(`Model: ${app.model || 'N/A'}`, 25, currentY + 8);
+                        currentY += 18;
+                    });
+                }
+
+                // Photos
+                currentY += 10;
+                if (reportData.photos && Object.keys(reportData.photos).length > 0) {
+                    let totalPhotos = 0;
+                    Object.values(reportData.photos).forEach(photoArray => {
+                        totalPhotos += photoArray.length;
+                    });
+
+                    pdf.setFontSize(14);
+                    pdf.setTextColor(0, 102, 204);
+                    pdf.setFont
