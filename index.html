@@ -28,81 +28,21 @@
             position: relative;
         }
 
-        /* Header - Mejorado para impresión */
+        /* Header */
         .header {
-            background-color: #0066cc !important;
-            color: white !important;
+            background-color: #0066cc;
+            color: white;
             padding: 15px;
             text-align: center;
             position: sticky;
             top: 0;
             z-index: 100;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-        }
-
-        /* Estilos específicos para impresión */
-        @media print {
-            .header {
-                background-color: #0066cc !important;
-                color: white !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            
-            .header * {
-                color: white !important;
-            }
-            
-            /* Watermark para impresión */
-            body::before {
-                content: "";
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                width: 400px;
-                height: 200px;
-                background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100"><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-size="48" fill="%23000000" opacity="0.1">NEWCOMM</text></svg>');
-                background-repeat: no-repeat;
-                background-position: center;
-                opacity: 0.1;
-                z-index: -1;
-                pointer-events: none;
-            }
-            
-            /* Ocultar elementos no necesarios en impresión */
-            .btn, .step-indicator, button {
-                display: none !important;
-            }
-        }
-
-        /* Watermark para pantalla (opcional) */
-        .watermark {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-45deg);
-            font-size: 80px;
-            color: rgba(0, 102, 204, 0.05);
-            font-weight: bold;
-            pointer-events: none;
-            z-index: 0;
-            white-space: nowrap;
         }
 
         .header h1 {
             font-size: 20px;
             font-weight: 500;
-            color: white !important;
-        }
-
-        .header .version-info {
-            font-size: 12px;
-            opacity: 0.8;
-            margin-top: 5px;
-            color: white !important;
         }
 
         .step-indicator {
@@ -139,8 +79,6 @@
             display: none;
             padding: 20px;
             animation: slideIn 0.3s ease-out;
-            position: relative;
-            z-index: 1;
         }
 
         .form-section.active {
@@ -482,13 +420,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-    <!-- Watermark de fondo -->
-    <div class="watermark">NEWCOMM</div>
-    
     <div class="app-container">
         <header class="header">
             <h1>Tower Provider Report</h1>
-            <div class="version-info">Versión 2.2</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 2.1</div>
         </header>
 
         <div class="step-indicator">
@@ -511,7 +446,7 @@
                         Limpiar datos
                     </button>
                 </div>
-                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v2.2</div>
+                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v2.1</div>
             </div>
             
             <div class="form-group">
@@ -772,7 +707,7 @@
             photos: {},
             measurements: {}, // Nuevo objeto para mediciones
             metadata: { // Nuevo objeto para metadata
-                appVersion: '2.2',
+                appVersion: '2.0',
                 deviceInfo: navigator.userAgent,
                 createdAt: new Date().toISOString()
             }
@@ -1594,6 +1529,24 @@
                                 <strong>✓ Enviado a SharePoint</strong>
                             </p>
                             <div style="display: flex; gap: 10px; margin-top: 20px;">
+                                <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
+                                    ➕ Crear Nuevo Reporte
+                                </button>
+                                <button class="btn btn-primary" onclick="sendDetailedEmail('${reportId}')" style="flex: 1;">
+                                    📧 Enviar Email Detallado
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `
+                        <div style="background: #fff3cd; padding: 20px; border-radius: 6px; text-align: left;">
+                            <h3 style="color: #856404;">⚠️ Guardado Solo Localmente</h3>
+                            <p>ID: ${reportId}</p>
+                            <p style="margin-top: 15px;">
+                                El reporte se guardó en el dispositivo pero no se pudo enviar a SharePoint.
+                            </p>
+                            <div style="display: flex; gap: 10px; margin-top: 20px;">
                                 <button class="btn btn-primary" onclick="retrySharePoint('${reportId}')" style="flex: 1;">
                                     🔄 Reintentar Envío
                                 </button>
@@ -1670,13 +1623,7 @@
                 basic: {},
                 gps: {},
                 appurtenances: [],
-                photos: {},
-                measurements: {},
-                metadata: {
-                    appVersion: '2.2',
-                    deviceInfo: navigator.userAgent,
-                    createdAt: new Date().toISOString()
-                }
+                photos: {}
             };
             
             document.querySelectorAll('input, select, textarea').forEach(field => {
@@ -1759,6 +1706,8 @@
         function closeReportSummary() {
             document.getElementById('submitStatus').innerHTML = '';
         }
+
+        // Esta función ya está implementada arriba, la estoy eliminando para evitar duplicación
 
         function sendDetailedEmail(reportId) {
             // Crear un resumen detallado para el email
@@ -1868,21 +1817,4 @@ Date: ${new Date().toLocaleString()}
         }
     </script>
 </body>
-</html><button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
-                                    ➕ Crear Nuevo Reporte
-                                </button>
-                                <button class="btn btn-primary" onclick="sendDetailedEmail('${reportId}')" style="flex: 1;">
-                                    📧 Enviar Email Detallado
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    statusDiv.innerHTML = `
-                        <div style="background: #fff3cd; padding: 20px; border-radius: 6px; text-align: left;">
-                            <h3 style="color: #856404;">⚠️ Guardado Solo Localmente</h3>
-                            <p>ID: ${reportId}</p>
-                            <p style="margin-top: 15px;">
-                                El reporte se guardó en el dispositivo pero no se pudo enviar a SharePoint.
-                            </p>
-                            <div style="display: flex; gap: 10px; margin-top: 20px;">
+</html>
