@@ -835,9 +835,13 @@
                             return false;
                         }
                     }
+                    // GPS ya no es obligatorio en la validación
                     if (!reportData.gps.latitude) {
-                        showNotification('Por favor capture la ubicación GPS', 'error');
-                        return false;
+                        const confirmNoGPS = confirm('No has capturado la ubicación GPS. ¿Deseas continuar sin GPS o ingresarla manualmente?');
+                        if (!confirmNoGPS) {
+                            showManualGPS();
+                            return false;
+                        }
                     }
                     return true;
                     
@@ -851,7 +855,9 @@
                 case 3:
                     let totalPhotos = 0;
                     Object.values(reportData.photos).forEach(photoArray => {
-                        totalPhotos += photoArray.length;
+                        if (Array.isArray(photoArray)) {
+                            totalPhotos += photoArray.length;
+                        }
                     });
                     
                     if (totalPhotos < 5) {
@@ -943,15 +949,18 @@
             
             if (!navigator.geolocation) {
                 showGPSStatus(false, 'Geolocalización no soportada en este navegador');
+                showManualGPSOption();
                 return;
             }
 
+            // Opciones optimizadas para mejor rendimiento
             const options = {
-                enableHighAccuracy: false,
-                timeout: 15000,
-                maximumAge: 300000
+                enableHighAccuracy: false, // Desactivado para obtener ubicación más rápida
+                timeout: 10000, // Reducido a 10 segundos
+                maximumAge: 600000 // Acepta ubicaciones de hasta 10 minutos
             };
             
+            // Intentar obtener ubicación
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     reportData.gps = {
@@ -968,32 +977,41 @@
                     let errorMessage = 'Error desconocido';
                     
                     switch(error.code) {
-                        case error.PERMISSION_DENIED:
+                        case 1: // PERMISSION_DENIED
                             errorMessage = 'Permisos de ubicación denegados. Ve a Configuración > Safari > Ubicación y actívala.';
                             break;
-                        case error.POSITION_UNAVAILABLE:
+                        case 2: // POSITION_UNAVAILABLE
                             errorMessage = 'Ubicación no disponible. Intenta en un área con mejor señal.';
                             break;
-                        case error.TIMEOUT:
-                            errorMessage = 'Tiempo agotado. Intenta de nuevo.';
+                        case 3: // TIMEOUT
+                            errorMessage = 'Tiempo agotado obteniendo ubicación. Puedes intentar de nuevo o ingresar manualmente.';
                             break;
                         default:
-                            errorMessage = `Error de ubicación: ${error.message}`;
+                            errorMessage = `Error de ubicación: ${error.message || 'Desconocido'}`;
                     }
                     
                     showGPSStatus(false, errorMessage);
-                    
-                    const statusDiv = document.getElementById('gpsStatus');
-                    statusDiv.innerHTML += `
-                        <div style="margin-top: 10px;">
-                            <button class="btn btn-secondary" onclick="showManualGPS()" style="font-size: 14px;">
-                                📍 Ingresar ubicación manualmente
-                            </button>
-                        </div>
-                    `;
+                    showManualGPSOption();
                 },
                 options
             );
+        }
+
+        function showManualGPSOption() {
+            const statusDiv = document.getElementById('gpsStatus');
+            const existingButton = statusDiv.querySelector('button');
+            if (!existingButton) {
+                statusDiv.innerHTML += `
+                    <div style="margin-top: 10px;">
+                        <button class="btn btn-secondary" onclick="showManualGPS()" style="font-size: 14px;">
+                            📍 Ingresar ubicación manualmente
+                        </button>
+                        <button class="btn btn-primary" onclick="getGPSLocation()" style="font-size: 14px; margin-left: 10px;">
+                            🔄 Reintentar GPS
+                        </button>
+                    </div>
+                `;
+            }
         }
 
         function showManualGPS() {
@@ -1001,23 +1019,38 @@
             statusDiv.innerHTML = `
                 <div style="background: #fff3cd; padding: 15px; border-radius: 6px;">
                     <h4>Ubicación Manual</h4>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                        Ingresa las coordenadas del sitio. Puedes obtenerlas de Google Maps.
+                    </p>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0;">
-                        <input type="number" id="manualLat" placeholder="Latitud" step="any" style="padding: 8px;">
-                        <input type="number" id="manualLng" placeholder="Longitud" step="any" style="padding: 8px;">
+                        <div>
+                            <label style="font-size: 12px;">Latitud</label>
+                            <input type="number" id="manualLat" placeholder="ej: 18.4671" step="any" style="padding: 8px; width: 100%;">
+                        </div>
+                        <div>
+                            <label style="font-size: 12px;">Longitud</label>
+                            <input type="number" id="manualLng" placeholder="ej: -66.1185" step="any" style="padding: 8px; width: 100%;">
+                        </div>
                     </div>
                     <div style="display: flex; gap: 10px;">
                         <button class="btn btn-success" onclick="saveManualGPS()" style="font-size: 14px;">
-                            Guardar Ubicación
+                            ✓ Guardar Ubicación
                         </button>
                         <button class="btn btn-secondary" onclick="getGPSLocation()" style="font-size: 14px;">
-                            Reintentar GPS
+                            🔄 Reintentar GPS
                         </button>
                     </div>
-                    <p style="font-size: 12px; color: #666; margin-top: 10px;">
-                        Puedes usar Google Maps para obtener las coordenadas exactas del sitio.
+                    <p style="font-size: 11px; color: #666; margin-top: 10px;">
+                        <strong>Tip:</strong> En Google Maps, mantén presionado un punto y copia las coordenadas.
                     </p>
                 </div>
             `;
+            
+            // Auto-focus en el primer campo
+            setTimeout(() => {
+                const latInput = document.getElementById('manualLat');
+                if (latInput) latInput.focus();
+            }, 100);
         }
 
         function saveManualGPS() {
