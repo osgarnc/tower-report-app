@@ -1417,8 +1417,10 @@
         async function sendToSharePoint(reportData) {
             const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
             
+            // Generar ReportID único usando timestamp + random + contador
             const timestamp = Date.now();
-            const uniqueReportID = `RPT-${reportData.basic.siteId}-${timestamp}`;
+            const randomNum = Math.floor(Math.random() * 100000); // Número aleatorio más grande
+            const uniqueReportID = `RPT-${timestamp}-${randomNum}`; // Removido siteId para hacerlo único siempre
             
             // Preparar AppurtenanceData con toda la información adicional
             const appurtenanceDataJSON = {
@@ -1510,7 +1512,7 @@
             statusDiv.innerHTML = '<div class="spinner"></div><p>Enviando reporte a SharePoint...</p>';
             
             try {
-                const reportId = `RPT-${reportData.basic.siteId}-${Date.now()}`;
+                const reportId = `RPT-${Date.now()}-${Math.floor(Math.random() * 100000)}`; // ID único sin siteId
                 localStorage.setItem(reportId, JSON.stringify(reportData));
                 
                 const sentToSharePoint = await sendToSharePoint(reportData);
