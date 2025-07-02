@@ -1498,9 +1498,14 @@
                         <div style="background: #e8f5e9; padding: 20px; border-radius: 6px;">
                             <h3 style="color: #2e7d32;">✓ Enviado Exitosamente</h3>
                             <p>El reporte se envió a SharePoint.</p>
-                            <button class="btn btn-success" onclick="startNewReport()">
-                                Crear Nuevo Reporte
-                            </button>
+                            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
+                                    ➕ Crear Nuevo Reporte
+                                </button>
+                                <button class="btn btn-primary" onclick="location.href='mailto:accounting@newcomm2000.com?subject=Tower Report ${reportId}'" style="flex: 1;">
+                                    📧 Enviar por Email
+                                </button>
+                            </div>
                         </div>
                     `;
                 } else {
@@ -1508,9 +1513,14 @@
                         <div style="background: #ffebee; padding: 20px; border-radius: 6px;">
                             <h3 style="color: #c62828;">Error al enviar</h3>
                             <p>No se pudo conectar con SharePoint. Verifique su conexión.</p>
-                            <button class="btn btn-primary" onclick="retrySharePoint('${reportId}')">
-                                Reintentar
-                            </button>
+                            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                <button class="btn btn-primary" onclick="retrySharePoint('${reportId}')" style="flex: 1;">
+                                    🔄 Reintentar
+                                </button>
+                                <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
+                                    ➕ Nuevo Reporte
+                                </button>
+                            </div>
                         </div>
                     `;
                 }
