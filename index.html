@@ -417,6 +417,7 @@
             }
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -644,6 +645,10 @@
                 <p style="margin: 20px 0; color: #666;">
                     Al enviar, se generará un PDF y se enviará automáticamente a accounting@newcomm2000.com
                 </p>
+                
+                <button class="btn btn-primary btn-block" onclick="generateTowerReportPDF()" style="margin-bottom: 10px; font-size: 16px;">
+                    📄 Solo Generar PDF
+                </button>
                 
                 <button class="btn btn-success btn-block" onclick="submitReport()" style="font-size: 18px; padding: 15px;">
                     ✓ Enviar Reporte
@@ -1654,19 +1659,3 @@
         function showNotification(message, type = 'info') {
             // Remove existing notifications
             const existing = document.querySelector('.notification');
-            if (existing) {
-                existing.remove();
-            }
-            
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
-    </script>
-</body>
-</html>
