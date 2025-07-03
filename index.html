@@ -6,6 +6,9 @@
     <meta name="theme-color" content="#0066cc">
     <title>Tower Report Mobile - SharePoint Auth</title>
     
+    <!-- MSAL.js desde CDN -->
+    <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -102,16 +105,6 @@
         .login-info {
             background-color: #e3f2fd;
             color: #1565c0;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            text-align: left;
-        }
-
-        .setup-instructions {
-            background-color: #fff3cd;
-            color: #856404;
             padding: 15px;
             border-radius: 6px;
             margin-bottom: 20px;
@@ -540,15 +533,7 @@
             <h2 class="login-title">Tower Provider Report</h2>
             <p class="login-subtitle">Inicie sesión con su cuenta de Microsoft 365</p>
             
-            <div class="setup-instructions">
-                <strong>⚠️ Configuración Requerida:</strong><br>
-                1. Registre esta aplicación en Azure AD<br>
-                2. Configure los permisos necesarios<br>
-                3. Actualice el CLIENT_ID y TENANT_ID en el código<br>
-                4. Agregue la URL de esta página como redirect URI
-            </div>
-
-            <button class="login-btn" onclick="loginWithMicrosoft()">
+            <button class="login-btn" onclick="signIn()">
                 <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="1" y="1" width="9" height="9" fill="#F25022"/>
                     <rect x="11" y="1" width="9" height="9" fill="#7FBA00"/>
@@ -560,16 +545,8 @@
             
             <div id="loginError" style="display: none;" class="login-error"></div>
             
-            <div style="margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 6px; text-align: left;">
-                <h4 style="color: #333; margin-bottom: 10px;">Instrucciones de Configuración:</h4>
-                <ol style="font-size: 14px; color: #666; margin-left: 20px;">
-                    <li>Vaya a <a href="https://portal.azure.com" target="_blank">Azure Portal</a></li>
-                    <li>Navegue a Azure Active Directory > App registrations</li>
-                    <li>Cree una nueva aplicación (tipo: Single Page Application)</li>
-                    <li>Configure Redirect URI: <code id="redirectUri"></code></li>
-                    <li>Copie el Application (client) ID y actualice el código</li>
-                    <li>En API permissions, agregue: User.Read y Sites.ReadWrite.All</li>
-                </ol>
+            <div style="margin-top: 20px; font-size: 12px; color: #666;">
+                <p>Versión 3.0 - SharePoint Integrado</p>
             </div>
         </div>
     </div>
@@ -578,12 +555,12 @@
     <div id="mainApp" class="app-container" style="display: none;">
         <div class="user-info">
             <span>Usuario: <strong id="userDisplayName">-</strong></span>
-            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+            <button class="logout-btn" onclick="signOut()">Cerrar Sesión</button>
         </div>
 
         <header class="header">
             <h1>Tower Provider Report</h1>
-            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 2.1 - SharePoint Auth</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 3.0 - SharePoint Auth</div>
         </header>
 
         <div class="step-indicator">
@@ -606,7 +583,7 @@
                         Limpiar datos
                     </button>
                 </div>
-                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v2.1 SharePoint</div>
+                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v3.0 SharePoint</div>
             </div>
             
             <div class="form-group">
@@ -858,23 +835,30 @@
     </div>
 
     <script>
-        // SharePoint/Microsoft Authentication Configuration
-        // IMPORTANTE: Debes actualizar estos valores con tu configuración de Azure AD
-        const CLIENT_ID = '928a4b98-5894-4a97-b8b1-d8c489c22216'; // Reemplazar con tu Application (client) ID
-        const TENANT_ID = '93a307af-2b18-419b-82a4-da0d26ae31d0'; // Reemplazar con tu Directory (tenant) ID
-        const REDIRECT_URI = window.location.origin + window.location.pathname;
+        // MSAL Configuration
+        const msalConfig = {
+            auth: {
+                clientId: '928a4b98-5894-4a97-b8b1-d8c489c22216',
+                authority: 'https://login.microsoftonline.com/93a307af-2b18-419b-82a4-da0d26ae31d0',
+                redirectUri: window.location.origin + window.location.pathname
+            },
+            cache: {
+                cacheLocation: 'sessionStorage',
+                storeAuthStateInCookie: false
+            }
+        };
 
-        // Authentication endpoints
-        const AUTH_ENDPOINT = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/authorize`;
-        const TOKEN_ENDPOINT = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`;
+        // Create MSAL instance
+        const msalInstance = new msal.PublicClientApplication(msalConfig);
 
-        // Scopes needed for the application
-        const SCOPES = ['User.Read', 'Sites.ReadWrite.All'];
+        // Login request configuration
+        const loginRequest = {
+            scopes: ['User.Read']
+        };
 
         // Global variables
+        let currentAccount = null;
         let currentStep = 1;
-        let currentUser = null;
-        let accessToken = null;
         let reportData = {
             basic: {},
             gps: {},
@@ -882,7 +866,7 @@
             photos: {},
             measurements: {},
             metadata: {
-                appVersion: '2.1',
+                appVersion: '3.0',
                 deviceInfo: navigator.userAgent,
                 createdAt: new Date().toISOString()
             }
@@ -903,140 +887,90 @@
             { id: 'beacon', name: 'Beacon Photos', required: 2, description: 'Beacon and label' }
         ];
 
-        // Initialize app
-        window.onload = function() {
-            // Show redirect URI for configuration
-            document.getElementById('redirectUri').textContent = REDIRECT_URI;
-            
-            // Check if we're returning from authentication
-            checkAuthentication();
-        };
-
-        // Authentication Functions
-        function loginWithMicrosoft() {
-            // Check if CLIENT_ID and TENANT_ID are configured
-            if (CLIENT_ID === 'YOUR_CLIENT_ID_HERE' || TENANT_ID === 'YOUR_TENANT_ID_HERE') {
-                showLoginError('Por favor configure CLIENT_ID y TENANT_ID en el código antes de continuar.');
-                return;
-            }
-
-            // Generate random state for security
-            const state = generateRandomString();
-            sessionStorage.setItem('auth_state', state);
-
-            // Build authorization URL
-            const authUrl = `${AUTH_ENDPOINT}?` +
-                `client_id=${CLIENT_ID}` +
-                `&response_type=code` +
-                `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-                `&response_mode=query` +
-                `&scope=${encodeURIComponent(SCOPES.join(' '))}` +
-                `&state=${state}`;
-
-            // Redirect to Microsoft login
-            window.location.href = authUrl;
-        }
-
-        function checkAuthentication() {
-            // Check for authorization code in URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            const state = urlParams.get('state');
-            const error = urlParams.get('error');
-
-            if (error) {
-                showLoginError(`Error de autenticación: ${urlParams.get('error_description') || error}`);
-                return;
-            }
-
-            if (code && state) {
-                // Verify state
-                const savedState = sessionStorage.getItem('auth_state');
-                if (state !== savedState) {
-                    showLoginError('Error de seguridad: State no coincide');
-                    return;
-                }
-
-                // Exchange code for token
-                exchangeCodeForToken(code);
-            } else {
-                // Check if we have a saved session
-                const savedSession = localStorage.getItem('towerReportSession');
-                if (savedSession) {
-                    try {
-                        const session = JSON.parse(savedSession);
-                        const expirationTime = new Date(session.expiresAt);
-                        
-                        if (expirationTime > new Date()) {
-                            currentUser = session.user;
-                            accessToken = session.token;
-                            showMainApp();
-                        } else {
-                            // Session expired
-                            localStorage.removeItem('towerReportSession');
-                        }
-                    } catch (e) {
-                        console.error('Error loading saved session:', e);
+        // Initialize MSAL
+        async function initializeMsal() {
+            try {
+                const response = await msalInstance.handleRedirectPromise();
+                
+                if (response) {
+                    currentAccount = response.account;
+                    await getUserDetails();
+                    showMainApp();
+                } else {
+                    const accounts = msalInstance.getAllAccounts();
+                    if (accounts.length > 0) {
+                        currentAccount = accounts[0];
+                        await getUserDetails();
+                        showMainApp();
                     }
                 }
+            } catch (error) {
+                console.error('Error during initialization:', error);
+                showLoginError('Error durante inicialización: ' + error.message);
             }
         }
 
-        async function exchangeCodeForToken(code) {
-            // For Single Page Applications, we need to use the implicit flow
-            // or implement a backend service to handle the token exchange
-            // For simplicity, we'll show instructions for the implicit flow
-
-            showLoginError('Para completar la integración con SharePoint, necesita un servidor backend para intercambiar el código por un token. Alternativamente, puede usar el flujo implícito cambiando response_type=token en la configuración.');
-            
-            // Clean URL
-            window.history.replaceState({}, document.title, window.location.pathname);
+        // Sign in function
+        async function signIn() {
+            try {
+                const response = await msalInstance.loginPopup(loginRequest);
+                currentAccount = response.account;
+                await getUserDetails();
+                showMainApp();
+            } catch (error) {
+                console.error('Popup blocked, using redirect:', error);
+                await msalInstance.loginRedirect(loginRequest);
+            }
         }
 
-        // For demo purposes, we'll create a simplified authentication
-        // In production, you should use proper OAuth2 flow with a backend
-        function simulateAuthentication() {
-            // This is just for demo - replace with real authentication
-            currentUser = {
-                displayName: 'Usuario Demo',
-                mail: 'demo@newcomm2000.com',
-                id: 'demo-user-id'
+        // Sign out function
+        async function signOut() {
+            const logoutRequest = {
+                account: currentAccount,
+                postLogoutRedirectUri: window.location.origin + window.location.pathname
             };
-            
-            // Save session
-            const session = {
-                user: currentUser,
-                token: 'demo-token',
-                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-            };
-            localStorage.setItem('towerReportSession', JSON.stringify(session));
-            
-            showMainApp();
+            await msalInstance.logoutRedirect(logoutRequest);
         }
 
-        function logout() {
-            currentUser = null;
-            accessToken = null;
-            localStorage.removeItem('towerReportSession');
-            showLoginScreen();
-            
-            // Optionally, redirect to Microsoft logout
-            // window.location.href = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/logout`;
+        // Get user details
+        async function getUserDetails() {
+            try {
+                const tokenResponse = await msalInstance.acquireTokenSilent({
+                    scopes: ['User.Read'],
+                    account: currentAccount
+                });
+
+                const response = await fetch('https://graph.microsoft.com/v1.0/me', {
+                    headers: {
+                        'Authorization': `Bearer ${tokenResponse.accessToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const userData = await response.json();
+                    document.getElementById('userDisplayName').textContent = userData.displayName || currentAccount.name;
+                    
+                    // Store user info for reports
+                    reportData.metadata.submittedBy = userData.displayName || currentAccount.name;
+                    reportData.metadata.submittedByEmail = userData.mail || userData.userPrincipalName || currentAccount.username;
+                }
+            } catch (error) {
+                console.error('Error getting user details:', error);
+                document.getElementById('userDisplayName').textContent = currentAccount.name;
+            }
         }
 
+        // Show login error
         function showLoginError(message) {
             const errorDiv = document.getElementById('loginError');
             errorDiv.textContent = message;
             errorDiv.style.display = 'block';
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 10000);
         }
 
+        // Show main app
         function showMainApp() {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
-            document.getElementById('userDisplayName').textContent = currentUser.displayName || currentUser.mail;
             
             // Initialize app
             document.getElementById('completionDate').value = new Date().toISOString().split('T')[0];
@@ -1044,109 +978,6 @@
             loadSavedData();
             updateStorageIndicator();
             optimizeStorage();
-        }
-
-        function showLoginScreen() {
-            document.getElementById('loginScreen').style.display = 'flex';
-            document.getElementById('mainApp').style.display = 'none';
-        }
-
-        // Utility functions
-        function generateRandomString() {
-            const array = new Uint32Array(28);
-            window.crypto.getRandomValues(array);
-            return Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('');
-        }
-
-        // Storage management functions
-        function checkStorageSpace() {
-            try {
-                let totalSize = 0;
-                for (let key in localStorage) {
-                    if (localStorage.hasOwnProperty(key)) {
-                        totalSize += localStorage[key].length;
-                    }
-                }
-                return (totalSize / 1024 / 1024).toFixed(2);
-            } catch (e) {
-                return 'Unknown';
-            }
-        }
-
-        function updateStorageIndicator() {
-            const indicator = document.getElementById('storageIndicator');
-            if (indicator) {
-                const usedMB = checkStorageSpace();
-                const usedNum = parseFloat(usedMB);
-                
-                indicator.textContent = `${usedMB} MB`;
-                
-                if (usedNum > 4.5) {
-                    indicator.style.color = 'red';
-                    indicator.textContent += ' (CRÍTICO)';
-                } else if (usedNum > 3) {
-                    indicator.style.color = 'orange';
-                    indicator.textContent += ' (alto)';
-                } else {
-                    indicator.style.color = 'green';
-                }
-            }
-        }
-
-        function optimizeStorage() {
-            const currentSize = parseFloat(checkStorageSpace());
-            
-            if (currentSize > 4) {
-                showNotification('Optimizando almacenamiento...', 'info');
-                clearOldReports();
-                
-                if (parseFloat(checkStorageSpace()) > 3) {
-                    Object.keys(reportData.photos).forEach(photoType => {
-                        const photos = reportData.photos[photoType];
-                        if (photos && photos.length > 2) {
-                            reportData.photos[photoType] = photos.slice(-2);
-                        }
-                    });
-                    updatePhotoCounts();
-                }
-                
-                updateStorageIndicator();
-                showNotification('Almacenamiento optimizado', 'success');
-            }
-        }
-
-        function clearOldReports() {
-            const keysToRemove = [];
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key && key.startsWith('RPT-') && key !== 'towerReportSession') {
-                    keysToRemove.push(key);
-                }
-            }
-            keysToRemove.forEach(key => localStorage.removeItem(key));
-        }
-
-        function clearAllData() {
-            if (confirm('¿Eliminar todos los datos guardados? Esto borrará reportes anteriores pero mantendrá su sesión activa.')) {
-                const keysToRemove = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key && key !== 'towerReportSession') {
-                        keysToRemove.push(key);
-                    }
-                }
-                keysToRemove.forEach(key => localStorage.removeItem(key));
-                
-                reportData = {
-                    basic: {},
-                    gps: {},
-                    appurtenances: [],
-                    photos: {}
-                };
-                showNotification('Datos eliminados correctamente', 'success');
-                updateStorageIndicator();
-                location.reload();
-            }
         }
 
         // Navigation functions
@@ -1258,8 +1089,8 @@
                             towerTop: document.getElementById('towerTop').value,
                             completionDate: document.getElementById('completionDate').value,
                             tpTenant: document.getElementById('tpTenant').value,
-                            submittedBy: currentUser ? currentUser.displayName || currentUser.mail : 'Unknown User',
-                            submittedByEmail: currentUser ? currentUser.mail : 'unknown@email.com',
+                            submittedBy: reportData.metadata.submittedBy || 'Unknown User',
+                            submittedByEmail: reportData.metadata.submittedByEmail || 'unknown@email.com',
                             submissionTimestamp: new Date().toISOString(),
                             uniqueReportId: `RPT-${timestamp}-${randomNum}`
                         };
@@ -1317,6 +1148,101 @@
                 }
                 updateAppurtenanceList();
                 updatePhotoCounts();
+            }
+        }
+
+        // Storage management functions
+        function checkStorageSpace() {
+            try {
+                let totalSize = 0;
+                for (let key in localStorage) {
+                    if (localStorage.hasOwnProperty(key)) {
+                        totalSize += localStorage[key].length;
+                    }
+                }
+                return (totalSize / 1024 / 1024).toFixed(2);
+            } catch (e) {
+                return 'Unknown';
+            }
+        }
+
+        function updateStorageIndicator() {
+            const indicator = document.getElementById('storageIndicator');
+            if (indicator) {
+                const usedMB = checkStorageSpace();
+                const usedNum = parseFloat(usedMB);
+                
+                indicator.textContent = `${usedMB} MB`;
+                
+                if (usedNum > 4.5) {
+                    indicator.style.color = 'red';
+                    indicator.textContent += ' (CRÍTICO)';
+                } else if (usedNum > 3) {
+                    indicator.style.color = 'orange';
+                    indicator.textContent += ' (alto)';
+                } else {
+                    indicator.style.color = 'green';
+                }
+            }
+        }
+
+        function optimizeStorage() {
+            const currentSize = parseFloat(checkStorageSpace());
+            
+            if (currentSize > 4) {
+                showNotification('Optimizando almacenamiento...', 'info');
+                clearOldReports();
+                
+                if (parseFloat(checkStorageSpace()) > 3) {
+                    Object.keys(reportData.photos).forEach(photoType => {
+                        const photos = reportData.photos[photoType];
+                        if (photos && photos.length > 2) {
+                            reportData.photos[photoType] = photos.slice(-2);
+                        }
+                    });
+                    updatePhotoCounts();
+                }
+                
+                updateStorageIndicator();
+                showNotification('Almacenamiento optimizado', 'success');
+            }
+        }
+
+        function clearOldReports() {
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('RPT-') && key !== 'towerReportSession') {
+                    keysToRemove.push(key);
+                }
+            }
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+        }
+
+        function clearAllData() {
+            if (confirm('¿Eliminar todos los datos guardados? Esto borrará reportes anteriores pero mantendrá su sesión activa.')) {
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key !== 'towerReportSession') {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(key => localStorage.removeItem(key));
+                
+                reportData = {
+                    basic: {},
+                    gps: {},
+                    appurtenances: [],
+                    photos: {},
+                    metadata: {
+                        submittedBy: reportData.metadata.submittedBy,
+                        submittedByEmail: reportData.metadata.submittedByEmail
+                    }
+                };
+                showNotification('Datos eliminados correctamente', 'success');
+                updateStorageIndicator();
+                location.reload();
             }
         }
 
@@ -1837,8 +1763,8 @@
             const statusDiv = document.getElementById('submitStatus');
             
             // Update submittedBy with current authenticated user
-            reportData.basic.submittedBy = currentUser ? currentUser.displayName || currentUser.mail : 'Unknown User';
-            reportData.basic.submittedByEmail = currentUser ? currentUser.mail : 'unknown@email.com';
+            reportData.basic.submittedBy = reportData.metadata.submittedBy || 'Unknown User';
+            reportData.basic.submittedByEmail = reportData.metadata.submittedByEmail || 'unknown@email.com';
             
             submitBtn.disabled = true;
             statusDiv.innerHTML = '<div class="spinner"></div><p>Enviando reporte a SharePoint...</p>';
@@ -1950,11 +1876,23 @@
         }
 
         function startNewReport() {
+            // Mantener la información del usuario
+            const userInfo = {
+                submittedBy: reportData.metadata.submittedBy,
+                submittedByEmail: reportData.metadata.submittedByEmail
+            };
+            
             reportData = {
                 basic: {},
                 gps: {},
                 appurtenances: [],
-                photos: {}
+                photos: {},
+                metadata: {
+                    ...userInfo,
+                    appVersion: '3.0',
+                    deviceInfo: navigator.userAgent,
+                    createdAt: new Date().toISOString()
+                }
             };
             
             document.querySelectorAll('input, select, textarea').forEach(field => {
@@ -1995,7 +1933,7 @@
                         <p><strong>Site ID:</strong> ${reportData.basic.siteId || 'N/A'}</p>
                         <p><strong>Site Name:</strong> ${reportData.basic.siteName || 'N/A'}</p>
                         <p><strong>Team Leader:</strong> ${reportData.basic.teamLeader || 'N/A'}</p>
-                        <p><strong>Enviado por:</strong> ${currentUser ? currentUser.displayName || currentUser.mail : 'N/A'}</p>
+                        <p><strong>Enviado por:</strong> ${reportData.metadata.submittedBy || 'N/A'}</p>
                         <p><strong>Fecha:</strong> ${reportData.basic.completionDate || 'N/A'}</p>
                     </div>
                     
@@ -2141,18 +2079,9 @@ Date: ${new Date().toLocaleString()}
             }, 3000);
         }
 
-        // Add demo login button for testing
-        window.addEventListener('load', function() {
-            if (CLIENT_ID === 'YOUR_CLIENT_ID_HERE') {
-                const loginContainer = document.querySelector('.login-container');
-                const demoBtn = document.createElement('button');
-                demoBtn.className = 'btn btn-secondary';
-                demoBtn.style.marginTop = '20px';
-                demoBtn.style.width = '100%';
-                demoBtn.textContent = '🧪 Modo Demo (Sin SharePoint)';
-                demoBtn.onclick = simulateAuthentication;
-                loginContainer.appendChild(demoBtn);
-            }
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            initializeMsal();
         });
     </script>
 </body>
