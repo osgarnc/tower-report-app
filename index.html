@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0066cc">
-    <title>Tower Report Mobile - SharePoint Auth</title>
+    <title>Tower Report Mobile - Secure</title>
     
     <style>
         * {
@@ -67,6 +67,35 @@
             margin-bottom: 30px;
         }
 
+        .login-form {
+            text-align: left;
+        }
+
+        .login-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .login-form label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
         .login-btn {
             background-color: #0066cc;
             color: white;
@@ -82,6 +111,7 @@
             justify-content: center;
             gap: 10px;
             transition: all 0.3s;
+            margin-top: 10px;
         }
 
         .login-btn:hover {
@@ -102,16 +132,6 @@
         .login-info {
             background-color: #e3f2fd;
             color: #1565c0;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            text-align: left;
-        }
-
-        .setup-instructions {
-            background-color: #fff3cd;
-            color: #856404;
             padding: 15px;
             border-radius: 6px;
             margin-bottom: 20px;
@@ -224,6 +244,8 @@
         input[type="text"],
         input[type="number"],
         input[type="date"],
+        input[type="email"],
+        input[type="password"],
         select,
         textarea {
             width: 100%;
@@ -538,39 +560,35 @@
     <div id="loginScreen" class="login-screen">
         <div class="login-container">
             <h2 class="login-title">Tower Provider Report</h2>
-            <p class="login-subtitle">Inicie sesión con su cuenta de Microsoft 365</p>
+            <p class="login-subtitle">Sistema Seguro de Reportes</p>
             
-            <div class="setup-instructions">
-                <strong>⚠️ Configuración Requerida:</strong><br>
-                1. Registre esta aplicación en Azure AD<br>
-                2. Configure los permisos necesarios<br>
-                3. Actualice el CLIENT_ID y TENANT_ID en el código<br>
-                4. Agregue la URL de esta página como redirect URI
+            <div class="login-info">
+                <strong>📋 Información importante:</strong><br>
+                Use sus credenciales de SharePoint para acceder al sistema. Su nombre será registrado automáticamente en todos los reportes que envíe.
             </div>
 
-            <button class="login-btn" onclick="loginWithMicrosoft()">
-                <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="1" y="1" width="9" height="9" fill="#F25022"/>
-                    <rect x="11" y="1" width="9" height="9" fill="#7FBA00"/>
-                    <rect x="1" y="11" width="9" height="9" fill="#00A4EF"/>
-                    <rect x="11" y="11" width="9" height="9" fill="#FFB900"/>
-                </svg>
-                Iniciar sesión con Microsoft
-            </button>
+            <form class="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="userEmail">Email de SharePoint <span class="required">*</span></label>
+                    <input type="email" id="userEmail" placeholder="usuario@newcomm2000.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="userName">Nombre Completo <span class="required">*</span></label>
+                    <input type="text" id="userName" placeholder="Nombre Apellido" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="userPassword">Contraseña <span class="required">*</span></label>
+                    <input type="password" id="userPassword" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="login-btn">
+                    🔐 Iniciar Sesión
+                </button>
+            </form>
             
             <div id="loginError" style="display: none;" class="login-error"></div>
-            
-            <div style="margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 6px; text-align: left;">
-                <h4 style="color: #333; margin-bottom: 10px;">Instrucciones de Configuración:</h4>
-                <ol style="font-size: 14px; color: #666; margin-left: 20px;">
-                    <li>Vaya a <a href="https://portal.azure.com" target="_blank">Azure Portal</a></li>
-                    <li>Navegue a Azure Active Directory > App registrations</li>
-                    <li>Cree una nueva aplicación (tipo: Single Page Application)</li>
-                    <li>Configure Redirect URI: <code id="redirectUri"></code></li>
-                    <li>Copie el Application (client) ID y actualice el código</li>
-                    <li>En API permissions, agregue: User.Read y Sites.ReadWrite.All</li>
-                </ol>
-            </div>
         </div>
     </div>
 
@@ -578,12 +596,12 @@
     <div id="mainApp" class="app-container" style="display: none;">
         <div class="user-info">
             <span>Usuario: <strong id="userDisplayName">-</strong></span>
-            <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+            <button class="logout-btn" onclick="signOut()">Cerrar Sesión</button>
         </div>
 
         <header class="header">
             <h1>Tower Provider Report</h1>
-            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 2.3 - SharePoint Auth</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 2.4 - Secure</div>
         </header>
 
         <div class="step-indicator">
@@ -606,7 +624,7 @@
                         Limpiar datos
                     </button>
                 </div>
-                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v2.3 SharePoint</div>
+                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v2.4 Secure</div>
             </div>
             
             <div class="form-group">
@@ -858,23 +876,19 @@
     </div>
 
     <script>
-        // SharePoint/Microsoft Authentication Configuration
-        // IMPORTANTE: Debes actualizar estos valores con tu configuración de Azure AD
-        const CLIENT_ID = 'YOUR_CLIENT_ID_HERE'; // Reemplazar con tu Application (client) ID
-        const TENANT_ID = 'YOUR_TENANT_ID_HERE'; // Reemplazar con tu Directory (tenant) ID
-        const REDIRECT_URI = window.location.origin + window.location.pathname;
-
-        // Authentication endpoints
-        const AUTH_ENDPOINT = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/authorize`;
-        const TOKEN_ENDPOINT = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`;
-
-        // Scopes needed for the application
-        const SCOPES = ['User.Read', 'Sites.ReadWrite.All'];
+        // Simple authentication system using localStorage
+        // In production, this should be replaced with proper SharePoint authentication
+        
+        // Valid users list (in production, this would come from SharePoint)
+        const validUsers = [
+            { email: 'admin@newcomm2000.com', name: 'Administrator', password: 'admin123' },
+            { email: 'christopher.rodriguez@newcomm2000.com', name: 'Christopher Rodriguez', password: 'chris123' },
+            { email: 'field.tech@newcomm2000.com', name: 'Field Technician', password: 'field123' }
+        ];
 
         // Global variables
         let currentStep = 1;
         let currentUser = null;
-        let accessToken = null;
         let reportData = {
             basic: {},
             gps: {},
@@ -882,7 +896,7 @@
             photos: {},
             measurements: {},
             metadata: {
-                appVersion: '2.3',
+                appVersion: '2.4',
                 deviceInfo: navigator.userAgent,
                 createdAt: new Date().toISOString()
             }
@@ -903,125 +917,64 @@
             { id: 'beacon', name: 'Beacon Photos', required: 2, description: 'Beacon and label' }
         ];
 
-        // Initialize app
-        window.onload = function() {
-            // Show redirect URI for configuration
-            document.getElementById('redirectUri').textContent = REDIRECT_URI;
-            
-            // Check if we're returning from authentication
-            checkAuthentication();
-        };
-
         // Authentication Functions
-        function loginWithMicrosoft() {
-            // Check if CLIENT_ID and TENANT_ID are configured
-            if (CLIENT_ID === 'YOUR_CLIENT_ID_HERE' || TENANT_ID === 'YOUR_TENANT_ID_HERE') {
-                showLoginError('Por favor configure CLIENT_ID y TENANT_ID en el código antes de continuar.');
-                return;
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('userEmail').value.toLowerCase();
+            const name = document.getElementById('userName').value;
+            const password = document.getElementById('userPassword').value;
+            
+            // Validate against valid users (in production, this would be a SharePoint API call)
+            const validUser = validUsers.find(u => u.email === email && u.password === password);
+            
+            if (validUser) {
+                // Use the name provided by the user (allowing them to use their actual name)
+                currentUser = {
+                    email: email,
+                    name: name || validUser.name,
+                    authenticated: true,
+                    loginTime: new Date().toISOString()
+                };
+                
+                // Save to localStorage
+                localStorage.setItem('towerReportUser', JSON.stringify(currentUser));
+                
+                showMainApp();
+            } else {
+                showLoginError('Credenciales inválidas. Verifique su email y contraseña.');
             }
-
-            // Generate random state for security
-            const state = generateRandomString();
-            sessionStorage.setItem('auth_state', state);
-
-            // Build authorization URL
-            const authUrl = `${AUTH_ENDPOINT}?` +
-                `client_id=${CLIENT_ID}` +
-                `&response_type=code` +
-                `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-                `&response_mode=query` +
-                `&scope=${encodeURIComponent(SCOPES.join(' '))}` +
-                `&state=${state}`;
-
-            // Redirect to Microsoft login
-            window.location.href = authUrl;
         }
 
         function checkAuthentication() {
-            // Check for authorization code in URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            const state = urlParams.get('state');
-            const error = urlParams.get('error');
-
-            if (error) {
-                showLoginError(`Error de autenticación: ${urlParams.get('error_description') || error}`);
-                return;
-            }
-
-            if (code && state) {
-                // Verify state
-                const savedState = sessionStorage.getItem('auth_state');
-                if (state !== savedState) {
-                    showLoginError('Error de seguridad: State no coincide');
-                    return;
-                }
-
-                // Exchange code for token
-                exchangeCodeForToken(code);
-            } else {
-                // Check if we have a saved session
-                const savedSession = localStorage.getItem('towerReportSession');
-                if (savedSession) {
-                    try {
-                        const session = JSON.parse(savedSession);
-                        const expirationTime = new Date(session.expiresAt);
-                        
-                        if (expirationTime > new Date()) {
-                            currentUser = session.user;
-                            accessToken = session.token;
-                            showMainApp();
-                        } else {
-                            // Session expired
-                            localStorage.removeItem('towerReportSession');
-                        }
-                    } catch (e) {
-                        console.error('Error loading saved session:', e);
-                    }
+            const savedUser = localStorage.getItem('towerReportUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                
+                // Check if session is still valid (24 hours)
+                const loginTime = new Date(currentUser.loginTime);
+                const now = new Date();
+                const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+                
+                if (hoursDiff < 24) {
+                    showMainApp();
+                } else {
+                    // Session expired
+                    signOut();
+                    showLoginError('Su sesión ha expirado. Por favor, inicie sesión nuevamente.');
                 }
             }
         }
 
-        async function exchangeCodeForToken(code) {
-            // For Single Page Applications, we need to use the implicit flow
-            // or implement a backend service to handle the token exchange
-            // For simplicity, we'll show instructions for the implicit flow
-
-            showLoginError('Para completar la integración con SharePoint, necesita un servidor backend para intercambiar el código por un token. Alternativamente, puede usar el flujo implícito cambiando response_type=token en la configuración.');
-            
-            // Clean URL
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-
-        // For demo purposes, we'll create a simplified authentication
-        // In production, you should use proper OAuth2 flow with a backend
-        function simulateAuthentication() {
-            // This is just for demo - replace with real authentication
-            currentUser = {
-                displayName: 'Usuario Demo',
-                mail: 'demo@newcomm2000.com',
-                id: 'demo-user-id'
-            };
-            
-            // Save session
-            const session = {
-                user: currentUser,
-                token: 'demo-token',
-                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-            };
-            localStorage.setItem('towerReportSession', JSON.stringify(session));
-            
-            showMainApp();
-        }
-
-        function logout() {
+        function signOut() {
             currentUser = null;
-            accessToken = null;
-            localStorage.removeItem('towerReportSession');
+            localStorage.removeItem('towerReportUser');
             showLoginScreen();
             
-            // Optionally, redirect to Microsoft logout
-            // window.location.href = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/logout`;
+            // Reset form
+            document.getElementById('userEmail').value = '';
+            document.getElementById('userName').value = '';
+            document.getElementById('userPassword').value = '';
         }
 
         function showLoginError(message) {
@@ -1030,13 +983,13 @@
             errorDiv.style.display = 'block';
             setTimeout(() => {
                 errorDiv.style.display = 'none';
-            }, 10000);
+            }, 5000);
         }
 
         function showMainApp() {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
-            document.getElementById('userDisplayName').textContent = currentUser.displayName || currentUser.mail;
+            document.getElementById('userDisplayName').textContent = currentUser.name;
             
             // Initialize app
             document.getElementById('completionDate').value = new Date().toISOString().split('T')[0];
@@ -1051,12 +1004,10 @@
             document.getElementById('mainApp').style.display = 'none';
         }
 
-        // Utility functions
-        function generateRandomString() {
-            const array = new Uint32Array(28);
-            window.crypto.getRandomValues(array);
-            return Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('');
-        }
+        // Initialize app when page loads
+        window.onload = function() {
+            checkAuthentication();
+        };
 
         // Storage management functions
         function checkStorageSpace() {
@@ -1119,7 +1070,7 @@
             const keysToRemove = [];
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
-                if (key && key.startsWith('RPT-') && key !== 'towerReportSession') {
+                if (key && key.startsWith('RPT-') && key !== 'towerReportUser') {
                     keysToRemove.push(key);
                 }
             }
@@ -1128,10 +1079,11 @@
 
         function clearAllData() {
             if (confirm('¿Eliminar todos los datos guardados? Esto borrará reportes anteriores pero mantendrá su sesión activa.')) {
+                // Clear only report data, not authentication data
                 const keysToRemove = [];
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
-                    if (key && key !== 'towerReportSession') {
+                    if (key && key !== 'towerReportUser') {
                         keysToRemove.push(key);
                     }
                 }
@@ -1258,8 +1210,8 @@
                             towerTop: document.getElementById('towerTop').value,
                             completionDate: document.getElementById('completionDate').value,
                             tpTenant: document.getElementById('tpTenant').value,
-                            submittedBy: currentUser ? currentUser.displayName || currentUser.mail : 'Unknown User',
-                            submittedByEmail: currentUser ? currentUser.mail : 'unknown@email.com',
+                            submittedBy: currentUser ? currentUser.name : 'Unknown User',
+                            submittedByEmail: currentUser ? currentUser.email : 'unknown@email.com',
                             submissionTimestamp: new Date().toISOString(),
                             uniqueReportId: `RPT-${timestamp}-${randomNum}`
                         };
@@ -1741,419 +1693,3 @@
                 <div class="review-item">
                     <span class="review-label">Categorías completas:</span>
                     <span class="review-value">${completedTypes} de ${photoTypes.length}</span>
-                </div>
-            `;
-        }
-
-        // Submit and SharePoint Functions
-        async function sendToSharePoint(reportData) {
-            const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
-            
-            const timestamp = Date.now();
-            const randomNum = Math.floor(Math.random() * 100000);
-            const uniqueReportID = `RPT-${timestamp}-${randomNum}`;
-            
-            const appurtenanceDataJSON = {
-                appurtenances: reportData.appurtenances || [],
-                measurements: reportData.measurements || {},
-                gpsDetails: {
-                    latitude: reportData.gps.latitude || 0,
-                    longitude: reportData.gps.longitude || 0,
-                    altitude: reportData.gps.altitude || 0,
-                    accuracy: reportData.gps.accuracy || 0,
-                    method: reportData.gps.manual ? 'manual' : 'auto'
-                },
-                metadata: reportData.metadata || {}
-            };
-            
-            const photoLinksJSON = {
-                totalPhotos: 0,
-                categories: {},
-                photoMetadata: {}
-            };
-            
-            Object.keys(reportData.photos).forEach(category => {
-                const photos = reportData.photos[category] || [];
-                photoLinksJSON.totalPhotos += photos.length;
-                photoLinksJSON.categories[category] = photos.length;
-                
-                photos.forEach((photo, index) => {
-                    const photoKey = `${category}_${index + 1}`;
-                    photoLinksJSON.photoMetadata[photoKey] = {
-                        timestamp: photo.timestamp,
-                        name: photo.name || photoKey,
-                        category: photoTypes.find(t => t.id === category)?.name || category
-                    };
-                });
-            });
-            
-            const dataToSend = {
-                Title: reportData.basic.teamLeader || 'Field Technician',
-                SubmittedBy: reportData.basic.submittedBy || 'Field Technician',
-                SubmittedByEmail: reportData.basic.submittedByEmail || 'unknown@email.com',
-                SubmissionTimestamp: new Date().toISOString(),
-                ReportID: uniqueReportID,
-                TowerProviderSiteID: reportData.basic.siteId || '',
-                TowerProviderSiteName: reportData.basic.siteName || '',
-                CustomerSiteID: reportData.basic.customerSiteId || '',
-                CustomerSiteName: reportData.basic.customerSiteName || '',
-                RadiosInstalled: parseInt(reportData.basic.radiosInstalled) || 0,
-                AntennasInstalled: parseInt(reportData.basic.antennasInstalled) || 0,
-                TeamLeader: reportData.basic.teamLeader || '',
-                TowerTopInstallation: reportData.basic.towerTop === 'yes',
-                CompletionDate: reportData.basic.completionDate || new Date().toISOString().split('T')[0],
-                TPTenant: reportData.basic.tpTenant || '',
-                Latitude: reportData.gps.latitude || 0,
-                Longitude: reportData.gps.longitude || 0,
-                AppurtenanceData: JSON.stringify(appurtenanceDataJSON),
-                PhotoLinks: JSON.stringify(photoLinksJSON),
-                ReportStatus: 'DraftSubmittedPDF'
-            };
-            
-            try {
-                const response = await fetch(POWER_AUTOMATE_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(dataToSend)
-                });
-                
-                if (response.ok) {
-                    return true;
-                } else {
-                    console.error('Error response:', response.status, response.statusText);
-                    return false;
-                }
-            } catch (error) {
-                console.error('Network/Connection error:', error);
-                return false;
-            }
-        }
-
-        async function submitReport() {
-            const submitBtn = event.target;
-            const statusDiv = document.getElementById('submitStatus');
-            
-            // Update submittedBy with current authenticated user
-            reportData.basic.submittedBy = currentUser ? currentUser.displayName || currentUser.mail : 'Unknown User';
-            reportData.basic.submittedByEmail = currentUser ? currentUser.mail : 'unknown@email.com';
-            
-            submitBtn.disabled = true;
-            statusDiv.innerHTML = '<div class="spinner"></div><p>Enviando reporte a SharePoint...</p>';
-            
-            try {
-                const reportId = `RPT-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
-                localStorage.setItem(reportId, JSON.stringify(reportData));
-                
-                const sentToSharePoint = await sendToSharePoint(reportData);
-                
-                if (sentToSharePoint) {
-                    statusDiv.innerHTML = `
-                        <div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: left;">
-                            <h3 style="color: #2e7d32;">✓ Reporte Enviado a SharePoint</h3>
-                            <p>ID: ${reportId}</p>
-                            <p>Enviado por: <strong>${reportData.basic.submittedBy}</strong></p>
-                            <p style="margin-top: 15px;">
-                                <strong>✓ Guardado localmente</strong><br>
-                                <strong>✓ Enviado a SharePoint</strong>
-                            </p>
-                            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                                <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
-                                    ➕ Crear Nuevo Reporte
-                                </button>
-                                <button class="btn btn-primary" onclick="sendDetailedEmail('${reportId}')" style="flex: 1;">
-                                    📧 Enviar Email Detallado
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    statusDiv.innerHTML = `
-                        <div style="background: #fff3cd; padding: 20px; border-radius: 6px; text-align: left;">
-                            <h3 style="color: #856404;">⚠️ Guardado Solo Localmente</h3>
-                            <p>ID: ${reportId}</p>
-                            <p style="margin-top: 15px;">
-                                El reporte se guardó en el dispositivo pero no se pudo enviar a SharePoint.
-                            </p>
-                            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                                <button class="btn btn-primary" onclick="retrySharePoint('${reportId}')" style="flex: 1;">
-                                    🔄 Reintentar Envío
-                                </button>
-                                <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
-                                    ➕ Nuevo Reporte
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                submitBtn.disabled = false;
-                
-            } catch (error) {
-                statusDiv.innerHTML = `
-                    <div style="background: #ffebee; padding: 20px; border-radius: 6px;">
-                        <h3 style="color: #c62828;">Error al guardar</h3>
-                        <p>${error.message}</p>
-                        <button class="btn btn-primary" onclick="location.reload()">
-                            Recargar Página
-                        </button>
-                    </div>
-                `;
-                submitBtn.disabled = false;
-            }
-        }
-
-        async function retrySharePoint(reportId) {
-            const savedData = localStorage.getItem(reportId);
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                const statusDiv = document.getElementById('submitStatus');
-                
-                statusDiv.innerHTML = '<div class="spinner"></div><p>Reintentando envío...</p>';
-                
-                const sent = await sendToSharePoint(data);
-                
-                if (sent) {
-                    statusDiv.innerHTML = `
-                        <div style="background: #e8f5e9; padding: 20px; border-radius: 6px;">
-                            <h3 style="color: #2e7d32;">✓ Enviado Exitosamente</h3>
-                            <p>El reporte se envió a SharePoint.</p>
-                            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                                <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
-                                    ➕ Crear Nuevo Reporte
-                                </button>
-                                <button class="btn btn-primary" onclick="location.href='mailto:accounting@newcomm2000.com?subject=Tower Report ${reportId}'" style="flex: 1;">
-                                    📧 Enviar por Email
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    statusDiv.innerHTML = `
-                        <div style="background: #ffebee; padding: 20px; border-radius: 6px;">
-                            <h3 style="color: #c62828;">Error al enviar</h3>
-                            <p>No se pudo conectar con SharePoint. Verifique su conexión.</p>
-                            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                                <button class="btn btn-primary" onclick="retrySharePoint('${reportId}')" style="flex: 1;">
-                                    🔄 Reintentar
-                                </button>
-                                <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
-                                    ➕ Nuevo Reporte
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-        }
-
-        function startNewReport() {
-            reportData = {
-                basic: {},
-                gps: {},
-                appurtenances: [],
-                photos: {}
-            };
-            
-            document.querySelectorAll('input, select, textarea').forEach(field => {
-                if (field.type === 'date') {
-                    field.value = new Date().toISOString().split('T')[0];
-                } else if (field.id === 'appQuantity') {
-                    field.value = '1';
-                } else {
-                    field.value = '';
-                }
-            });
-            
-            currentStep = 1;
-            showStep(1);
-            
-            document.getElementById('gpsStatus').innerHTML = '';
-            document.getElementById('appurtenanceList').innerHTML = '';
-            
-            generatePhotoGrid();
-            
-            showNotification('Nuevo reporte iniciado', 'success');
-        }
-
-        function showReportSummary() {
-            let totalPhotos = 0;
-            Object.values(reportData.photos).forEach(photoArray => {
-                if (Array.isArray(photoArray)) {
-                    totalPhotos += photoArray.length;
-                }
-            });
-
-            const summaryHTML = `
-                <div style="background: #f5f5f5; padding: 20px; border-radius: 6px; margin: 20px 0;">
-                    <h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte</h3>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <h4 style="color: #333;">Información del Sitio</h4>
-                        <p><strong>Site ID:</strong> ${reportData.basic.siteId || 'N/A'}</p>
-                        <p><strong>Site Name:</strong> ${reportData.basic.siteName || 'N/A'}</p>
-                        <p><strong>Team Leader:</strong> ${reportData.basic.teamLeader || 'N/A'}</p>
-                        <p><strong>Enviado por:</strong> ${currentUser ? currentUser.displayName || currentUser.mail : 'N/A'}</p>
-                        <p><strong>Fecha:</strong> ${reportData.basic.completionDate || 'N/A'}</p>
-                    </div>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <h4 style="color: #333;">Equipos Instalados</h4>
-                        <p><strong>Radios:</strong> ${reportData.basic.radiosInstalled || 0}</p>
-                        <p><strong>Antenas:</strong> ${reportData.basic.antennasInstalled || 0}</p>
-                        <p><strong>Equipos registrados:</strong> ${reportData.appurtenances.length}</p>
-                    </div>
-                    
-                    ${reportData.measurements && (reportData.measurements.towerHeight || reportData.measurements.sector1TapeDrop) ? `
-                    <div style="margin-bottom: 15px;">
-                        <h4 style="color: #333;">Mediciones</h4>
-                        ${reportData.measurements.towerHeight ? `<p><strong>Tower Height:</strong> ${reportData.measurements.towerHeight}</p>` : ''}
-                        ${reportData.measurements.sector1TapeDrop ? `<p><strong>Sector 1:</strong> ${reportData.measurements.sector1TapeDrop}</p>` : ''}
-                        ${reportData.measurements.sector2TapeDrop ? `<p><strong>Sector 2:</strong> ${reportData.measurements.sector2TapeDrop}</p>` : ''}
-                        ${reportData.measurements.sector3TapeDrop ? `<p><strong>Sector 3:</strong> ${reportData.measurements.sector3TapeDrop}</p>` : ''}
-                        ${reportData.measurements.tallestPoint ? `<p><strong>Tallest Point:</strong> ${reportData.measurements.tallestPoint}</p>` : ''}
-                    </div>
-                    ` : ''}
-                    
-                    <div>
-                        <h4 style="color: #333;">Documentación</h4>
-                        <p><strong>Total de fotos:</strong> ${totalPhotos}</p>
-                        <p><strong>GPS:</strong> ${reportData.gps.latitude ? '✓ Capturado' : '✗ No capturado'}</p>
-                    </div>
-                    
-                    <button class="btn btn-secondary" onclick="closeReportSummary()" style="margin-top: 15px;">
-                        Cerrar Resumen
-                    </button>
-                </div>
-            `;
-            
-            const statusDiv = document.getElementById('submitStatus');
-            statusDiv.innerHTML = summaryHTML;
-            showNotification('Resumen del reporte mostrado', 'info');
-        }
-
-        function closeReportSummary() {
-            document.getElementById('submitStatus').innerHTML = '';
-        }
-
-        function sendDetailedEmail(reportId) {
-            const emailSubject = `Tower Provider Report - ${reportData.basic.siteName || reportId}`;
-            
-            const emailBody = `
-TOWER PROVIDER REPORT
-=====================
-
-SITE INFORMATION:
-- Site ID: ${reportData.basic.siteId || 'N/A'}
-- Site Name: ${reportData.basic.siteName || 'N/A'}
-- Customer Site ID: ${reportData.basic.customerSiteId || 'N/A'}
-- Customer Site Name: ${reportData.basic.customerSiteName || 'N/A'}
-
-INSTALLATION DETAILS:
-- Radios Installed: ${reportData.basic.radiosInstalled || '0'}
-- Antennas Installed: ${reportData.basic.antennasInstalled || '0'}
-- Team Leader: ${reportData.basic.teamLeader || 'N/A'}
-- Tower Top Installation: ${reportData.basic.towerTop || 'N/A'}
-- Completion Date: ${reportData.basic.completionDate || 'N/A'}
-- TP Tenant: ${reportData.basic.tpTenant || 'N/A'}
-
-GPS LOCATION:
-- Latitude: ${reportData.gps.latitude || 'N/A'}
-- Longitude: ${reportData.gps.longitude || 'N/A'}
-- Accuracy: ${reportData.gps.accuracy ? `±${reportData.gps.accuracy.toFixed(1)}m` : 'N/A'}
-
-${reportData.measurements && (reportData.measurements.towerHeight || reportData.measurements.sector1TapeDrop) ? `
-MEASUREMENTS:
-- Tower Height: ${reportData.measurements.towerHeight || 'N/A'}
-- Sector 1 Tape Drop: ${reportData.measurements.sector1TapeDrop || 'N/A'}
-- Sector 2 Tape Drop: ${reportData.measurements.sector2TapeDrop || 'N/A'}
-- Sector 3 Tape Drop: ${reportData.measurements.sector3TapeDrop || 'N/A'}
-- Tallest Point: ${reportData.measurements.tallestPoint || 'N/A'}
-` : ''}
-
-EQUIPMENT INSTALLED (${reportData.appurtenances.length} items):
-${reportData.appurtenances.map((app, i) => 
-`${i + 1}. ${app.type} - ${app.manufacturer} ${app.model} (Qty: ${app.quantity})`
-).join('\n')}
-
-PHOTO DOCUMENTATION:
-- Total Photos: ${Object.values(reportData.photos).reduce((sum, arr) => sum + (arr ? arr.length : 0), 0)}
-${Object.entries(reportData.photos).map(([category, photos]) => {
-    const catName = photoTypes.find(t => t.id === category)?.name || category;
-    return `- ${catName}: ${photos ? photos.length : 0} photos`;
-}).join('\n')}
-
-REPORT DETAILS:
-- Report ID: ${reportId}
-- Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
-- Email: ${reportData.basic.submittedByEmail || 'N/A'}
-- Submission Time: ${new Date().toLocaleString()}
-
----
-This report has been submitted to SharePoint.
-For the complete PDF report with all photos, please check SharePoint or request it from the system administrator.
-
-Newcomm Management Services Corp.
-PO Box 4116, Vega Baja PR 00694
-Phone: 787-718-2600
-            `.trim();
-            
-            const encodedBody = encodeURIComponent(emailBody);
-            
-            const mailtoLink = `mailto:accounting@newcomm2000.com?subject=${encodeURIComponent(emailSubject)}&body=${encodedBody}`;
-            
-            if (mailtoLink.length > 2000) {
-                const shortBody = `
-Tower Provider Report - ${reportData.basic.siteName || 'N/A'}
-Site ID: ${reportData.basic.siteId || 'N/A'}
-Report ID: ${reportId}
-Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
-
-Please check SharePoint for the complete report with all details and photos.
-
-Date: ${new Date().toLocaleString()}
-                `.trim();
-                
-                window.location.href = `mailto:accounting@newcomm2000.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(shortBody)}`;
-                showNotification('Email abierto con resumen corto (límite de caracteres)', 'info');
-            } else {
-                window.location.href = mailtoLink;
-                showNotification('Email abierto con todos los detalles', 'success');
-            }
-        }
-
-        // Notification function
-        function showNotification(message, type = 'info') {
-            const existing = document.querySelector('.notification');
-            if (existing) {
-                existing.remove();
-            }
-            
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
-
-        // Add demo login button for testing
-        window.addEventListener('load', function() {
-            if (CLIENT_ID === 'YOUR_CLIENT_ID_HERE') {
-                const loginContainer = document.querySelector('.login-container');
-                const demoBtn = document.createElement('button');
-                demoBtn.className = 'btn btn-secondary';
-                demoBtn.style.marginTop = '20px';
-                demoBtn.style.width = '100%';
-                demoBtn.textContent = '🧪 Modo Demo (Sin SharePoint)';
-                demoBtn.onclick = simulateAuthentication;
-                loginContainer.appendChild(demoBtn);
-            }
-        });
-    </script>
-</body>
-</html>
