@@ -526,52 +526,30 @@
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-/*!
- * Tower Provider Report Mobile Application v3.0
- * Copyright (c) 2025 Newcomm Management Services Corp.
- * 
- * AVISO LEGAL: Este código es propiedad intelectual de Newcomm Management Services Corp.
- * Cualquier uso no autorizado, copia, modificación o distribución está estrictamente prohibido
- * y puede resultar en acciones legales.
- * 
- * Desarrollado por: Osvaldo García
- * Para: Newcomm Management Services Corp.
- * Contacto: accounting@newcomm2000.com
- */
-
+// Protección elegante sin molestar al usuario
 (function() {
     'use strict';
     
-    // Protección de dominio
-    const AUTHORIZED_DOMAINS = ['newcomm2000.com', 'osgarnc.github.io', 'localhost'];
-    if (!AUTHORIZED_DOMAINS.some(d => window.location.hostname.includes(d))) {
-        alert('Esta aplicación solo puede ejecutarse desde dominios autorizados de Newcomm.');
-        window.location.href = 'https://newcomm2000.com';
-        return;
+    // Solo registrar en consola (no alertas molestas)
+    const APP_SIGNATURE = {
+        name: 'Tower Provider Report',
+        version: '3.1',
+        copyright: '© 2025 Newcomm Management Services Corp.'
+    };
+    
+    // Verificar dominio silenciosamente
+    const allowedDomains = ['newcomm2000.com', 'osgarnc.github.io', 'localhost'];
+    if (!allowedDomains.some(d => location.hostname.includes(d))) {
+        console.warn('Dominio no autorizado');
+        // NO uses alert() - es muy molesto
     }
     
-    // Marca de agua en consola
-    console.log('%c⚠️ TOWER REPORT APP - CÓDIGO PROPIETARIO', 
-                'color: red; font-size: 20px; font-weight: bold; background: yellow; padding: 10px;');
-    console.log('%c© 2024 Newcomm Management Services Corp. Todos los derechos reservados.', 
-                'color: #333; font-size: 12px;');
-    
-    // Desactivar clic derecho
-    document.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        alert('© 2024 Newcomm Management Services Corp.');
-        return false;
-    });
-    
-    // Desactivar teclas de depuración
-    document.addEventListener('keydown', (e) => {
-        // F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
-        if (e.keyCode === 123 || 
-            (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
-            (e.ctrlKey && e.keyCode === 85)) {
-            e.preventDefault();
-            return false;
-        }
+    // Agregar copyright discreto al footer
+    window.addEventListener('load', () => {
+        const footer = document.createElement('div');
+        footer.style.cssText = 'text-align:center; font-size:11px; color:#999; padding:10px;';
+        footer.textContent = APP_SIGNATURE.copyright;
+        document.body.appendChild(footer);
     });
 })();
 </head>
@@ -595,7 +573,7 @@
             <div id="loginError" style="display: none;" class="login-error"></div>
             
             <div style="margin-top: 20px; font-size: 12px; color: #666;">
-                <p>Versión 3.0 - SharePoint Integrado</p>
+                <p>Versión 3.1 - SharePoint Integrado</p>
             </div>
         </div>
     </div>
@@ -609,7 +587,7 @@
 
         <header class="header">
             <h1>Tower Provider Report</h1>
-            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 3.0 - SharePoint Auth</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 3.1 - SharePoint Auth</div>
         </header>
 
         <div class="step-indicator">
@@ -632,7 +610,7 @@
                         Limpiar datos
                     </button>
                 </div>
-                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v3.0 SharePoint</div>
+                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v3.1 SharePoint</div>
             </div>
             
             <div class="form-group">
@@ -915,7 +893,7 @@
             photos: {},
             measurements: {},
             metadata: {
-                appVersion: '3.0',
+                appVersion: '3.1',
                 deviceInfo: navigator.userAgent,
                 createdAt: new Date().toISOString()
             }
@@ -1938,7 +1916,7 @@
                 photos: {},
                 metadata: {
                     ...userInfo,
-                    appVersion: '3.0',
+                    appVersion: '3.1',
                     deviceInfo: navigator.userAgent,
                     createdAt: new Date().toISOString()
                 }
