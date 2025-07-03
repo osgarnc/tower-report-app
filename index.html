@@ -525,6 +525,55 @@
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+/*!
+ * Tower Provider Report Mobile Application v3.0
+ * Copyright (c) 2025 Newcomm Management Services Corp.
+ * 
+ * AVISO LEGAL: Este código es propiedad intelectual de Newcomm Management Services Corp.
+ * Cualquier uso no autorizado, copia, modificación o distribución está estrictamente prohibido
+ * y puede resultar en acciones legales.
+ * 
+ * Desarrollado por: Osvaldo García
+ * Para: Newcomm Management Services Corp.
+ * Contacto: accounting@newcomm2000.com
+ */
+
+(function() {
+    'use strict';
+    
+    // Protección de dominio
+    const AUTHORIZED_DOMAINS = ['newcomm2000.com', 'osgarnc.github.io', 'localhost'];
+    if (!AUTHORIZED_DOMAINS.some(d => window.location.hostname.includes(d))) {
+        alert('Esta aplicación solo puede ejecutarse desde dominios autorizados de Newcomm.');
+        window.location.href = 'https://newcomm2000.com';
+        return;
+    }
+    
+    // Marca de agua en consola
+    console.log('%c⚠️ TOWER REPORT APP - CÓDIGO PROPIETARIO', 
+                'color: red; font-size: 20px; font-weight: bold; background: yellow; padding: 10px;');
+    console.log('%c© 2024 Newcomm Management Services Corp. Todos los derechos reservados.', 
+                'color: #333; font-size: 12px;');
+    
+    // Desactivar clic derecho
+    document.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        alert('© 2024 Newcomm Management Services Corp.');
+        return false;
+    });
+    
+    // Desactivar teclas de depuración
+    document.addEventListener('keydown', (e) => {
+        // F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+        if (e.keyCode === 123 || 
+            (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
+            (e.ctrlKey && e.keyCode === 85)) {
+            e.preventDefault();
+            return false;
+        }
+    });
+})();
 </head>
 <body>
     <!-- Login Screen -->
