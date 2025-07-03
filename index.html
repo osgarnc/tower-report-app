@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0066cc">
+    <meta name="author" content="Newcomm Management Services Corp.">
+    <meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
+    <meta name="description" content="Tower Provider Report - Professional Mobile Application">
     <title>Tower Report Mobile - SharePoint Auth</title>
     
     <!-- MSAL.js desde CDN -->
@@ -512,6 +515,16 @@
             background-color: #2196f3;
         }
 
+        /* Copyright Footer */
+        .copyright-footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #999;
+            border-top: 1px solid #eee;
+            margin-top: 40px;
+        }
+
         /* Responsive */
         @media (max-width: 480px) {
             .header h1 {
@@ -525,33 +538,6 @@
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-// Protección elegante sin molestar al usuario
-(function() {
-    'use strict';
-    
-    // Solo registrar en consola (no alertas molestas)
-    const APP_SIGNATURE = {
-        name: 'Tower Provider Report',
-        version: '3.1',
-        copyright: '© 2025 Newcomm Management Services Corp.'
-    };
-    
-    // Verificar dominio silenciosamente
-    const allowedDomains = ['newcomm2000.com', 'osgarnc.github.io', 'localhost'];
-    if (!allowedDomains.some(d => location.hostname.includes(d))) {
-        console.warn('Dominio no autorizado');
-        // NO uses alert() - es muy molesto
-    }
-    
-    // Agregar copyright discreto al footer
-    window.addEventListener('load', () => {
-        const footer = document.createElement('div');
-        footer.style.cssText = 'text-align:center; font-size:11px; color:#999; padding:10px;';
-        footer.textContent = APP_SIGNATURE.copyright;
-        document.body.appendChild(footer);
-    });
-})();
 </head>
 <body>
     <!-- Login Screen -->
@@ -572,8 +558,8 @@
             
             <div id="loginError" style="display: none;" class="login-error"></div>
             
-            <div style="margin-top: 20px; font-size: 12px; color: #666;">
-                <p>Versión 3.1 - SharePoint Integrado</p>
+            <div style="margin-top: 30px; font-size: 11px; color: #999;">
+                <p>Version 3.0 • © 2025 Newcomm Management Services Corp.</p>
             </div>
         </div>
     </div>
@@ -587,7 +573,7 @@
 
         <header class="header">
             <h1>Tower Provider Report</h1>
-            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 3.1 - SharePoint Auth</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Professional Mobile Application</div>
         </header>
 
         <div class="step-indicator">
@@ -610,7 +596,6 @@
                         Limpiar datos
                     </button>
                 </div>
-                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v3.1 SharePoint</div>
             </div>
             
             <div class="form-group">
@@ -859,9 +844,24 @@
                 </button>
             </div>
         </div>
+
+        <!-- Copyright Footer -->
+        <div class="copyright-footer">
+            © 2025 Newcomm Management Services Corp. • All rights reserved
+        </div>
     </div>
 
     <script>
+        /*!
+         * Tower Provider Report v3.0
+         * © 2025 Newcomm Management Services Corp.
+         * Proprietary software - All rights reserved
+         */
+
+        // Elegant copyright notice
+        console.log('%cTower Report v3.0', 'color: #0066cc; font-size: 14px; font-weight: bold;');
+        console.log('© 2025 Newcomm Management Services Corp.');
+
         // MSAL Configuration
         const msalConfig = {
             auth: {
@@ -893,7 +893,7 @@
             photos: {},
             measurements: {},
             metadata: {
-                appVersion: '3.1',
+                appVersion: '3.0',
                 deviceInfo: navigator.userAgent,
                 createdAt: new Date().toISOString()
             }
@@ -1916,7 +1916,7 @@
                 photos: {},
                 metadata: {
                     ...userInfo,
-                    appVersion: '3.1',
+                    appVersion: '3.0',
                     deviceInfo: navigator.userAgent,
                     createdAt: new Date().toISOString()
                 }
@@ -2110,6 +2110,16 @@ Date: ${new Date().toLocaleString()}
         window.addEventListener('load', () => {
             initializeMsal();
         });
+
+        // Domain protection (elegant version)
+        (function() {
+            const allowedDomains = ['newcomm2000.com', 'osgarnc.github.io', 'localhost'];
+            const currentDomain = window.location.hostname;
+            
+            if (!allowedDomains.some(d => currentDomain.includes(d))) {
+                console.warn('Application running on unauthorized domain:', currentDomain);
+            }
+        })();
     </script>
 </body>
 </html>
