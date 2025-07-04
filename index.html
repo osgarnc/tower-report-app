@@ -7,7 +7,7 @@
     <meta name="author" content="Newcomm Management Services Corp.">
     <meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
     <meta name="description" content="Tower Provider Report - Professional Mobile Application">
-    <title>Tower Report Mobile - SharePoint Auth</title>
+    <title>Tower Report Mobile v3.2 - SharePoint Auth</title>
     
     <!-- MSAL.js desde CDN -->
     <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
@@ -559,7 +559,7 @@
             <div id="loginError" style="display: none;" class="login-error"></div>
             
             <div style="margin-top: 30px; font-size: 11px; color: #999;">
-                <p>Version 3.0 • © 2025 Newcomm Management Services Corp.</p>
+                <p>Version 3.2 • © 2025 Newcomm Management Services Corp.</p>
             </div>
         </div>
     </div>
@@ -573,7 +573,7 @@
 
         <header class="header">
             <h1>Tower Provider Report</h1>
-            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Professional Mobile Application</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Professional Mobile Application v3.2</div>
         </header>
 
         <div class="step-indicator">
@@ -847,20 +847,22 @@
 
         <!-- Copyright Footer -->
         <div class="copyright-footer">
-            © 2025 Newcomm Management Services Corp. • All rights reserved
+            © 2025 Newcomm Management Services Corp. • All rights reserved • v3.2
         </div>
     </div>
 
     <script>
         /*!
-         * Tower Provider Report v3.0
+         * Tower Provider Report v3.2
          * © 2025 Newcomm Management Services Corp.
          * Proprietary software - All rights reserved
+         * Fixed CSP issues with eval() and new Function()
          */
 
         // Elegant copyright notice
-        console.log('%cTower Report v3.0', 'color: #0066cc; font-size: 14px; font-weight: bold;');
+        console.log('%cTower Report v3.2', 'color: #0066cc; font-size: 14px; font-weight: bold;');
         console.log('© 2025 Newcomm Management Services Corp.');
+        console.log('CSP-compliant version');
 
         // MSAL Configuration
         const msalConfig = {
@@ -893,7 +895,7 @@
             photos: {},
             measurements: {},
             metadata: {
-                appVersion: '3.0',
+                appVersion: '3.2',
                 deviceInfo: navigator.userAgent,
                 createdAt: new Date().toISOString()
             }
@@ -1159,22 +1161,27 @@
         }
 
         function loadSavedData() {
-            const saved = localStorage.getItem('towerReport');
-            if (saved) {
-                reportData = JSON.parse(saved);
-                if (reportData.basic) {
-                    Object.keys(reportData.basic).forEach(key => {
-                        const element = document.getElementById(key);
-                        if (element && key !== 'submittedBy' && key !== 'submittedByEmail') {
-                            element.value = reportData.basic[key];
-                        }
-                    });
+            try {
+                const saved = localStorage.getItem('towerReport');
+                if (saved) {
+                    reportData = JSON.parse(saved);
+                    if (reportData.basic) {
+                        Object.keys(reportData.basic).forEach(key => {
+                            const element = document.getElementById(key);
+                            if (element && key !== 'submittedBy' && key !== 'submittedByEmail') {
+                                element.value = reportData.basic[key];
+                            }
+                        });
+                    }
+                    if (reportData.gps && reportData.gps.latitude) {
+                        showGPSStatus(true);
+                    }
+                    updateAppurtenanceList();
+                    updatePhotoCounts();
                 }
-                if (reportData.gps.latitude) {
-                    showGPSStatus(true);
-                }
-                updateAppurtenanceList();
-                updatePhotoCounts();
+            } catch (error) {
+                console.error('Error loading saved data:', error);
+                localStorage.removeItem('towerReport');
             }
         }
 
@@ -1916,7 +1923,7 @@
                 photos: {},
                 metadata: {
                     ...userInfo,
-                    appVersion: '3.0',
+                    appVersion: '3.2',
                     deviceInfo: navigator.userAgent,
                     createdAt: new Date().toISOString()
                 }
@@ -2055,6 +2062,7 @@ REPORT DETAILS:
 - Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 - Email: ${reportData.basic.submittedByEmail || 'N/A'}
 - Submission Time: ${new Date().toLocaleString()}
+- App Version: 3.2
 
 ---
 This report has been submitted to SharePoint.
