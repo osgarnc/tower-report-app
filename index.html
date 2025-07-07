@@ -853,16 +853,26 @@
     </div>
 
     <script>
-        // MSAL Configuration
+        // MSAL Configuration - Optimizado para móviles
         const msalConfig = {
             auth: {
                 clientId: '928a4b98-5894-4a97-b8b1-d8c489c22216',
                 authority: 'https://login.microsoftonline.com/93a307af-2b18-419b-82a4-da0d26ae31d0',
-                redirectUri: window.location.origin + window.location.pathname
+                redirectUri: window.location.origin + window.location.pathname,
+                navigateToLoginRequestUrl: false // Importante para móviles
             },
             cache: {
-                cacheLocation: 'sessionStorage',
-                storeAuthStateInCookie: false
+                cacheLocation: 'localStorage', // Cambiado a localStorage para persistencia
+                storeAuthStateInCookie: true    // Habilitado para mejor compatibilidad móvil
+            },
+            system: {
+                loggerOptions: {
+                    loggerCallback: (level, message, containsPii) => {
+                        if (containsPii) return;
+                        console.log(message);
+                    },
+                    logLevel: msal.LogLevel.Warning
+                }
             }
         };
 
@@ -871,7 +881,8 @@
 
         // Login request configuration
         const loginRequest = {
-            scopes: ['User.Read']
+            scopes: ['User.Read'],
+            prompt: 'select_account' // Fuerza selección de cuenta en móviles
         };
 
         // Global variables
@@ -905,21 +916,68 @@
             { id: 'beacon', name: 'Beacon Photos', required: 2, description: 'Beacon and label' }
         ];
 
-        // Initialize MSAL
+        // Initialize MSAL - Mejorado para móviles
         async function initializeMsal() {
             try {
+                // Esperar a que MSAL esté completamente inicializado
+                await msalInstance.initialize();
+                
+                // Manejar el redirect promise
                 const response = await msalInstance.handleRedirectPromise();
                 
                 if (response) {
+                    // Usuario viene de un redirect
                     currentAccount = response.account;
+                    // Guardar el estado de autenticación
+                    localStorage.setItem('isAuthenticated', 'true');
+                    localStorage.setItem('userAccount', JSON.stringify(currentAccount));
                     await getUserDetails();
                     showMainApp();
                 } else {
+                    // Verificar si hay cuentas en caché
                     const accounts = msalInstance.getAllAccounts();
                     if (accounts.length > 0) {
                         currentAccount = accounts[0];
-                        await getUserDetails();
-                        showMainApp();
+                        msalInstance.setActiveAccount(currentAccount);
+                        
+                        // Verificar si tenemos un token válido
+                        try {
+                            await msalInstance.acquireTokenSilent({
+                                ...loginRequest,
+                                account: currentAccount
+                            });
+                            await getUserDetails();
+                            showMainApp();
+                        } catch (error) {
+                            // Token expirado, necesita login
+                            console.log('Token expired, need to login again');
+                            localStorage.removeItem('isAuthenticated');
+                            localStorage.removeItem('userAccount');
+                        }
+                    } else {
+                        // Verificar localStorage para sesión persistente
+                        const savedAuth = localStorage.getItem('isAuthenticated');
+                        const savedAccount = localStorage.getItem('userAccount');
+                        
+                        if (savedAuth === 'true' && savedAccount) {
+                            try {
+                                currentAccount = JSON.parse(savedAccount);
+                                // Intentar obtener token silenciosamente
+                                const tokenResponse = await msalInstance.acquireTokenSilent({
+                                    ...loginRequest,
+                                    account: currentAccount,
+                                    forceRefresh: true
+                                });
+                                if (tokenResponse) {
+                                    await getUserDetails();
+                                    showMainApp();
+                                }
+                            } catch (error) {
+                                console.log('Silent token acquisition failed:', error);
+                                localStorage.removeItem('isAuthenticated');
+                                localStorage.removeItem('userAccount');
+                            }
+                        }
                     }
                 }
             } catch (error) {
@@ -928,21 +986,46 @@
             }
         }
 
-        // Sign in function
+        // Sign in function - Optimizado para móviles
         async function signIn() {
             try {
-                const response = await msalInstance.loginPopup(loginRequest);
-                currentAccount = response.account;
-                await getUserDetails();
-                showMainApp();
+                // Detectar si es móvil
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                
+                if (isMobile) {
+                    // En móviles, usar redirect en lugar de popup
+                    await msalInstance.loginRedirect(loginRequest);
+                } else {
+                    // En desktop, intentar popup primero
+                    try {
+                        const response = await msalInstance.loginPopup(loginRequest);
+                        currentAccount = response.account;
+                        msalInstance.setActiveAccount(currentAccount);
+                        
+                        // Guardar estado de autenticación
+                        localStorage.setItem('isAuthenticated', 'true');
+                        localStorage.setItem('userAccount', JSON.stringify(currentAccount));
+                        
+                        await getUserDetails();
+                        showMainApp();
+                    } catch (popupError) {
+                        console.error('Popup blocked, using redirect:', popupError);
+                        await msalInstance.loginRedirect(loginRequest);
+                    }
+                }
             } catch (error) {
-                console.error('Popup blocked, using redirect:', error);
-                await msalInstance.loginRedirect(loginRequest);
+                console.error('Login error:', error);
+                showLoginError('Error al iniciar sesión: ' + error.message);
             }
         }
 
-        // Sign out function
+        // Sign out function - Actualizado
         async function signOut() {
+            // Limpiar localStorage
+            localStorage.removeItem('isAuthenticated');
+            localStorage.removeItem('userAccount');
+            localStorage.removeItem('towerReport');
+            
             const logoutRequest = {
                 account: currentAccount,
                 postLogoutRedirectUri: window.location.origin + window.location.pathname
@@ -950,7 +1033,7 @@
             await msalInstance.logoutRedirect(logoutRequest);
         }
 
-        // Get user details
+        // Get user details - Mejorado con reintentos
         async function getUserDetails() {
             try {
                 const tokenResponse = await msalInstance.acquireTokenSilent({
@@ -971,10 +1054,27 @@
                     // Store user info for reports
                     reportData.metadata.submittedBy = userData.displayName || currentAccount.name;
                     reportData.metadata.submittedByEmail = userData.mail || userData.userPrincipalName || currentAccount.username;
+                    
+                    // Guardar información del usuario
+                    localStorage.setItem('userName', userData.displayName || currentAccount.name);
+                    localStorage.setItem('userEmail', userData.mail || userData.userPrincipalName || currentAccount.username);
                 }
             } catch (error) {
                 console.error('Error getting user details:', error);
-                document.getElementById('userDisplayName').textContent = currentAccount.name;
+                
+                // Usar información guardada si está disponible
+                const savedName = localStorage.getItem('userName');
+                const savedEmail = localStorage.getItem('userEmail');
+                
+                if (savedName) {
+                    document.getElementById('userDisplayName').textContent = savedName;
+                    reportData.metadata.submittedBy = savedName;
+                    reportData.metadata.submittedByEmail = savedEmail || currentAccount.username;
+                } else {
+                    document.getElementById('userDisplayName').textContent = currentAccount.name || 'Usuario';
+                    reportData.metadata.submittedBy = currentAccount.name || 'Usuario';
+                    reportData.metadata.submittedByEmail = currentAccount.username || 'unknown@email.com';
+                }
             }
         }
 
@@ -985,10 +1085,27 @@
             errorDiv.style.display = 'block';
         }
 
-        // Show main app
+        // Show main app - Con verificación adicional
         function showMainApp() {
+            console.log('Showing main app for user:', currentAccount?.name);
+            
+            // Asegurar que tenemos una cuenta válida
+            if (!currentAccount) {
+                console.error('No current account found');
+                location.reload();
+                return;
+            }
+            
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
+            
+            // Prevenir el botón de retroceso en móviles
+            if (window.history && window.history.pushState) {
+                window.history.pushState(null, null, window.location.href);
+                window.onpopstate = function () {
+                    window.history.pushState(null, null, window.location.href);
+                };
+            }
             
             // Initialize app
             document.getElementById('completionDate').value = new Date().toISOString().split('T')[0];
@@ -996,6 +1113,9 @@
             loadSavedData();
             updateStorageIndicator();
             optimizeStorage();
+            
+            // Guardar estado de la aplicación
+            sessionStorage.setItem('appState', 'mainApp');
         }
 
         // Navigation functions
@@ -2097,9 +2217,51 @@ Date: ${new Date().toLocaleString()}
             }, 3000);
         }
 
-        // Initialize on page load
-        window.addEventListener('load', () => {
-            initializeMsal();
+        // Initialize on page load - Mejorado para móviles
+        window.addEventListener('load', async () => {
+            console.log('Page loaded, initializing MSAL...');
+            
+            // Verificar si ya estábamos en la app principal
+            const appState = sessionStorage.getItem('appState');
+            if (appState === 'mainApp') {
+                // Intentar restaurar la sesión
+                const savedAccount = localStorage.getItem('userAccount');
+                if (savedAccount) {
+                    try {
+                        currentAccount = JSON.parse(savedAccount);
+                        await getUserDetails();
+                        showMainApp();
+                        return;
+                    } catch (e) {
+                        console.error('Error restoring session:', e);
+                    }
+                }
+            }
+            
+            await initializeMsal();
+        });
+        
+        // Manejar eventos de visibilidad de página (importante para móviles)
+        document.addEventListener('visibilitychange', async () => {
+            if (!document.hidden && currentAccount) {
+                // La página volvió a ser visible, verificar token
+                try {
+                    await msalInstance.acquireTokenSilent({
+                        ...loginRequest,
+                        account: currentAccount
+                    });
+                } catch (error) {
+                    console.log('Token refresh needed');
+                }
+            }
+        });
+        
+        // Prevenir que la app se cierre accidentalmente
+        window.addEventListener('beforeunload', (e) => {
+            if (currentStep > 1 && Object.keys(reportData.basic).length > 0) {
+                e.preventDefault();
+                e.returnValue = '¿Estás seguro de que quieres salir? Los datos no guardados se perderán.';
+            }
         });
     </script>
 </body>
