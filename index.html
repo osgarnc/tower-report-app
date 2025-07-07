@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://alcdn.msauth.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://login.microsoftonline.com https://graph.microsoft.com https://prod-19.westus.logic.azure.com;">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0066cc">
     <meta name="author" content="Newcomm Management Services Corp.">
     <meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
     <meta name="description" content="Tower Provider Report - Professional Mobile Application">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://alcdn.msauth.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://login.microsoftonline.com https://graph.microsoft.com https://prod-19.westus.logic.azure.com;">
-    <title>Tower Report Mobile v3.7 - SharePoint Auth</title>
+    <title>Tower Report Mobile v3.2 - SharePoint Auth</title>
     
     <!-- MSAL.js desde CDN -->
     <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
@@ -340,31 +338,6 @@
             color: #666;
         }
 
-        /* Appurtenance Requirements Alert */
-        .appurtenance-requirements {
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .appurtenance-requirements.complete {
-            background-color: #d4edda;
-            border-color: #c3e6cb;
-            color: #155724;
-        }
-
-        .appurtenance-requirements.error {
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
-            color: #721c24;
-        }
-
         /* Photo Section */
         .photo-requirements {
             background-color: #e3f2fd;
@@ -573,7 +546,7 @@
             <h2 class="login-title">Tower Provider Report</h2>
             <p class="login-subtitle">Inicie sesión con su cuenta de Microsoft 365</p>
             
-            <button class="login-btn" id="signInButton">
+            <button class="login-btn" onclick="signIn()">
                 <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <rect x="1" y="1" width="9" height="9" fill="#F25022"/>
                     <rect x="11" y="1" width="9" height="9" fill="#7FBA00"/>
@@ -586,7 +559,7 @@
             <div id="loginError" style="display: none;" class="login-error"></div>
             
             <div style="margin-top: 20px; font-size: 12px; color: #666;">
-                <p>Versión 3.7 - SharePoint Integrado</p>
+                <p>Versión 3.2 - SharePoint Integrado</p>
             </div>
         </div>
     </div>
@@ -600,7 +573,7 @@
 
         <header class="header">
             <h1>Tower Provider Report</h1>
-            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 3.7 - SharePoint Auth</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 3.2 - SharePoint Auth</div>
         </header>
 
         <div class="step-indicator">
@@ -623,7 +596,7 @@
                         Limpiar datos
                     </button>
                 </div>
-                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v3.7 SharePoint</div>
+                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v3.2 SharePoint</div>
             </div>
             
             <div class="form-group">
@@ -648,12 +621,12 @@
 
             <div class="form-group">
                 <label>Radios Installed <span class="required">*</span></label>
-                <input type="number" id="radiosInstalled" min="0" placeholder="3" required onchange="updateAppurtenanceRequirements()">
+                <input type="number" id="radiosInstalled" min="0" placeholder="3" required>
             </div>
 
             <div class="form-group">
                 <label>Antennas Installed <span class="required">*</span></label>
-                <input type="number" id="antennasInstalled" min="0" placeholder="6" required onchange="updateAppurtenanceRequirements()">
+                <input type="number" id="antennasInstalled" min="0" placeholder="6" required>
             </div>
 
             <div class="form-group">
@@ -727,23 +700,14 @@
         <div class="form-section" id="section2">
             <h2>Información de Equipos</h2>
             
-            <div id="appurtenanceRequirements" class="appurtenance-requirements">
-                <span style="font-size: 20px;">⚠️</span>
-                <div>
-                    <strong>Requisitos de Equipos:</strong><br>
-                    <span id="requirementsText">Debe agregar información para todos los equipos instalados</span>
-                </div>
-            </div>
-            
             <button class="btn btn-primary btn-block" onclick="showAppurtenanceForm()">
                 + Agregar Equipo
             </button>
 
             <div id="appurtenanceForm" style="display: none; margin-top: 20px;">
                 <div class="form-group">
-                    <label>Type <span class="required">*</span></label>
-                    <select id="appType" required>
-                        <option value="">Seleccione tipo</option>
+                    <label>Type</label>
+                    <select id="appType">
                         <option value="Antenna">Antenna</option>
                         <option value="RRU">RRU</option>
                         <option value="Cable">Cable</option>
@@ -752,23 +716,23 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Rad Center <span class="required">*</span></label>
-                    <input type="text" id="appRadCenter" placeholder="50" required>
+                    <label>Rad Center</label>
+                    <input type="text" id="appRadCenter" placeholder="50">
                 </div>
 
                 <div class="form-group">
-                    <label>Manufacturer <span class="required">*</span></label>
-                    <input type="text" id="appManufacturer" placeholder="ej: Ericsson" required>
+                    <label>Manufacturer</label>
+                    <input type="text" id="appManufacturer" placeholder="ej: Ericsson">
                 </div>
 
                 <div class="form-group">
-                    <label>Model <span class="required">*</span></label>
-                    <input type="text" id="appModel" placeholder="ej: 840590003" required>
+                    <label>Model</label>
+                    <input type="text" id="appModel" placeholder="ej: 840590003">
                 </div>
 
                 <div class="form-group">
-                    <label>Quantity <span class="required">*</span></label>
-                    <input type="number" id="appQuantity" min="1" value="1" required>
+                    <label>Quantity</label>
+                    <input type="number" id="appQuantity" min="1" value="1">
                 </div>
 
                 <div class="form-group">
@@ -884,7 +848,7 @@
 
         <!-- Copyright Footer -->
         <div class="copyright-footer">
-            © 2025 Newcomm Management Services Corp. • All rights reserved • v3.7
+            © 2025 Newcomm Management Services Corp. • All rights reserved • v3.2
         </div>
     </div>
 
@@ -931,7 +895,7 @@
             photos: {},
             measurements: {},
             metadata: {
-                appVersion: '3.7',
+                appVersion: '3.2',
                 deviceInfo: navigator.userAgent,
                 createdAt: new Date().toISOString()
             }
@@ -1149,45 +1113,9 @@
             loadSavedData();
             updateStorageIndicator();
             optimizeStorage();
-            updateAppurtenanceRequirements();
             
             // Guardar estado de la aplicación
             sessionStorage.setItem('appState', 'mainApp');
-        }
-
-        // Update appurtenance requirements
-        function updateAppurtenanceRequirements() {
-            const radios = parseInt(document.getElementById('radiosInstalled').value) || 0;
-            const antennas = parseInt(document.getElementById('antennasInstalled').value) || 0;
-            const totalRequired = radios + antennas;
-            
-            const antennaCount = reportData.appurtenances.filter(app => app.type === 'Antenna').length;
-            const rruCount = reportData.appurtenances.filter(app => app.type === 'RRU').length;
-            const totalCount = antennaCount + rruCount;
-            
-            const requirementsDiv = document.getElementById('appurtenanceRequirements');
-            const requirementsText = document.getElementById('requirementsText');
-            
-            if (totalRequired === 0) {
-                requirementsText.innerHTML = 'Por favor, ingrese la cantidad de radios y antenas instalados en el paso anterior.';
-                requirementsDiv.className = 'appurtenance-requirements error';
-            } else if (antennaCount < antennas || rruCount < radios) {
-                requirementsText.innerHTML = `
-                    <strong>Faltan equipos por agregar:</strong><br>
-                    Antenas: ${antennaCount} de ${antennas} agregadas<br>
-                    RRUs/Radios: ${rruCount} de ${radios} agregados<br>
-                    <span style="color: #dc3545;">Debe agregar toda la información de equipos antes de continuar.</span>
-                `;
-                requirementsDiv.className = 'appurtenance-requirements error';
-            } else {
-                requirementsText.innerHTML = `
-                    <strong>✓ Requisitos completados:</strong><br>
-                    Antenas: ${antennaCount} de ${antennas}<br>
-                    RRUs/Radios: ${rruCount} de ${radios}<br>
-                    Total: ${totalCount} equipos agregados
-                `;
-                requirementsDiv.className = 'appurtenance-requirements complete';
-            }
         }
 
         // Navigation functions
@@ -1255,23 +1183,10 @@
                     return true;
                     
                 case 2:
-                    // Validar que se hayan agregado todos los appurtenances requeridos
-                    const radios = parseInt(document.getElementById('radiosInstalled').value) || 0;
-                    const antennas = parseInt(document.getElementById('antennasInstalled').value) || 0;
-                    
-                    const antennaCount = reportData.appurtenances.filter(app => app.type === 'Antenna').length;
-                    const rruCount = reportData.appurtenances.filter(app => app.type === 'RRU').length;
-                    
-                    if (antennaCount < antennas) {
-                        showNotification(`Debe agregar información para las ${antennas} antenas instaladas. Solo ha agregado ${antennaCount}.`, 'error');
+                    if (reportData.appurtenances.length === 0) {
+                        showNotification('Por favor agregue al menos un equipo', 'error');
                         return false;
                     }
-                    
-                    if (rruCount < radios) {
-                        showNotification(`Debe agregar información para los ${radios} radios/RRUs instalados. Solo ha agregado ${rruCount}.`, 'error');
-                        return false;
-                    }
-                    
                     return true;
                     
                 case 3:
@@ -1371,7 +1286,6 @@
                 }
                 updateAppurtenanceList();
                 updatePhotoCounts();
-                updateAppurtenanceRequirements();
             }
         }
 
@@ -1627,7 +1541,6 @@
         // Appurtenance Functions
         function showAppurtenanceForm() {
             document.getElementById('appurtenanceForm').style.display = 'block';
-            document.getElementById('appType').focus();
         }
 
         function cancelAppurtenance() {
@@ -1638,33 +1551,19 @@
         }
 
         function addAppurtenance() {
-            // Validar todos los campos requeridos
-            const type = document.getElementById('appType').value;
-            const radCenter = document.getElementById('appRadCenter').value;
-            const manufacturer = document.getElementById('appManufacturer').value;
-            const model = document.getElementById('appModel').value;
-            const quantity = document.getElementById('appQuantity').value;
-            
-            if (!type || !radCenter || !manufacturer || !model || !quantity) {
-                showNotification('Por favor complete todos los campos requeridos', 'error');
-                return;
-            }
-            
             const appurtenance = {
-                type: type,
-                radCenter: radCenter,
-                manufacturer: manufacturer,
-                model: model,
-                quantity: quantity,
+                type: document.getElementById('appType').value,
+                radCenter: document.getElementById('appRadCenter').value,
+                manufacturer: document.getElementById('appManufacturer').value,
+                model: document.getElementById('appModel').value,
+                quantity: document.getElementById('appQuantity').value,
                 coaxSize: document.getElementById('appCoaxSize').value
             };
             
             reportData.appurtenances.push(appurtenance);
             updateAppurtenanceList();
-            updateAppurtenanceRequirements();
             cancelAppurtenance();
             saveCurrentStep();
-            showNotification('Equipo agregado correctamente', 'success');
         }
 
         function updateAppurtenanceList() {
@@ -1686,11 +1585,684 @@
         }
 
         function removeAppurtenance(index) {
-            if (confirm('¿Está seguro de eliminar este equipo?')) {
-                reportData.appurtenances.splice(index, 1);
-                updateAppurtenanceList();
-                updateAppurtenanceRequirements();
-                saveCurrentStep();
-                showNotification('Equipo eliminado', 'info');
+            reportData.appurtenances.splice(index, 1);
+            updateAppurtenanceList();
+            saveCurrentStep();
+        }
+
+        // Photo Functions
+        function generatePhotoGrid() {
+            const grid = document.getElementById('photoGrid');
+            grid.innerHTML = '';
+            
+            photoTypes.forEach(type => {
+                const photoItem = document.createElement('div');
+                photoItem.className = 'photo-item';
+                photoItem.innerHTML = `
+                    <h4>${type.name}</h4>
+                    <div class="photo-capture">
+                        <input type="file" 
+                               accept="image/*" 
+                               capture="environment" 
+                               multiple
+                               class="camera-input" 
+                               id="photo_${type.id}"
+                               onchange="handlePhotoCapture('${type.id}', this)">
+                        <label for="photo_${type.id}" class="camera-btn">
+                            📷 Tomar Foto (${type.required} requeridas)
+                        </label>
+                    </div>
+                    <div id="preview_${type.id}"></div>
+                    <div class="photo-count">
+                        <span id="count_${type.id}">0</span> de ${type.required} fotos
+                    </div>
+                    <div class="photo-status ${(reportData.photos[type.id] || []).length >= type.required ? 'complete' : 'pending'}" 
+                         id="status_${type.id}">
+                        ${(reportData.photos[type.id] || []).length >= type.required ? '✓ Completo' : '⏱ Pendiente'}
+                    </div>
+                `;
+                grid.appendChild(photoItem);
+            });
+            
+            updatePhotoCounts();
+        }
+
+        function handlePhotoCapture(typeId, input) {
+            const files = Array.from(input.files);
+            if (!reportData.photos[typeId]) {
+                reportData.photos[typeId] = [];
+            }
+            
+            files.forEach(file => {
+                const currentSize = checkStorageSpace();
+                if (parseFloat(currentSize) > 4.5) {
+                    showNotification('Almacenamiento casi lleno. Limpiando fotos antiguas...', 'info');
+                    clearOldReports();
+                }
+                
+                compressImage(file, 400, 0.5, (compressedDataUrl) => {
+                    try {
+                        reportData.photos[typeId].push({
+                            data: compressedDataUrl,
+                            timestamp: new Date().toISOString(),
+                            name: file.name
+                        });
+                        updatePhotoPreview(typeId);
+                        updatePhotoCounts();
+                        saveCurrentStep();
+                    } catch (error) {
+                        if (error.name === 'QuotaExceededError') {
+                            showNotification('Almacenamiento lleno. Use "Limpiar datos" primero.', 'error');
+                        }
+                    }
+                });
+            });
+        }
+
+        function compressImage(file, maxWidth, quality, callback) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    const maxSize = 400;
+                    if (width > height) {
+                        if (width > maxSize) {
+                            height = (maxSize / width) * height;
+                            width = maxSize;
+                        }
+                    } else {
+                        if (height > maxSize) {
+                            width = (maxSize / height) * width;
+                            height = maxSize;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+                    callback(compressedDataUrl);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updatePhotoPreview(typeId) {
+            const previewDiv = document.getElementById(`preview_${typeId}`);
+            const photos = reportData.photos[typeId] || [];
+            
+            previewDiv.innerHTML = photos.map((photo, index) => `
+                <img src="${photo.data}" class="photo-preview" alt="Photo ${index + 1}" style="width: 100px; height: 100px; object-fit: cover; margin: 5px;">
+            `).join('');
+        }
+
+        function updatePhotoCounts() {
+            photoTypes.forEach(type => {
+                const photos = reportData.photos[type.id] || [];
+                const countSpan = document.getElementById(`count_${type.id}`);
+                const statusDiv = document.getElementById(`status_${type.id}`);
+                
+                if (countSpan) {
+                    countSpan.textContent = photos.length;
+                }
+                
+                if (statusDiv) {
+                    if (photos.length >= type.required) {
+                        statusDiv.className = 'photo-status complete';
+                        statusDiv.textContent = '✓ Completo';
+                    } else {
+                        statusDiv.className = 'photo-status pending';
+                        statusDiv.textContent = '⏱ Pendiente';
+                    }
+                }
+            });
+        }
+
+        function skipPhotoValidation() {
+            photoTypes.forEach(type => {
+                if (!reportData.photos[type.id]) {
+                    reportData.photos[type.id] = [];
+                }
+                reportData.photos[type.id].push({
+                    data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+                    timestamp: new Date().toISOString(),
+                    name: 'demo_photo.png'
+                });
+            });
+            
+            updatePhotoCounts();
+            saveCurrentStep();
+            showNotification('Fotos de demostración agregadas. Ahora puede continuar.', 'success');
+        }
+
+        // Review Functions
+        function updateReview() {
+            const siteReview = document.getElementById('siteReview');
+            siteReview.innerHTML = `
+                <div class="review-item">
+                    <span class="review-label">Site ID:</span>
+                    <span class="review-value">${reportData.basic.siteId || 'N/A'}</span>
+                </div>
+                <div class="review-item">
+                    <span class="review-label">Site Name:</span>
+                    <span class="review-value">${reportData.basic.siteName || 'N/A'}</span>
+                </div>
+                <div class="review-item">
+                    <span class="review-label">Team Leader:</span>
+                    <span class="review-value">${reportData.basic.teamLeader || 'N/A'}</span>
+                </div>
+                <div class="review-item">
+                    <span class="review-label">Submitted By:</span>
+                    <span class="review-value">${reportData.basic.submittedBy || 'N/A'}</span>
+                </div>
+                <div class="review-item">
+                    <span class="review-label">GPS Location:</span>
+                    <span class="review-value">${reportData.gps.latitude ? `${reportData.gps.latitude.toFixed(6)}, ${reportData.gps.longitude.toFixed(6)}` : 'N/A'}</span>
+                </div>
+            `;
+            
+            const equipmentReview = document.getElementById('equipmentReview');
+            equipmentReview.innerHTML = `
+                <div class="review-item">
+                    <span class="review-label">Radios:</span>
+                    <span class="review-value">${reportData.basic.radiosInstalled || 'N/A'}</span>
+                </div>
+                <div class="review-item">
+                    <span class="review-label">Antennas:</span>
+                    <span class="review-value">${reportData.basic.antennasInstalled || 'N/A'}</span>
+                </div>
+                <div class="review-item">
+                    <span class="review-label">Equipment Items:</span>
+                    <span class="review-value">${reportData.appurtenances.length} tipos</span>
+                </div>
+            `;
+            
+            const photoReview = document.getElementById('photoReview');
+            let totalPhotos = 0;
+            let completedTypes = 0;
+            
+            photoTypes.forEach(type => {
+                const photos = reportData.photos[type.id] || [];
+                totalPhotos += photos.length;
+                if (photos.length >= type.required) {
+                    completedTypes++;
+                }
+            });
+            
+            photoReview.innerHTML = `
+                <div class="review-item">
+                    <span class="review-label">Total de fotos:</span>
+                    <span class="review-value">${totalPhotos}</span>
+                </div>
+                <div class="review-item">
+                    <span class="review-label">Categorías completas:</span>
+                    <span class="review-value">${completedTypes} de ${photoTypes.length}</span>
+                </div>
+            `;
+        }
+
+        // Submit and SharePoint Functions
+        async function sendToSharePoint(reportData) {
+            const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
+            
+            const timestamp = Date.now();
+            const randomNum = Math.floor(Math.random() * 100000);
+            const uniqueReportID = `RPT-${timestamp}-${randomNum}`;
+            
+            const appurtenanceDataJSON = {
+                appurtenances: reportData.appurtenances || [],
+                measurements: reportData.measurements || {},
+                gpsDetails: {
+                    latitude: reportData.gps.latitude || 0,
+                    longitude: reportData.gps.longitude || 0,
+                    altitude: reportData.gps.altitude || 0,
+                    accuracy: reportData.gps.accuracy || 0,
+                    method: reportData.gps.manual ? 'manual' : 'auto'
+                },
+                metadata: reportData.metadata || {}
+            };
+            
+            const photoLinksJSON = {
+                totalPhotos: 0,
+                categories: {},
+                photoMetadata: {}
+            };
+            
+            Object.keys(reportData.photos).forEach(category => {
+                const photos = reportData.photos[category] || [];
+                photoLinksJSON.totalPhotos += photos.length;
+                photoLinksJSON.categories[category] = photos.length;
+                
+                photos.forEach((photo, index) => {
+                    const photoKey = `${category}_${index + 1}`;
+                    photoLinksJSON.photoMetadata[photoKey] = {
+                        timestamp: photo.timestamp,
+                        name: photo.name || photoKey,
+                        category: photoTypes.find(t => t.id === category)?.name || category
+                    };
+                });
+            });
+            
+            const dataToSend = {
+                Title: reportData.basic.teamLeader || 'Field Technician',
+                SubmittedBy: reportData.basic.submittedBy || 'Field Technician',
+                SubmittedByEmail: reportData.basic.submittedByEmail || 'unknown@email.com',
+                SubmissionTimestamp: new Date().toISOString(),
+                ReportID: uniqueReportID,
+                TowerProviderSiteID: reportData.basic.siteId || '',
+                TowerProviderSiteName: reportData.basic.siteName || '',
+                CustomerSiteID: reportData.basic.customerSiteId || '',
+                CustomerSiteName: reportData.basic.customerSiteName || '',
+                RadiosInstalled: parseInt(reportData.basic.radiosInstalled) || 0,
+                AntennasInstalled: parseInt(reportData.basic.antennasInstalled) || 0,
+                TeamLeader: reportData.basic.teamLeader || '',
+                TowerTopInstallation: reportData.basic.towerTop === 'yes',
+                CompletionDate: reportData.basic.completionDate || new Date().toISOString().split('T')[0],
+                TPTenant: reportData.basic.tpTenant || '',
+                Latitude: reportData.gps.latitude || 0,
+                Longitude: reportData.gps.longitude || 0,
+                AppurtenanceData: JSON.stringify(appurtenanceDataJSON),
+                PhotoLinks: JSON.stringify(photoLinksJSON),
+                ReportStatus: 'DraftSubmittedPDF'
+            };
+            
+            try {
+                const response = await fetch(POWER_AUTOMATE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(dataToSend)
+                });
+                
+                if (response.ok) {
+                    return true;
+                } else {
+                    console.error('Error response:', response.status, response.statusText);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Network/Connection error:', error);
+                return false;
             }
         }
+
+        async function submitReport() {
+            const submitBtn = event.target;
+            const statusDiv = document.getElementById('submitStatus');
+            
+            // Update submittedBy with current authenticated user
+            reportData.basic.submittedBy = reportData.metadata.submittedBy || 'Unknown User';
+            reportData.basic.submittedByEmail = reportData.metadata.submittedByEmail || 'unknown@email.com';
+            
+            submitBtn.disabled = true;
+            statusDiv.innerHTML = '<div class="spinner"></div><p>Enviando reporte a SharePoint...</p>';
+            
+            try {
+                const reportId = `RPT-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+                localStorage.setItem(reportId, JSON.stringify(reportData));
+                
+                const sentToSharePoint = await sendToSharePoint(reportData);
+                
+                if (sentToSharePoint) {
+                    statusDiv.innerHTML = `
+                        <div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: left;">
+                            <h3 style="color: #2e7d32;">✓ Reporte Enviado a SharePoint</h3>
+                            <p>ID: ${reportId}</p>
+                            <p>Enviado por: <strong>${reportData.basic.submittedBy}</strong></p>
+                            <p style="margin-top: 15px;">
+                                <strong>✓ Guardado localmente</strong><br>
+                                <strong>✓ Enviado a SharePoint</strong>
+                            </p>
+                            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                                <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
+                                    ➕ Crear Nuevo Reporte
+                                </button>
+                                <button class="btn btn-primary" onclick="sendDetailedEmail('${reportId}')" style="flex: 1;">
+                                    📧 Enviar Email Detallado
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `
+                        <div style="background: #fff3cd; padding: 20px; border-radius: 6px; text-align: left;">
+                            <h3 style="color: #856404;">⚠️ Guardado Solo Localmente</h3>
+                            <p>ID: ${reportId}</p>
+                            <p style="margin-top: 15px;">
+                                El reporte se guardó en el dispositivo pero no se pudo enviar a SharePoint.
+                            </p>
+                            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                                <button class="btn btn-primary" onclick="retrySharePoint('${reportId}')" style="flex: 1;">
+                                    🔄 Reintentar Envío
+                                </button>
+                                <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
+                                    ➕ Nuevo Reporte
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                submitBtn.disabled = false;
+                
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div style="background: #ffebee; padding: 20px; border-radius: 6px;">
+                        <h3 style="color: #c62828;">Error al guardar</h3>
+                        <p>${error.message}</p>
+                        <button class="btn btn-primary" onclick="location.reload()">
+                            Recargar Página
+                        </button>
+                    </div>
+                `;
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function retrySharePoint(reportId) {
+            const savedData = localStorage.getItem(reportId);
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                const statusDiv = document.getElementById('submitStatus');
+                
+                statusDiv.innerHTML = '<div class="spinner"></div><p>Reintentando envío...</p>';
+                
+                const sent = await sendToSharePoint(data);
+                
+                if (sent) {
+                    statusDiv.innerHTML = `
+                        <div style="background: #e8f5e9; padding: 20px; border-radius: 6px;">
+                            <h3 style="color: #2e7d32;">✓ Enviado Exitosamente</h3>
+                            <p>El reporte se envió a SharePoint.</p>
+                            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
+                                    ➕ Crear Nuevo Reporte
+                                </button>
+                                <button class="btn btn-primary" onclick="location.href='mailto:accounting@newcomm2000.com?subject=Tower Report ${reportId}'" style="flex: 1;">
+                                    📧 Enviar por Email
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `
+                        <div style="background: #ffebee; padding: 20px; border-radius: 6px;">
+                            <h3 style="color: #c62828;">Error al enviar</h3>
+                            <p>No se pudo conectar con SharePoint. Verifique su conexión.</p>
+                            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                <button class="btn btn-primary" onclick="retrySharePoint('${reportId}')" style="flex: 1;">
+                                    🔄 Reintentar
+                                </button>
+                                <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
+                                    ➕ Nuevo Reporte
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function startNewReport() {
+            // Mantener la información del usuario
+            const userInfo = {
+                submittedBy: reportData.metadata.submittedBy,
+                submittedByEmail: reportData.metadata.submittedByEmail
+            };
+            
+            reportData = {
+                basic: {},
+                gps: {},
+                appurtenances: [],
+                photos: {},
+                metadata: {
+                    ...userInfo,
+                    appVersion: '3.2',
+                    deviceInfo: navigator.userAgent,
+                    createdAt: new Date().toISOString()
+                }
+            };
+            
+            document.querySelectorAll('input, select, textarea').forEach(field => {
+                if (field.type === 'date') {
+                    field.value = new Date().toISOString().split('T')[0];
+                } else if (field.id === 'appQuantity') {
+                    field.value = '1';
+                } else {
+                    field.value = '';
+                }
+            });
+            
+            currentStep = 1;
+            showStep(1);
+            
+            document.getElementById('gpsStatus').innerHTML = '';
+            document.getElementById('appurtenanceList').innerHTML = '';
+            
+            generatePhotoGrid();
+            
+            showNotification('Nuevo reporte iniciado', 'success');
+        }
+
+        function showReportSummary() {
+            let totalPhotos = 0;
+            Object.values(reportData.photos).forEach(photoArray => {
+                if (Array.isArray(photoArray)) {
+                    totalPhotos += photoArray.length;
+                }
+            });
+
+            const summaryHTML = `
+                <div style="background: #f5f5f5; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                    <h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte</h3>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="color: #333;">Información del Sitio</h4>
+                        <p><strong>Site ID:</strong> ${reportData.basic.siteId || 'N/A'}</p>
+                        <p><strong>Site Name:</strong> ${reportData.basic.siteName || 'N/A'}</p>
+                        <p><strong>Team Leader:</strong> ${reportData.basic.teamLeader || 'N/A'}</p>
+                        <p><strong>Enviado por:</strong> ${reportData.metadata.submittedBy || 'N/A'}</p>
+                        <p><strong>Fecha:</strong> ${reportData.basic.completionDate || 'N/A'}</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="color: #333;">Equipos Instalados</h4>
+                        <p><strong>Radios:</strong> ${reportData.basic.radiosInstalled || 0}</p>
+                        <p><strong>Antenas:</strong> ${reportData.basic.antennasInstalled || 0}</p>
+                        <p><strong>Equipos registrados:</strong> ${reportData.appurtenances.length}</p>
+                    </div>
+                    
+                    ${reportData.measurements && (reportData.measurements.towerHeight || reportData.measurements.sector1TapeDrop) ? `
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="color: #333;">Mediciones</h4>
+                        ${reportData.measurements.towerHeight ? `<p><strong>Tower Height:</strong> ${reportData.measurements.towerHeight}</p>` : ''}
+                        ${reportData.measurements.sector1TapeDrop ? `<p><strong>Sector 1:</strong> ${reportData.measurements.sector1TapeDrop}</p>` : ''}
+                        ${reportData.measurements.sector2TapeDrop ? `<p><strong>Sector 2:</strong> ${reportData.measurements.sector2TapeDrop}</p>` : ''}
+                        ${reportData.measurements.sector3TapeDrop ? `<p><strong>Sector 3:</strong> ${reportData.measurements.sector3TapeDrop}</p>` : ''}
+                        ${reportData.measurements.tallestPoint ? `<p><strong>Tallest Point:</strong> ${reportData.measurements.tallestPoint}</p>` : ''}
+                    </div>
+                    ` : ''}
+                    
+                    <div>
+                        <h4 style="color: #333;">Documentación</h4>
+                        <p><strong>Total de fotos:</strong> ${totalPhotos}</p>
+                        <p><strong>GPS:</strong> ${reportData.gps.latitude ? '✓ Capturado' : '✗ No capturado'}</p>
+                    </div>
+                    
+                    <button class="btn btn-secondary" onclick="closeReportSummary()" style="margin-top: 15px;">
+                        Cerrar Resumen
+                    </button>
+                </div>
+            `;
+            
+            const statusDiv = document.getElementById('submitStatus');
+            statusDiv.innerHTML = summaryHTML;
+            showNotification('Resumen del reporte mostrado', 'info');
+        }
+
+        function closeReportSummary() {
+            document.getElementById('submitStatus').innerHTML = '';
+        }
+
+        function sendDetailedEmail(reportId) {
+            const emailSubject = `Tower Provider Report - ${reportData.basic.siteName || reportId}`;
+            
+            const emailBody = `
+TOWER PROVIDER REPORT
+=====================
+
+SITE INFORMATION:
+- Site ID: ${reportData.basic.siteId || 'N/A'}
+- Site Name: ${reportData.basic.siteName || 'N/A'}
+- Customer Site ID: ${reportData.basic.customerSiteId || 'N/A'}
+- Customer Site Name: ${reportData.basic.customerSiteName || 'N/A'}
+
+INSTALLATION DETAILS:
+- Radios Installed: ${reportData.basic.radiosInstalled || '0'}
+- Antennas Installed: ${reportData.basic.antennasInstalled || '0'}
+- Team Leader: ${reportData.basic.teamLeader || 'N/A'}
+- Tower Top Installation: ${reportData.basic.towerTop || 'N/A'}
+- Completion Date: ${reportData.basic.completionDate || 'N/A'}
+- TP Tenant: ${reportData.basic.tpTenant || 'N/A'}
+
+GPS LOCATION:
+- Latitude: ${reportData.gps.latitude || 'N/A'}
+- Longitude: ${reportData.gps.longitude || 'N/A'}
+- Accuracy: ${reportData.gps.accuracy ? `±${reportData.gps.accuracy.toFixed(1)}m` : 'N/A'}
+
+${reportData.measurements && (reportData.measurements.towerHeight || reportData.measurements.sector1TapeDrop) ? `
+MEASUREMENTS:
+- Tower Height: ${reportData.measurements.towerHeight || 'N/A'}
+- Sector 1 Tape Drop: ${reportData.measurements.sector1TapeDrop || 'N/A'}
+- Sector 2 Tape Drop: ${reportData.measurements.sector2TapeDrop || 'N/A'}
+- Sector 3 Tape Drop: ${reportData.measurements.sector3TapeDrop || 'N/A'}
+- Tallest Point: ${reportData.measurements.tallestPoint || 'N/A'}
+` : ''}
+
+EQUIPMENT INSTALLED (${reportData.appurtenances.length} items):
+${reportData.appurtenances.map((app, i) => 
+`${i + 1}. ${app.type} - ${app.manufacturer} ${app.model} (Qty: ${app.quantity})`
+).join('\n')}
+
+PHOTO DOCUMENTATION:
+- Total Photos: ${Object.values(reportData.photos).reduce((sum, arr) => sum + (arr ? arr.length : 0), 0)}
+${Object.entries(reportData.photos).map(([category, photos]) => {
+    const catName = photoTypes.find(t => t.id === category)?.name || category;
+    return `- ${catName}: ${photos ? photos.length : 0} photos`;
+}).join('\n')}
+
+REPORT DETAILS:
+- Report ID: ${reportId}
+- Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
+- Email: ${reportData.basic.submittedByEmail || 'N/A'}
+- Submission Time: ${new Date().toLocaleString()}
+
+---
+This report has been submitted to SharePoint.
+For the complete PDF report with all photos, please check SharePoint or request it from the system administrator.
+
+Newcomm Management Services Corp.
+PO Box 4116, Vega Baja PR 00694
+Phone: 787-718-2600
+            `.trim();
+            
+            const encodedBody = encodeURIComponent(emailBody);
+            
+            const mailtoLink = `mailto:accounting@newcomm2000.com?subject=${encodeURIComponent(emailSubject)}&body=${encodedBody}`;
+            
+            if (mailtoLink.length > 2000) {
+                const shortBody = `
+Tower Provider Report - ${reportData.basic.siteName || 'N/A'}
+Site ID: ${reportData.basic.siteId || 'N/A'}
+Report ID: ${reportId}
+Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
+
+Please check SharePoint for the complete report with all details and photos.
+
+Date: ${new Date().toLocaleString()}
+                `.trim();
+                
+                window.location.href = `mailto:accounting@newcomm2000.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(shortBody)}`;
+                showNotification('Email abierto con resumen corto (límite de caracteres)', 'info');
+            } else {
+                window.location.href = mailtoLink;
+                showNotification('Email abierto con todos los detalles', 'success');
+            }
+        }
+
+        // Notification function
+        function showNotification(message, type = 'info') {
+            const existing = document.querySelector('.notification');
+            if (existing) {
+                existing.remove();
+            }
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Initialize on page load - Mejorado para móviles
+        window.addEventListener('load', async () => {
+            console.log('Page loaded, initializing MSAL...');
+            
+            // Verificar si ya estábamos en la app principal
+            const appState = sessionStorage.getItem('appState');
+            if (appState === 'mainApp') {
+                // Intentar restaurar la sesión
+                const savedAccount = localStorage.getItem('userAccount');
+                if (savedAccount) {
+                    try {
+                        currentAccount = JSON.parse(savedAccount);
+                        await getUserDetails();
+                        showMainApp();
+                        return;
+                    } catch (e) {
+                        console.error('Error restoring session:', e);
+                    }
+                }
+            }
+            
+            await initializeMsal();
+        });
+        
+        // Manejar eventos de visibilidad de página (importante para móviles)
+        document.addEventListener('visibilitychange', async () => {
+            if (!document.hidden && currentAccount) {
+                // La página volvió a ser visible, verificar token
+                try {
+                    await msalInstance.acquireTokenSilent({
+                        ...loginRequest,
+                        account: currentAccount
+                    });
+                } catch (error) {
+                    console.log('Token refresh needed');
+                }
+            }
+        });
+        
+        // Prevenir que la app se cierre accidentalmente
+        window.addEventListener('beforeunload', (e) => {
+            if (currentStep > 1 && Object.keys(reportData.basic).length > 0) {
+                e.preventDefault();
+                e.returnValue = '¿Estás seguro de que quieres salir? Los datos no guardados se perderán.';
+            }
+        });
+    </script>
+</body>
+</html>
