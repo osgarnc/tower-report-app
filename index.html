@@ -7,7 +7,7 @@
     <meta name="author" content="Newcomm Management Services Corp.">
     <meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
     <meta name="description" content="Tower Provider Report - Professional Mobile Application">
-    <title>Tower Report Mobile v3.2 - SharePoint Auth</title>
+    <title>Tower Report Mobile v4.0 - SharePoint Auth</title>
     
     <!-- MSAL.js desde CDN -->
     <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
@@ -312,6 +312,11 @@
             color: #c62828;
         }
 
+        .gps-status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
         /* Appurtenance List */
         .appurtenance-list {
             margin-top: 20px;
@@ -559,7 +564,7 @@
             <div id="loginError" style="display: none;" class="login-error"></div>
             
             <div style="margin-top: 20px; font-size: 12px; color: #666;">
-                <p>Versión 3.2 - SharePoint Integrado</p>
+                <p>Versión 4.0 - SharePoint Integrado</p>
             </div>
         </div>
     </div>
@@ -573,7 +578,7 @@
 
         <header class="header">
             <h1>Tower Provider Report</h1>
-            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 3.2 - SharePoint Auth</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 4.0 - SharePoint Auth</div>
         </header>
 
         <div class="step-indicator">
@@ -596,7 +601,7 @@
                         Limpiar datos
                     </button>
                 </div>
-                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v3.2 SharePoint</div>
+                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v4.0 SharePoint</div>
             </div>
             
             <div class="form-group">
@@ -652,7 +657,12 @@
                 <input type="text" id="tpTenant" placeholder="ej: Liberty" required>
             </div>
 
-            <div class="form-group">
+            <!-- GPS Section - Now Required -->
+            <div style="background: #ffebee; padding: 15px; border-radius: 6px; margin-top: 20px; margin-bottom: 20px;">
+                <h3 style="color: #c62828; margin-bottom: 10px;">📍 Ubicación GPS (OBLIGATORIO)</h3>
+                <p style="font-size: 14px; color: #666; margin-bottom: 15px;">
+                    La ubicación GPS es <strong>obligatoria</strong> para continuar. Si el GPS automático falla, debe ingresar las coordenadas manualmente.
+                </p>
                 <button class="btn btn-success btn-block" onclick="getGPSLocation()">
                     📍 Obtener Ubicación GPS
                 </button>
@@ -848,7 +858,7 @@
 
         <!-- Copyright Footer -->
         <div class="copyright-footer">
-            © 2025 Newcomm Management Services Corp. • All rights reserved • v3.2
+            © 2025 Newcomm Management Services Corp. • All rights reserved • v4.0
         </div>
     </div>
 
@@ -895,7 +905,7 @@
             photos: {},
             measurements: {},
             metadata: {
-                appVersion: '3.2',
+                appVersion: '4.0',
                 deviceInfo: navigator.userAgent,
                 createdAt: new Date().toISOString()
             }
@@ -1159,7 +1169,7 @@
             window.scrollTo(0, 0);
         }
 
-        // Validation functions
+        // Validation functions - ACTUALIZADO PARA GPS OBLIGATORIO
         function validateCurrentStep() {
             switch(currentStep) {
                 case 1:
@@ -1173,12 +1183,18 @@
                             return false;
                         }
                     }
-                    if (!reportData.gps.latitude) {
-                        const confirmNoGPS = confirm('No has capturado la ubicación GPS. ¿Deseas continuar sin GPS o ingresarla manualmente?');
-                        if (!confirmNoGPS) {
+                    
+                    // GPS ES OBLIGATORIO - NO SE PUEDE CONTINUAR SIN GPS
+                    if (!reportData.gps.latitude || !reportData.gps.longitude) {
+                        showNotification('⚠️ DEBE capturar o ingresar las coordenadas GPS para continuar', 'error');
+                        // Mostrar opción manual si aún no está visible
+                        const statusDiv = document.getElementById('gpsStatus');
+                        if (!statusDiv.querySelector('#manualLat')) {
                             showManualGPS();
-                            return false;
                         }
+                        // Scroll hasta la sección de GPS
+                        document.getElementById('gpsStatus').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return false;
                     }
                     return true;
                     
@@ -1384,21 +1400,21 @@
             }
         }
 
-        // GPS Functions
+        // GPS Functions - ACTUALIZADO PARA SER OBLIGATORIO
         function getGPSLocation() {
             const statusDiv = document.getElementById('gpsStatus');
-            statusDiv.innerHTML = '<div class="spinner"></div><p>Obteniendo ubicación...</p>';
+            statusDiv.innerHTML = '<div class="spinner"></div><p>Obteniendo ubicación GPS...</p>';
             
             if (!navigator.geolocation) {
-                showGPSStatus(false, 'Geolocalización no soportada en este navegador');
-                showManualGPSOption();
+                showGPSStatus(false, 'Geolocalización no soportada. Use la opción manual.');
+                showManualGPS();
                 return;
             }
 
             const options = {
-                enableHighAccuracy: false,
-                timeout: 10000,
-                maximumAge: 600000
+                enableHighAccuracy: true,  // Cambiado a true para mayor precisión
+                timeout: 15000,           // Aumentado a 15 segundos
+                maximumAge: 0             // Sin caché para obtener ubicación actual
             };
             
             navigator.geolocation.getCurrentPosition(
@@ -1411,6 +1427,7 @@
                     };
                     showGPSStatus(true);
                     saveCurrentStep();
+                    showNotification('✓ GPS capturado exitosamente', 'success');
                 },
                 (error) => {
                     console.error('GPS Error:', error);
@@ -1418,74 +1435,62 @@
                     
                     switch(error.code) {
                         case 1:
-                            errorMessage = 'Permisos de ubicación denegados. Ve a Configuración > Safari > Ubicación y actívala.';
+                            errorMessage = 'Permisos de ubicación denegados. Active la ubicación en su dispositivo o use la opción manual.';
                             break;
                         case 2:
-                            errorMessage = 'Ubicación no disponible. Intenta en un área con mejor señal.';
+                            errorMessage = 'Ubicación no disponible. Intente en un área con mejor señal o use la opción manual.';
                             break;
                         case 3:
-                            errorMessage = 'Tiempo agotado obteniendo ubicación. Puedes intentar de nuevo o ingresar manualmente.';
+                            errorMessage = 'Tiempo agotado obteniendo ubicación. Use la opción manual para continuar.';
                             break;
                         default:
-                            errorMessage = `Error de ubicación: ${error.message || 'Desconocido'}`;
+                            errorMessage = `Error de ubicación: ${error.message || 'Desconocido'}. Use la opción manual.`;
                     }
                     
                     showGPSStatus(false, errorMessage);
-                    showManualGPSOption();
+                    // Mostrar automáticamente la opción manual cuando falla
+                    showManualGPS();
                 },
                 options
             );
         }
 
-        function showManualGPSOption() {
-            const statusDiv = document.getElementById('gpsStatus');
-            const existingButton = statusDiv.querySelector('button');
-            if (!existingButton) {
-                statusDiv.innerHTML += `
-                    <div style="margin-top: 10px;">
-                        <button class="btn btn-secondary" onclick="showManualGPS()" style="font-size: 14px;">
-                            📍 Ingresar ubicación manualmente
-                        </button>
-                        <button class="btn btn-primary" onclick="getGPSLocation()" style="font-size: 14px; margin-left: 10px;">
-                            🔄 Reintentar GPS
-                        </button>
-                    </div>
-                `;
-            }
-        }
-
         function showManualGPS() {
             const statusDiv = document.getElementById('gpsStatus');
             statusDiv.innerHTML = `
-                <div style="background: #fff3cd; padding: 15px; border-radius: 6px;">
-                    <h4>Ubicación Manual</h4>
+                <div style="background: #fff3cd; padding: 15px; border-radius: 6px; margin-top: 10px;">
+                    <h4 style="color: #856404;">🗺️ Ingreso Manual de Coordenadas (OBLIGATORIO)</h4>
                     <p style="font-size: 12px; color: #666; margin-bottom: 10px;">
-                        Ingresa las coordenadas del sitio. Puedes obtenerlas de Google Maps.
+                        Ingrese las coordenadas del sitio. Puede obtenerlas de Google Maps manteniendo presionado un punto en el mapa.
                     </p>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0;">
                         <div>
-                            <label style="font-size: 12px;">Latitud</label>
-                            <input type="number" id="manualLat" placeholder="ej: 18.4671" step="any" style="padding: 8px; width: 100%;">
+                            <label style="font-size: 12px; color: #856404;">Latitud <span class="required">*</span></label>
+                            <input type="number" id="manualLat" placeholder="ej: 18.4671" step="any" style="padding: 8px; width: 100%;" required>
                         </div>
                         <div>
-                            <label style="font-size: 12px;">Longitud</label>
-                            <input type="number" id="manualLng" placeholder="ej: -66.1185" step="any" style="padding: 8px; width: 100%;">
+                            <label style="font-size: 12px; color: #856404;">Longitud <span class="required">*</span></label>
+                            <input type="number" id="manualLng" placeholder="ej: -66.1185" step="any" style="padding: 8px; width: 100%;" required>
                         </div>
                     </div>
                     <div style="display: flex; gap: 10px;">
                         <button class="btn btn-success" onclick="saveManualGPS()" style="font-size: 14px;">
-                            ✓ Guardar Ubicación
+                            ✓ Guardar Coordenadas
                         </button>
-                        <button class="btn btn-secondary" onclick="getGPSLocation()" style="font-size: 14px;">
-                            🔄 Reintentar GPS
+                        <button class="btn btn-primary" onclick="getGPSLocation()" style="font-size: 14px;">
+                            🔄 Reintentar GPS Auto
                         </button>
                     </div>
-                    <p style="font-size: 11px; color: #666; margin-top: 10px;">
-                        <strong>Tip:</strong> En Google Maps, mantén presionado un punto y copia las coordenadas.
-                    </p>
+                    <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin-top: 10px;">
+                        <p style="font-size: 11px; color: #1565c0; margin: 0;">
+                            <strong>Consejo:</strong> En Google Maps (móvil), mantenga presionado el sitio de la torre, 
+                            luego toque las coordenadas que aparecen arriba para copiarlas.
+                        </p>
+                    </div>
                 </div>
             `;
             
+            // Focus en el primer campo
             setTimeout(() => {
                 const latInput = document.getElementById('manualLat');
                 if (latInput) latInput.focus();
@@ -1497,18 +1502,37 @@
             const lng = document.getElementById('manualLng').value;
             
             if (!lat || !lng) {
-                showNotification('Por favor ingresa latitud y longitud', 'error');
+                showNotification('⚠️ Debe ingresar tanto latitud como longitud', 'error');
                 return;
             }
             
-            if (Math.abs(lat) > 90 || Math.abs(lng) > 180) {
-                showNotification('Coordenadas inválidas. Verifica los valores.', 'error');
+            const latNum = parseFloat(lat);
+            const lngNum = parseFloat(lng);
+            
+            // Validación de rangos
+            if (Math.abs(latNum) > 90) {
+                showNotification('Latitud inválida. Debe estar entre -90 y 90', 'error');
+                document.getElementById('manualLat').focus();
                 return;
+            }
+            
+            if (Math.abs(lngNum) > 180) {
+                showNotification('Longitud inválida. Debe estar entre -180 y 180', 'error');
+                document.getElementById('manualLng').focus();
+                return;
+            }
+            
+            // Validación específica para Puerto Rico (aproximada)
+            if (latNum < 17.5 || latNum > 19 || lngNum < -68 || lngNum > -65) {
+                const confirmOutside = confirm('Las coordenadas parecen estar fuera de Puerto Rico. ¿Desea continuar?');
+                if (!confirmOutside) {
+                    return;
+                }
             }
             
             reportData.gps = {
-                latitude: parseFloat(lat),
-                longitude: parseFloat(lng),
+                latitude: latNum,
+                longitude: lngNum,
                 altitude: 0,
                 accuracy: 0,
                 manual: true
@@ -1516,7 +1540,7 @@
             
             showGPSStatus(true);
             saveCurrentStep();
-            showNotification('Ubicación manual guardada correctamente', 'success');
+            showNotification('✓ Coordenadas GPS guardadas correctamente', 'success');
         }
 
         function showGPSStatus(success, message = '') {
@@ -1527,12 +1551,16 @@
                     <div class="gps-status success">
                         ✓ GPS Capturado${isManual}: ${reportData.gps.latitude.toFixed(7)}, ${reportData.gps.longitude.toFixed(7)}
                         ${!reportData.gps.manual ? `<br>Precisión: ±${reportData.gps.accuracy.toFixed(1)}m` : ''}
+                        <br>
+                        <button class="btn btn-secondary" onclick="showManualGPS()" style="margin-top: 10px; font-size: 12px;">
+                            ✏️ Editar Coordenadas
+                        </button>
                     </div>
                 `;
             } else {
                 statusDiv.innerHTML = `
                     <div class="gps-status error">
-                        ✗ Error: ${message}
+                        ✗ ${message}
                     </div>
                 `;
             }
@@ -2027,7 +2055,7 @@
                 photos: {},
                 metadata: {
                     ...userInfo,
-                    appVersion: '3.2',
+                    appVersion: '4.0',
                     deviceInfo: navigator.userAgent,
                     createdAt: new Date().toISOString()
                 }
@@ -2093,10 +2121,17 @@
                     </div>
                     ` : ''}
                     
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="color: #333;">Ubicación GPS</h4>
+                        <p><strong>Latitud:</strong> ${reportData.gps.latitude ? reportData.gps.latitude.toFixed(7) : 'N/A'}</p>
+                        <p><strong>Longitud:</strong> ${reportData.gps.longitude ? reportData.gps.longitude.toFixed(7) : 'N/A'}</p>
+                        <p><strong>Método:</strong> ${reportData.gps.manual ? 'Manual' : 'Automático'}</p>
+                        ${!reportData.gps.manual && reportData.gps.accuracy ? `<p><strong>Precisión:</strong> ±${reportData.gps.accuracy.toFixed(1)}m</p>` : ''}
+                    </div>
+                    
                     <div>
                         <h4 style="color: #333;">Documentación</h4>
                         <p><strong>Total de fotos:</strong> ${totalPhotos}</p>
-                        <p><strong>GPS:</strong> ${reportData.gps.latitude ? '✓ Capturado' : '✗ No capturado'}</p>
                     </div>
                     
                     <button class="btn btn-secondary" onclick="closeReportSummary()" style="margin-top: 15px;">
@@ -2135,9 +2170,10 @@ INSTALLATION DETAILS:
 - Completion Date: ${reportData.basic.completionDate || 'N/A'}
 - TP Tenant: ${reportData.basic.tpTenant || 'N/A'}
 
-GPS LOCATION:
+GPS LOCATION (REQUIRED):
 - Latitude: ${reportData.gps.latitude || 'N/A'}
 - Longitude: ${reportData.gps.longitude || 'N/A'}
+- Method: ${reportData.gps.manual ? 'Manual Entry' : 'Automatic GPS'}
 - Accuracy: ${reportData.gps.accuracy ? `±${reportData.gps.accuracy.toFixed(1)}m` : 'N/A'}
 
 ${reportData.measurements && (reportData.measurements.towerHeight || reportData.measurements.sector1TapeDrop) ? `
@@ -2169,7 +2205,7 @@ REPORT DETAILS:
 
 ---
 This report has been submitted to SharePoint.
-For the complete PDF report with all photos, please check SharePoint or request it from the system administrator.
+GPS coordinates were ${reportData.gps.manual ? 'manually entered' : 'automatically captured'}.
 
 Newcomm Management Services Corp.
 PO Box 4116, Vega Baja PR 00694
@@ -2185,6 +2221,7 @@ Phone: 787-718-2600
 Tower Provider Report - ${reportData.basic.siteName || 'N/A'}
 Site ID: ${reportData.basic.siteId || 'N/A'}
 Report ID: ${reportId}
+GPS: ${reportData.gps.latitude || 'N/A'}, ${reportData.gps.longitude || 'N/A'}
 Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 
 Please check SharePoint for the complete report with all details and photos.
