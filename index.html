@@ -7,7 +7,7 @@
     <meta name="author" content="Newcomm Management Services Corp.">
     <meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
     <meta name="description" content="Tower Provider Report - Professional Mobile Application">
-    <title>Tower Report Mobile v3.2 - SharePoint Auth</title>
+    <title>Tower Report Mobile v3.3 - SharePoint Auth</title>
     
     <!-- MSAL.js desde CDN -->
     <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
@@ -559,7 +559,7 @@
             <div id="loginError" style="display: none;" class="login-error"></div>
             
             <div style="margin-top: 20px; font-size: 12px; color: #666;">
-                <p>Versión 3.2 - SharePoint Integrado</p>
+                <p>Versión 3.3 - SharePoint Integrado</p>
             </div>
         </div>
     </div>
@@ -573,7 +573,7 @@
 
         <header class="header">
             <h1>Tower Provider Report</h1>
-            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 3.2 - SharePoint Auth</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 3.3 - SharePoint Auth</div>
         </header>
 
         <div class="step-indicator">
@@ -596,7 +596,7 @@
                         Limpiar datos
                     </button>
                 </div>
-                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v3.2 SharePoint</div>
+                <div style="font-size: 11px; color: #666; margin-top: 5px;">App v3.3 SharePoint</div>
             </div>
             
             <div class="form-group">
@@ -848,7 +848,7 @@
 
         <!-- Copyright Footer -->
         <div class="copyright-footer">
-            © 2025 Newcomm Management Services Corp. • All rights reserved • v3.2
+            © 2025 Newcomm Management Services Corp. • All rights reserved • v3.3
         </div>
     </div>
 
@@ -895,7 +895,7 @@
             photos: {},
             measurements: {},
             metadata: {
-                appVersion: '3.2',
+                appVersion: '3.3',
                 deviceInfo: navigator.userAgent,
                 createdAt: new Date().toISOString()
             }
@@ -1810,91 +1810,105 @@
         }
 
         // Submit and SharePoint Functions
-        async function sendToSharePoint(reportData) {
-            const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
-            
-            const timestamp = Date.now();
-            const randomNum = Math.floor(Math.random() * 100000);
-            const uniqueReportID = `RPT-${timestamp}-${randomNum}`;
-            
-            const appurtenanceDataJSON = {
-                appurtenances: reportData.appurtenances || [],
-                measurements: reportData.measurements || {},
-                gpsDetails: {
-                    latitude: reportData.gps.latitude || 0,
-                    longitude: reportData.gps.longitude || 0,
-                    altitude: reportData.gps.altitude || 0,
-                    accuracy: reportData.gps.accuracy || 0,
-                    method: reportData.gps.manual ? 'manual' : 'auto'
-                },
-                metadata: reportData.metadata || {}
+async function sendToSharePoint(reportData) {
+    const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
+
+    const timestamp = Date.now();
+    const randomNum = Math.floor(Math.random() * 100000);
+    const uniqueReportID = `RPT-${timestamp}-${randomNum}`;
+
+    // Debug: Log the data we're about to send
+    console.log('Report Data Basic:', reportData.basic);
+    console.log('Site ID:', reportData.basic.siteId);
+    console.log('Site Name:', reportData.basic.siteName);
+
+    const appurtenanceDataJSON = {
+        appurtenances: reportData.appurtenances || [],
+        measurements: reportData.measurements || {},
+        gpsDetails: {
+            latitude: reportData.gps.latitude || 0,
+            longitude: reportData.gps.longitude || 0,
+            altitude: reportData.gps.altitude || 0,
+            accuracy: reportData.gps.accuracy || 0,
+            method: reportData.gps.manual ? 'manual' : 'auto'
+        },
+        metadata: reportData.metadata || {}
+    };
+
+    const photoLinksJSON = {
+        totalPhotos: 0,
+        categories: {},
+        photoMetadata: {}
+    };
+
+    Object.keys(reportData.photos).forEach(category => {
+        const photos = reportData.photos[category] || [];
+        photoLinksJSON.totalPhotos += photos.length;
+        photoLinksJSON.categories[category] = photos.length;
+
+        photos.forEach((photo, index) => {
+            const photoKey = `${category}_${index + 1}`;
+            photoLinksJSON.photoMetadata[photoKey] = {
+                timestamp: photo.timestamp,
+                name: photo.name || photoKey,
+                category: photoTypes.find(t => t.id === category)?.name || category
             };
-            
-            const photoLinksJSON = {
-                totalPhotos: 0,
-                categories: {},
-                photoMetadata: {}
-            };
-            
-            Object.keys(reportData.photos).forEach(category => {
-                const photos = reportData.photos[category] || [];
-                photoLinksJSON.totalPhotos += photos.length;
-                photoLinksJSON.categories[category] = photos.length;
-                
-                photos.forEach((photo, index) => {
-                    const photoKey = `${category}_${index + 1}`;
-                    photoLinksJSON.photoMetadata[photoKey] = {
-                        timestamp: photo.timestamp,
-                        name: photo.name || photoKey,
-                        category: photoTypes.find(t => t.id === category)?.name || category
-                    };
-                });
-            });
-            
-            const dataToSend = {
-                Title: reportData.basic.teamLeader || 'Field Technician',
-                SubmittedBy: reportData.basic.submittedBy || 'Field Technician',
-                SubmittedByEmail: reportData.basic.submittedByEmail || 'unknown@email.com',
-                SubmissionTimestamp: new Date().toISOString(),
-                ReportID: uniqueReportID,
-                TowerProviderSiteID: reportData.basic.siteId || '',
-                TowerProviderSiteName: reportData.basic.siteName || '',
-                CustomerSiteID: reportData.basic.customerSiteId || '',
-                CustomerSiteName: reportData.basic.customerSiteName || '',
-                RadiosInstalled: parseInt(reportData.basic.radiosInstalled) || 0,
-                AntennasInstalled: parseInt(reportData.basic.antennasInstalled) || 0,
-                TeamLeader: reportData.basic.teamLeader || '',
-                TowerTopInstallation: reportData.basic.towerTop === 'yes',
-                CompletionDate: reportData.basic.completionDate || new Date().toISOString().split('T')[0],
-                TPTenant: reportData.basic.tpTenant || '',
-                Latitude: reportData.gps.latitude || 0,
-                Longitude: reportData.gps.longitude || 0,
-                AppurtenanceData: JSON.stringify(appurtenanceDataJSON),
-                PhotoLinks: JSON.stringify(photoLinksJSON),
-                ReportStatus: 'DraftSubmittedPDF'
-            };
-            
-            try {
-                const response = await fetch(POWER_AUTOMATE_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(dataToSend)
-                });
-                
-                if (response.ok) {
-                    return true;
-                } else {
-                    console.error('Error response:', response.status, response.statusText);
-                    return false;
-                }
-            } catch (error) {
-                console.error('Network/Connection error:', error);
-                return false;
-            }
+        });
+    });
+
+    // Ensure we have the site information
+    const siteId = reportData.basic.siteId || document.getElementById('siteId').value || '';
+    const siteName = reportData.basic.siteName || document.getElementById('siteName').value || '';
+
+    const dataToSend = {
+        Title: reportData.basic.teamLeader || 'Field Technician',
+        SubmittedBy: reportData.basic.submittedBy || 'Field Technician',
+        SubmittedByEmail: reportData.basic.submittedByEmail || 'unknown@email.com',
+        SubmissionTimestamp: new Date().toISOString(),
+        ReportID: uniqueReportID,
+        TowerProviderSiteID: siteId,
+        TowerProviderSiteName: siteName,
+        CustomerSiteID: reportData.basic.customerSiteId || '',
+        CustomerSiteName: reportData.basic.customerSiteName || '',
+        RadiosInstalled: parseInt(reportData.basic.radiosInstalled) || 0,
+        AntennasInstalled: parseInt(reportData.basic.antennasInstalled) || 0,
+        TeamLeader: reportData.basic.teamLeader || '',
+        TowerTopInstallation: reportData.basic.towerTop === 'yes',
+        CompletionDate: reportData.basic.completionDate || new Date().toISOString().split('T')[0],
+        TPTenant: reportData.basic.tpTenant || '',
+        Latitude: reportData.gps.latitude || 0,
+        Longitude: reportData.gps.longitude || 0,
+        AppurtenanceData: JSON.stringify(appurtenanceDataJSON),
+        PhotoLinks: JSON.stringify(photoLinksJSON),
+        ReportStatus: 'DraftSubmittedPDF'
+    };
+
+    // Debug: Log what we're sending
+    console.log('Data being sent to SharePoint:', dataToSend);
+    console.log('AppurtenanceData content:', appurtenanceDataJSON);
+
+    try {
+        const response = await fetch(POWER_AUTOMATE_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(dataToSend)
+        });
+
+        if (response.ok) {
+            console.log('Data sent successfully to SharePoint');
+            return true;
+        } else {
+            console.error('Error response:', response.status, response.statusText);
+            return false;
         }
+    } catch (error) {
+        console.error('Network/Connection error:', error);
+        return false;
+    }
+}
 
         async function submitReport() {
             const submitBtn = event.target;
@@ -2027,7 +2041,7 @@
                 photos: {},
                 metadata: {
                     ...userInfo,
-                    appVersion: '3.2',
+                    appVersion: '3.3',
                     deviceInfo: navigator.userAgent,
                     createdAt: new Date().toISOString()
                 }
