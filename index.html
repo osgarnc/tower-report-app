@@ -7,7 +7,7 @@
 <meta name="author" content="Newcomm Management Services Corp.">
 <meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
 <meta name="description" content="Tower Provider Report - Professional Mobile Application">
-<title>Tower Report Mobile v7.0 - SharePoint Auth</title>
+<title>Tower Report Mobile v6.1 - SharePoint Auth</title>
 
 <!-- MSAL.js desde CDN -->
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
@@ -485,6 +485,21 @@ background-color: #ff9800;
 color: white;
 }
 
+/* Estilos para las secciones de sectores */
+.sector-photo-section {
+margin: 20px 0;
+padding: 15px;
+background-color: #f8f9fa;
+border-radius: 8px;
+border-left: 4px solid #0066cc;
+}
+
+.sector-photo-section h4 {
+color: #0066cc;
+margin-bottom: 15px;
+font-size: 18px;
+}
+
 /* Review Section */
 .review-section {
 background-color: #f5f5f5;
@@ -634,7 +649,7 @@ Iniciar sesión con Microsoft
 <div id="loginError" style="display: none;" class="login-error"></div>
 
 <div style="margin-top: 20px; font-size: 12px; color: #666;">
-<p>Versión 7.0 - Mediciones Obligatorias</p>
+<p>Versión 6.1 - Mediciones Obligatorias</p>
 </div>
 </div>
 </div>
@@ -648,7 +663,7 @@ Iniciar sesión con Microsoft
 
 <header class="header">
 <h1>Tower Provider Report</h1>
-<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 7.0 - SharePoint Auth</div>
+<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 6.1 - SharePoint Auth</div>
 </header>
 
 <div class="step-indicator">
@@ -671,7 +686,7 @@ Iniciar sesión con Microsoft
 Limpiar datos
 </button>
 </div>
-<div style="font-size: 11px; color: #666; margin-top: 5px;">App v7.0 SharePoint</div>
+<div style="font-size: 11px; color: #666; margin-top: 5px;">App v6.1 SharePoint</div>
 </div>
 
 <div class="form-group">
@@ -871,8 +886,9 @@ Siguiente →
 <div class="photo-requirements">
 <h3>📷 Fotos Requeridas</h3>
 <ul>
-<li>Las fotos requeridas se ajustan según la cantidad de sectores, antenas y radios</li>
-<li>Puede tomar múltiples fotos por categoría</li>
+<li>Las fotos se organizan por categorías y sectores</li>
+<li>Cada sector tiene su propia sección de fotos</li>
+<li>Puede tomar múltiples fotos por categoría si es necesario</li>
 <li>Las fotos se guardan automáticamente</li>
 </ul>
 <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px;">
@@ -961,7 +977,7 @@ Al enviar, se generará un PDF y se enviará automáticamente a accounting@newco
 
 <!-- Copyright Footer -->
 <div class="copyright-footer">
-© 2025 Newcomm Management Services Corp. • All rights reserved • v7.0
+© 2025 Newcomm Management Services Corp. • All rights reserved • v6.1
 </div>
 </div>
 
@@ -1008,7 +1024,7 @@ appurtenances: [],
 photos: {},
 measurements: {},
 metadata: {
-appVersion: '7.0',
+appVersion: '6.1',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -1085,23 +1101,46 @@ description: `All ${sectorsCount} sectors`
 });
 }
 
-// Sector post pictures - 4 fotos por sector
-if (sectorsCount > 0) {
+// Crear categorías individuales para cada sector - Post Pictures
+for (let i = 1; i <= sectorsCount; i++) {
 photoTypes.push({ 
-id: 'sector_posts', 
-name: 'Sector Post Pictures', 
-required: sectorsCount * 4, // 4 fotos por sector
-description: `${sectorsCount * 4} photos total (4 per sector: general view from behind, cables going back, sector view, tapedrop looking down)` 
+id: `sector_${i}_general_view`, 
+name: `Sector ${i} - General View from Behind`, 
+required: 1,
+description: `General view from behind of Sector ${i}`,
+sectorGroup: true,
+sectorNumber: i,
+photoType: 'general_view'
+});
+photoTypes.push({ 
+id: `sector_${i}_cables_back`, 
+name: `Sector ${i} - Cables Going Back`, 
+required: 1,
+description: `Cables going back for Sector ${i}`,
+sectorGroup: true,
+sectorNumber: i,
+photoType: 'cables_back'
+});
+photoTypes.push({ 
+id: `sector_${i}_sector_view`, 
+name: `Sector ${i} - Sector View`, 
+required: 1,
+description: `Sector view for Sector ${i}`,
+sectorGroup: true,
+sectorNumber: i,
+photoType: 'sector_view'
 });
 }
 
-// Tape measurements - 2 fotos por sector
-if (sectorsCount > 0) {
+// Crear categorías individuales para tape drop por sector
+for (let i = 1; i <= sectorsCount; i++) {
 photoTypes.push({ 
-id: 'tape_measurements', 
-name: 'Tape Drop Measurements', 
-required: sectorsCount * 2, // 2 fotos por sector
-description: `All tape drop measurement photos (${sectorsCount * 2} total)` 
+id: `sector_${i}_tapedrop`, 
+name: `Sector ${i} - Tape Drop Measurements`, 
+required: 2,
+description: `Tape drop measurement photos for Sector ${i} (2 photos required)`,
+tapeDropGroup: true,
+sectorNumber: i
 });
 }
 
@@ -1822,7 +1861,7 @@ photos: {},
 metadata: {
 submittedBy: reportData.metadata.submittedBy,
 submittedByEmail: reportData.metadata.submittedByEmail,
-appVersion: '7.0',
+appVersion: '6.1',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -2085,7 +2124,73 @@ if (photoTypes.length === 0) {
 updatePhotoTypes();
 }
 
+// Organizar fotos por grupos
+const generalPhotos = [];
+const sectorPhotos = {};
+const tapeDropPhotos = {};
+
 photoTypes.forEach(type => {
+if (type.sectorGroup) {
+if (!sectorPhotos[type.sectorNumber]) {
+sectorPhotos[type.sectorNumber] = [];
+}
+sectorPhotos[type.sectorNumber].push(type);
+} else if (type.tapeDropGroup) {
+tapeDropPhotos[type.sectorNumber] = type;
+} else {
+generalPhotos.push(type);
+}
+});
+
+// Crear sección de fotos generales
+const generalSection = document.createElement('div');
+generalSection.innerHTML = '<h3 style="color: #0066cc; margin: 20px 0 10px 0;">Fotos Generales</h3>';
+grid.appendChild(generalSection);
+
+generalPhotos.forEach(type => {
+const photoItem = createPhotoItem(type);
+grid.appendChild(photoItem);
+});
+
+// Crear sección de fotos por sector
+if (Object.keys(sectorPhotos).length > 0) {
+const sectorSection = document.createElement('div');
+sectorSection.innerHTML = '<h3 style="color: #0066cc; margin: 30px 0 10px 0;">Fotos de Sectores - Post Pictures</h3>';
+grid.appendChild(sectorSection);
+
+// Para cada sector
+Object.keys(sectorPhotos).sort((a, b) => parseInt(a) - parseInt(b)).forEach(sectorNum => {
+// Crear título del sector
+const sectorTitle = document.createElement('div');
+sectorTitle.innerHTML = `<h4 style="background: #e3f2fd; color: #1565c0; padding: 10px; margin: 20px 0 10px 0; border-radius: 6px;">Sector ${sectorNum}</h4>`;
+grid.appendChild(sectorTitle);
+
+// Agregar cada tipo de foto para este sector
+sectorPhotos[sectorNum].forEach(type => {
+const photoItem = createPhotoItem(type);
+grid.appendChild(photoItem);
+});
+});
+}
+
+// Crear sección de tape drop
+if (Object.keys(tapeDropPhotos).length > 0) {
+const tapeDropSection = document.createElement('div');
+tapeDropSection.innerHTML = '<h3 style="color: #0066cc; margin: 30px 0 10px 0;">Tape Drop Measurements</h3>';
+grid.appendChild(tapeDropSection);
+
+// Para cada sector
+Object.keys(tapeDropPhotos).sort((a, b) => parseInt(a) - parseInt(b)).forEach(sectorNum => {
+const type = tapeDropPhotos[sectorNum];
+const photoItem = createPhotoItem(type);
+grid.appendChild(photoItem);
+});
+}
+
+updatePhotoCounts();
+}
+
+function createPhotoItem(type) {
 const photoItem = document.createElement('div');
 photoItem.className = 'photo-item';
 photoItem.innerHTML = `
@@ -2100,7 +2205,7 @@ class="camera-input"
 id="photo_${type.id}"
 onchange="handlePhotoCapture('${type.id}', this)">
 <label for="photo_${type.id}" class="camera-btn">
-📷 Tomar Foto (${type.required} requeridas)
+📷 Tomar Foto (${type.required} ${type.required === 1 ? 'requerida' : 'requeridas'})
 </label>
 </div>
 <div id="preview_${type.id}"></div>
@@ -2112,10 +2217,7 @@ id="status_${type.id}">
 ${(reportData.photos[type.id] || []).length >= type.required ? '✓ Completo' : '⏱ Pendiente'}
 </div>
 `;
-grid.appendChild(photoItem);
-});
-
-updatePhotoCounts();
+return photoItem;
 }
 
 function handlePhotoCapture(typeId, input) {
@@ -2591,7 +2693,7 @@ photos: {},
 measurements: {},
 metadata: {
 ...userInfo,
-appVersion: '7.0',
+appVersion: '6.1',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -2686,7 +2788,7 @@ ${!reportData.gps.manual && reportData.gps.accuracy ? `<p><strong>Precisión:</s
 <div>
 <h4 style="color: #333;">Documentación</h4>
 <p><strong>Total de fotos:</strong> ${totalPhotos}</p>
-<p><strong>Versión del reporte:</strong> 7.0</p>
+<p><strong>Versión del reporte:</strong> 6.1</p>
 </div>
 
 <button class="btn btn-secondary" onclick="closeReportSummary()" style="margin-top: 15px;">
@@ -2711,10 +2813,10 @@ for (let i = 1; i <= sectorsCount; i++) {
 sectorMeasurements += `- Sector ${i} Tape Drop: ${reportData.measurements[`sector${i}TapeDrop`] || 'N/A'} (REQUIRED)\n`;
 }
 
-const emailSubject = `Tower Provider Report v7.0 - ${reportData.basic.siteName || reportId}`;
+const emailSubject = `Tower Provider Report v6.1 - ${reportData.basic.siteName || reportId}`;
 
 const emailBody = `
-TOWER PROVIDER REPORT v7.0
+TOWER PROVIDER REPORT v6.1
 ===========================
 
 SITE INFORMATION:
@@ -2761,7 +2863,7 @@ REPORT DETAILS:
 - Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 - Email: ${reportData.basic.submittedByEmail || 'N/A'}
 - Submission Time: ${new Date().toLocaleString()}
-- Report Version: 7.0
+- Report Version: 6.1
 
 ---
 This report has been submitted to SharePoint.
@@ -2779,7 +2881,7 @@ const mailtoLink = `mailto:accounting@newcomm2000.com?subject=${encodeURICompone
 
 if (mailtoLink.length > 2000) {
 const shortBody = `
-Tower Provider Report v7.0 - ${reportData.basic.siteName || 'N/A'}
+Tower Provider Report v6.1 - ${reportData.basic.siteName || 'N/A'}
 Site ID: ${reportData.basic.siteId || 'N/A'}
 Sectors: ${sectorsCount}
 Report ID: ${reportId}
