@@ -7,7 +7,7 @@
 <meta name="author" content="Newcomm Management Services Corp.">
 <meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
 <meta name="description" content="Tower Provider Report - Professional Mobile Application">
-<title>Tower Report Mobile v5.0 - SharePoint Auth</title>
+<title>Tower Report Mobile v4.2 - SharePoint Auth</title>
 
 <!-- MSAL.js desde CDN -->
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
@@ -615,7 +615,7 @@ Iniciar sesión con Microsoft
 <div id="loginError" style="display: none;" class="login-error"></div>
 
 <div style="margin-top: 20px; font-size: 12px; color: #666;">
-<p>Versión 5.0 - Validación de Equipos</p>
+<p>Versión 4.2 - Validación de Equipos</p>
 </div>
 </div>
 </div>
@@ -629,7 +629,7 @@ Iniciar sesión con Microsoft
 
 <header class="header">
 <h1>Tower Provider Report</h1>
-<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 5.0 - SharePoint Auth</div>
+<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 4.2 - SharePoint Auth</div>
 </header>
 
 <div class="step-indicator">
@@ -652,7 +652,7 @@ Iniciar sesión con Microsoft
 Limpiar datos
 </button>
 </div>
-<div style="font-size: 11px; color: #666; margin-top: 5px;">App v5.0 SharePoint</div>
+<div style="font-size: 11px; color: #666; margin-top: 5px;">App v4.2 SharePoint</div>
 </div>
 
 <div class="form-group">
@@ -686,6 +686,11 @@ Limpiar datos
 </div>
 
 <div class="form-group">
+<label>Cables Installed <span class="required">*</span></label>
+<input type="number" id="cablesInstalled" min="0" placeholder="12" required onchange="updateEquipmentRequirements()">
+</div>
+
+<div class="form-group">
 <label>Team Leader <span class="required">*</span></label>
 <input type="text" id="teamLeader" placeholder="ej: Christopher Rodriguez" required>
 </div>
@@ -701,11 +706,6 @@ Limpiar datos
 <div class="form-group">
 <label>Completion Date <span class="required">*</span></label>
 <input type="date" id="completionDate" required>
-</div>
-
-<div class="form-group">
-<label>TP Tenant <span class="required">*</span></label>
-<input type="text" id="tpTenant" placeholder="ej: Liberty" required>
 </div>
 
 <!-- GPS Section - Now Required -->
@@ -783,9 +783,7 @@ Siguiente →
 <select id="appType">
 <option value="Antenna">Antenna</option>
 <option value="Radio">Radio</option>
-<option value="RRU">RRU</option>
 <option value="Cable">Cable</option>
-<option value="Other">Other</option>
 </select>
 </div>
 
@@ -926,7 +924,7 @@ Al enviar, se generará un PDF y se enviará automáticamente a accounting@newco
 
 <!-- Copyright Footer -->
 <div class="copyright-footer">
-© 2025 Newcomm Management Services Corp. • All rights reserved • v5.0
+© 2025 Newcomm Management Services Corp. • All rights reserved • v4.2
 </div>
 </div>
 
@@ -973,7 +971,7 @@ appurtenances: [],
 photos: {},
 measurements: {},
 metadata: {
-appVersion: '5.0',
+appVersion: '4.2',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -1201,7 +1199,7 @@ sessionStorage.setItem('appState', 'mainApp');
 function updateEquipmentRequirements() {
 const radios = parseInt(document.getElementById('radiosInstalled').value) || 0;
 const antennas = parseInt(document.getElementById('antennasInstalled').value) || 0;
-
+const cables = parseInt(document.getElementById('cablesInstalled').value) || 0;
 
 updateEquipmentCounter();
 }
@@ -1210,15 +1208,14 @@ updateEquipmentCounter();
 function updateEquipmentCounter() {
 const radios = parseInt(document.getElementById('radiosInstalled').value) || 0;
 const antennas = parseInt(document.getElementById('antennasInstalled').value) || 0;
-
+const cables = parseInt(document.getElementById('cablesInstalled').value) || 0;
 
 const counterDiv = document.getElementById('equipmentCounter');
 
 // Count equipment by type
 const radioCount = reportData.appurtenances.filter(app => app.type === 'Radio').reduce((sum, app) => sum + parseInt(app.quantity), 0);
 const antennaCount = reportData.appurtenances.filter(app => app.type === 'Antenna').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-const rruCount = reportData.appurtenances.filter(app => app.type === 'RRU').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-
+const cableCount = reportData.appurtenances.filter(app => app.type === 'Cable').reduce((sum, app) => sum + parseInt(app.quantity), 0);
 
 counterDiv.innerHTML = `
 <div class="counter-item ${radioCount >= radios ? 'complete' : 'incomplete'}">
@@ -1229,9 +1226,9 @@ counterDiv.innerHTML = `
 <span>Antenas:</span>
 <span>${antennaCount} / ${antennas} ${antennaCount >= antennas ? '✓' : '⚠️'}</span>
 </div>
-<div class="counter-item">
-<span>RRUs:</span>
-<span>${rruCount}</span>
+<div class="counter-item ${cableCount >= cables ? 'complete' : 'incomplete'}">
+<span>Cables:</span>
+<span>${cableCount} / ${cables} ${cableCount >= cables ? '✓' : '⚠️'}</span>
 </div>
 `;
   
@@ -1239,13 +1236,16 @@ counterDiv.innerHTML = `
 const requirementsDiv = document.getElementById('equipmentRequirements');
 const requirementsList = document.getElementById('requirementsList');
   
-if (radios > 0 || antennas > 0) {
+if (radios > 0 || antennas > 0 || cables > 0) {
 const requirements = [];
 if (radioCount < radios) {
 requirements.push(`Debe agregar ${radios - radioCount} radio(s) más`);
 }
 if (antennaCount < antennas) {
 requirements.push(`Debe agregar ${antennas - antennaCount} antena(s) más`);
+}
+if (cableCount < cables) {
+requirements.push(`Debe agregar ${cables - cableCount} cable(s) más`);
 }
   
 if (requirements.length > 0) {
@@ -1305,7 +1305,7 @@ function validateCurrentStep() {
 switch(currentStep) {
 case 1:
 const requiredFields = ['siteId', 'siteName', 'customerSiteId', 'customerSiteName',
-'radiosInstalled', 'antennasInstalled', 'teamLeader', 'completionDate', 'tpTenant'];
+'radiosInstalled', 'antennasInstalled', 'cablesInstalled', 'teamLeader', 'completionDate'];
 for (let field of requiredFields) {
 if (!document.getElementById(field).value) {
 showNotification('Por favor complete todos los campos requeridos', 'error');
@@ -1334,12 +1334,14 @@ showNotification('Por favor agregue al menos un equipo', 'error');
 return false;
 }
   
-// Validar cantidades mínimas de radios y antenas
+// Validar cantidades mínimas de radios, antenas y cables
 const radiosNeeded = parseInt(document.getElementById('radiosInstalled').value) || 0;
 const antennasNeeded = parseInt(document.getElementById('antennasInstalled').value) || 0;
+const cablesNeeded = parseInt(document.getElementById('cablesInstalled').value) || 0;
   
 const radioCount = reportData.appurtenances.filter(app => app.type === 'Radio').reduce((sum, app) => sum + parseInt(app.quantity), 0);
 const antennaCount = reportData.appurtenances.filter(app => app.type === 'Antenna').reduce((sum, app) => sum + parseInt(app.quantity), 0);
+const cableCount = reportData.appurtenances.filter(app => app.type === 'Cable').reduce((sum, app) => sum + parseInt(app.quantity), 0);
   
 if (radioCount < radiosNeeded) {
 showNotification(`Debe agregar al menos ${radiosNeeded} radio(s). Actualmente tiene ${radioCount}`, 'error');
@@ -1348,6 +1350,11 @@ return false;
   
 if (antennaCount < antennasNeeded) {
 showNotification(`Debe agregar al menos ${antennasNeeded} antena(s). Actualmente tiene ${antennaCount}`, 'error');
+return false;
+}
+  
+if (cableCount < cablesNeeded) {
+showNotification(`Debe agregar al menos ${cablesNeeded} cable(s). Actualmente tiene ${cableCount}`, 'error');
 return false;
 }
   
@@ -1387,10 +1394,10 @@ customerSiteId: document.getElementById('customerSiteId').value,
 customerSiteName: document.getElementById('customerSiteName').value,
 radiosInstalled: document.getElementById('radiosInstalled').value,
 antennasInstalled: document.getElementById('antennasInstalled').value,
+cablesInstalled: document.getElementById('cablesInstalled').value,
 teamLeader: document.getElementById('teamLeader').value,
 towerTop: document.getElementById('towerTop').value,
 completionDate: document.getElementById('completionDate').value,
-tpTenant: document.getElementById('tpTenant').value,
 submittedBy: reportData.metadata.submittedBy || 'Unknown User',
 submittedByEmail: reportData.metadata.submittedByEmail || 'unknown@email.com',
 submissionTimestamp: new Date().toISOString(),
@@ -1549,7 +1556,7 @@ photos: {},
 metadata: {
 submittedBy: reportData.metadata.submittedBy,
 submittedByEmail: reportData.metadata.submittedByEmail,
-appVersion: '5.0',
+appVersion: '4.2',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -1992,6 +1999,10 @@ equipmentReview.innerHTML = `
 <span class="review-value">${reportData.basic.antennasInstalled || 'N/A'}</span>
 </div>
 <div class="review-item">
+<span class="review-label">Cables:</span>
+<span class="review-value">${reportData.basic.cablesInstalled || 'N/A'}</span>
+</div>
+<div class="review-item">
 <span class="review-label">Equipment Items:</span>
 <span class="review-value">${reportData.appurtenances.length} tipos</span>
 </div>
@@ -2076,10 +2087,10 @@ CustomerSiteID: reportData.basic.customerSiteId || '',
 CustomerSiteName: reportData.basic.customerSiteName || '',
 RadiosInstalled: parseInt(reportData.basic.radiosInstalled) || 0,
 AntennasInstalled: parseInt(reportData.basic.antennasInstalled) || 0,
+CablesInstalled: parseInt(reportData.basic.cablesInstalled) || 0,
 TeamLeader: reportData.basic.teamLeader || '',
 TowerTopInstallation: reportData.basic.towerTop === 'yes',
 CompletionDate: reportData.basic.completionDate || new Date().toISOString().split('T')[0],
-TPTenant: reportData.basic.tpTenant || '',
 Latitude: reportData.gps.latitude || 0,
 Longitude: reportData.gps.longitude || 0,
 AppurtenanceData: JSON.stringify(appurtenanceDataJSON),
@@ -2240,7 +2251,7 @@ appurtenances: [],
 photos: {},
 metadata: {
 ...userInfo,
-appVersion: '5.0',
+appVersion: '4.2',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -2295,6 +2306,7 @@ const summaryHTML = `
 <h4 style="color: #333;">Equipos Instalados</h4>
 <p><strong>Radios:</strong> ${reportData.basic.radiosInstalled || 0}</p>
 <p><strong>Antenas:</strong> ${reportData.basic.antennasInstalled || 0}</p>
+<p><strong>Cables:</strong> ${reportData.basic.cablesInstalled || 0}</p>
 <p><strong>Equipos registrados:</strong> ${reportData.appurtenances.length}</p>
 </div>
 
@@ -2353,10 +2365,10 @@ SITE INFORMATION:
 INSTALLATION DETAILS:
 - Radios Installed: ${reportData.basic.radiosInstalled || '0'}
 - Antennas Installed: ${reportData.basic.antennasInstalled || '0'}
+- Cables Installed: ${reportData.basic.cablesInstalled || '0'}
 - Team Leader: ${reportData.basic.teamLeader || 'N/A'}
 - Tower Top Installation: ${reportData.basic.towerTop || 'N/A'}
 - Completion Date: ${reportData.basic.completionDate || 'N/A'}
-- TP Tenant: ${reportData.basic.tpTenant || 'N/A'}
 
 GPS LOCATION (REQUIRED):
 - Latitude: ${reportData.gps.latitude || 'N/A'}
