@@ -7,7 +7,7 @@
 <meta name="author" content="Newcomm Management Services Corp.">
 <meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
 <meta name="description" content="Tower Provider Report - Professional Mobile Application">
-<title>Tower Report Mobile v4.2 - SharePoint Auth</title>
+<title>Tower Report Mobile v6.0 - SharePoint Auth</title>
 
 <!-- MSAL.js desde CDN -->
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
@@ -241,31 +241,6 @@ border-color: #0066cc;
 color: #f44336;
 }
 
-/* Equipment Requirements Notice */
-.equipment-requirements {
-background-color: #fff3cd;
-border: 1px solid #ffeaa7;
-color: #856404;
-padding: 15px;
-border-radius: 6px;
-margin-bottom: 20px;
-font-size: 14px;
-}
-
-.equipment-requirements h4 {
-margin-bottom: 10px;
-color: #856404;
-}
-
-.equipment-requirements ul {
-margin-left: 20px;
-margin-bottom: 0;
-}
-
-.equipment-requirements li {
-margin-bottom: 5px;
-}
-
 /* Buttons */
 .btn {
 padding: 12px 24px;
@@ -366,32 +341,6 @@ color: #0066cc;
 margin: 0;
 font-size: 14px;
 color: #666;
-}
-
-.equipment-counter {
-background-color: #e3f2fd;
-padding: 15px;
-border-radius: 6px;
-margin-bottom: 20px;
-}
-
-.equipment-counter h4 {
-color: #1565c0;
-margin-bottom: 10px;
-}
-
-.counter-item {
-display: flex;
-justify-content: space-between;
-padding: 5px 0;
-}
-
-.counter-item.complete {
-color: #2e7d32;
-}
-
-.counter-item.incomplete {
-color: #f44336;
 }
 
 /* Photo Section */
@@ -615,7 +564,7 @@ Iniciar sesión con Microsoft
 <div id="loginError" style="display: none;" class="login-error"></div>
 
 <div style="margin-top: 20px; font-size: 12px; color: #666;">
-<p>Versión 4.2 - Validación de Equipos</p>
+<p>Versión 6.0 - SharePoint Integrado</p>
 </div>
 </div>
 </div>
@@ -629,7 +578,7 @@ Iniciar sesión con Microsoft
 
 <header class="header">
 <h1>Tower Provider Report</h1>
-<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 4.2 - SharePoint Auth</div>
+<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 6.0 - SharePoint Auth</div>
 </header>
 
 <div class="step-indicator">
@@ -652,7 +601,7 @@ Iniciar sesión con Microsoft
 Limpiar datos
 </button>
 </div>
-<div style="font-size: 11px; color: #666; margin-top: 5px;">App v4.2 SharePoint</div>
+<div style="font-size: 11px; color: #666; margin-top: 5px;">App v6.0 SharePoint</div>
 </div>
 
 <div class="form-group">
@@ -677,17 +626,12 @@ Limpiar datos
 
 <div class="form-group">
 <label>Radios Installed <span class="required">*</span></label>
-<input type="number" id="radiosInstalled" min="0" placeholder="3" required onchange="updateEquipmentRequirements()">
+<input type="number" id="radiosInstalled" min="0" placeholder="3" required>
 </div>
 
 <div class="form-group">
 <label>Antennas Installed <span class="required">*</span></label>
-<input type="number" id="antennasInstalled" min="0" placeholder="6" required onchange="updateEquipmentRequirements()">
-</div>
-
-<div class="form-group">
-<label>Cables Installed <span class="required">*</span></label>
-<input type="number" id="cablesInstalled" min="0" placeholder="12" required onchange="updateEquipmentRequirements()">
+<input type="number" id="antennasInstalled" min="0" placeholder="6" required>
 </div>
 
 <div class="form-group">
@@ -697,15 +641,22 @@ Limpiar datos
 
 <div class="form-group">
 <label>Tower Top Installation <span class="required">*</span></label>
-<select id="towerTop" required>
-<option value="yes">Yes</option>
-<option value="no">No</option>
+<select id="towerTop" required onchange="updateMeasurementRequirements()">
+<option value="">Seleccione una opción</option>
+<option value="yes">Yes - At Tower Top</option>
+<option value="near-top">Near Top (Within 10' of top)</option>
+<option value="no">No - Below 10' from top</option>
 </select>
 </div>
 
 <div class="form-group">
 <label>Completion Date <span class="required">*</span></label>
 <input type="date" id="completionDate" required>
+</div>
+
+<div class="form-group">
+<label>TP Tenant <span class="required">*</span></label>
+<input type="text" id="tpTenant" placeholder="ej: Liberty" required>
 </div>
 
 <!-- GPS Section - Now Required -->
@@ -720,32 +671,36 @@ La ubicación GPS es <strong>obligatoria</strong> para continuar. Si el GPS auto
 <div id="gpsStatus"></div>
 </div>
 
-<!-- Nueva sección de mediciones -->
-<div style="background: #e3f2fd; padding: 15px; border-radius: 6px; margin-top: 20px;">
-<h3 style="color: #1565c0; margin-bottom: 15px;">📏 Mediciones de Torre (Opcional)</h3>
+<!-- Sección de mediciones actualizada -->
+<div style="background: #ffebee; padding: 15px; border-radius: 6px; margin-top: 20px;">
+<h3 style="color: #c62828; margin-bottom: 15px;">📏 Mediciones de Torre (OBLIGATORIO)</h3>
+<p style="font-size: 14px; color: #666; margin-bottom: 15px;">
+<strong>Tape Drop de Sectores:</strong> Siempre obligatorio para todos los sectores.<br>
+<strong>Tower Height y Tallest Point:</strong> <span id="heightRequirementText">Seleccione "Tower Top Installation" para ver requisitos</span>
+</p>
 
 <div class="form-group">
-<label>Tower Height (ft)</label>
+<label>Tower Height (ft) <span id="towerHeightRequired" style="display: none;" class="required">*</span></label>
 <input type="text" id="towerHeight" placeholder="ej: 38.220">
 </div>
 
 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
 <div class="form-group">
-<label>Sector 1 Tape Drop</label>
-<input type="text" id="sector1TapeDrop" placeholder="ej: 15.5 ft">
+<label>Sector 1 Tape Drop <span class="required">*</span></label>
+<input type="text" id="sector1TapeDrop" placeholder="ej: 15.5 ft" required>
 </div>
 <div class="form-group">
-<label>Sector 2 Tape Drop</label>
-<input type="text" id="sector2TapeDrop" placeholder="ej: 16.2 ft">
+<label>Sector 2 Tape Drop <span class="required">*</span></label>
+<input type="text" id="sector2TapeDrop" placeholder="ej: 16.2 ft" required>
 </div>
 <div class="form-group">
-<label>Sector 3 Tape Drop</label>
-<input type="text" id="sector3TapeDrop" placeholder="ej: 14.8 ft">
+<label>Sector 3 Tape Drop <span class="required">*</span></label>
+<input type="text" id="sector3TapeDrop" placeholder="ej: 14.8 ft" required>
 </div>
 </div>
 
 <div class="form-group">
-<label>Tallest Point Measurement (ft)</label>
+<label>Tallest Point Measurement (ft) <span id="tallestPointRequired" style="display: none;" class="required">*</span></label>
 <input type="text" id="tallestPoint" placeholder="ej: 15.570">
 </div>
 </div>
@@ -761,18 +716,6 @@ Siguiente →
 <div class="form-section" id="section2">
 <h2>Información de Equipos</h2>
 
-<!-- Equipment Requirements Alert -->
-<div class="equipment-requirements" id="equipmentRequirements" style="display: none;">
-<h4>⚠️ Requisitos de Equipos</h4>
-<ul id="requirementsList"></ul>
-</div>
-
-<!-- Equipment Counter -->
-<div class="equipment-counter">
-<h4>Contador de Equipos</h4>
-<div id="equipmentCounter"></div>
-</div>
-
 <button class="btn btn-primary btn-block" onclick="showAppurtenanceForm()">
 + Agregar Equipo
 </button>
@@ -782,8 +725,9 @@ Siguiente →
 <label>Type</label>
 <select id="appType">
 <option value="Antenna">Antenna</option>
-<option value="Radio">Radio</option>
+<option value="RRU">RRU</option>
 <option value="Cable">Cable</option>
+<option value="Other">Other</option>
 </select>
 </div>
 
@@ -808,12 +752,8 @@ Siguiente →
 </div>
 
 <div class="form-group">
-<label>Coax Size</label>
-<select id="appCoaxSize">
-<option value="N/A">N/A</option>
-<option value="7/8">7/8</option>
-<option value="1 5/8">1 5/8</option>
-</select>
+<label>Coax Size (if applicable)</label>
+<input type="text" id="appCoaxSize" placeholder="Optional">
 </div>
 
 <button class="btn btn-success" onclick="addAppurtenance()">Guardar</button>
@@ -905,7 +845,7 @@ Al enviar, se generará un PDF y se enviará automáticamente a accounting@newco
 </p>
 
 <button class="btn btn-primary btn-block" onclick="showReportSummary()" style="margin-bottom: 10px; font-size: 16px;">
-📋 Ver Resumen del Reporte
+📄 Ver Resumen del Reporte
 </button>
 
 <button class="btn btn-success btn-block" onclick="submitReport()" style="font-size: 18px; padding: 15px;">
@@ -924,7 +864,7 @@ Al enviar, se generará un PDF y se enviará automáticamente a accounting@newco
 
 <!-- Copyright Footer -->
 <div class="copyright-footer">
-© 2025 Newcomm Management Services Corp. • All rights reserved • v4.2
+© 2025 Newcomm Management Services Corp. • All rights reserved • v6.0
 </div>
 </div>
 
@@ -971,7 +911,7 @@ appurtenances: [],
 photos: {},
 measurements: {},
 metadata: {
-appVersion: '4.2',
+appVersion: '6.0',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -1188,74 +1128,39 @@ document.getElementById('completionDate').value = new Date().toISOString().split
 generatePhotoGrid();
 loadSavedData();
 updateStorageIndicator();
-updateEquipmentCounter();
 optimizeStorage();
 
 // Guardar estado de la aplicación
 sessionStorage.setItem('appState', 'mainApp');
 }
 
-// Update equipment requirements display
-function updateEquipmentRequirements() {
-const radios = parseInt(document.getElementById('radiosInstalled').value) || 0;
-const antennas = parseInt(document.getElementById('antennasInstalled').value) || 0;
-const cables = parseInt(document.getElementById('cablesInstalled').value) || 0;
+// Función para actualizar los requisitos de medición según Tower Top Installation
+function updateMeasurementRequirements() {
+const towerTopValue = document.getElementById('towerTop').value;
+const towerHeightRequired = document.getElementById('towerHeightRequired');
+const tallestPointRequired = document.getElementById('tallestPointRequired');
+const heightRequirementText = document.getElementById('heightRequirementText');
 
-updateEquipmentCounter();
-}
+const towerHeightInput = document.getElementById('towerHeight');
+const tallestPointInput = document.getElementById('tallestPoint');
 
-// Update equipment counter
-function updateEquipmentCounter() {
-const radios = parseInt(document.getElementById('radiosInstalled').value) || 0;
-const antennas = parseInt(document.getElementById('antennasInstalled').value) || 0;
-const cables = parseInt(document.getElementById('cablesInstalled').value) || 0;
-
-const counterDiv = document.getElementById('equipmentCounter');
-
-// Count equipment by type
-const radioCount = reportData.appurtenances.filter(app => app.type === 'Radio').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-const antennaCount = reportData.appurtenances.filter(app => app.type === 'Antenna').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-const cableCount = reportData.appurtenances.filter(app => app.type === 'Cable').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-
-counterDiv.innerHTML = `
-<div class="counter-item ${radioCount >= radios ? 'complete' : 'incomplete'}">
-<span>Radios:</span>
-<span>${radioCount} / ${radios} ${radioCount >= radios ? '✓' : '⚠️'}</span>
-</div>
-<div class="counter-item ${antennaCount >= antennas ? 'complete' : 'incomplete'}">
-<span>Antenas:</span>
-<span>${antennaCount} / ${antennas} ${antennaCount >= antennas ? '✓' : '⚠️'}</span>
-</div>
-<div class="counter-item ${cableCount >= cables ? 'complete' : 'incomplete'}">
-<span>Cables:</span>
-<span>${cableCount} / ${cables} ${cableCount >= cables ? '✓' : '⚠️'}</span>
-</div>
-`;
-  
-// Show requirements alert if needed
-const requirementsDiv = document.getElementById('equipmentRequirements');
-const requirementsList = document.getElementById('requirementsList');
-  
-if (radios > 0 || antennas > 0 || cables > 0) {
-const requirements = [];
-if (radioCount < radios) {
-requirements.push(`Debe agregar ${radios - radioCount} radio(s) más`);
-}
-if (antennaCount < antennas) {
-requirements.push(`Debe agregar ${antennas - antennaCount} antena(s) más`);
-}
-if (cableCount < cables) {
-requirements.push(`Debe agregar ${cables - cableCount} cable(s) más`);
-}
-  
-if (requirements.length > 0) {
-requirementsList.innerHTML = requirements.map(req => `<li>${req}</li>`).join('');
-requirementsDiv.style.display = 'block';
+if (towerTopValue === 'yes' || towerTopValue === 'near-top') {
+// Si está en el tope o cerca del tope, tower height y tallest point son obligatorios
+towerHeightRequired.style.display = 'inline';
+tallestPointRequired.style.display = 'inline';
+towerHeightInput.setAttribute('required', 'required');
+tallestPointInput.setAttribute('required', 'required');
+heightRequirementText.innerHTML = '<strong style="color: #c62828;">OBLIGATORIO</strong> - Instalación en el tope o cerca del tope';
+} else if (towerTopValue === 'no') {
+// Si no está en el tope, son opcionales
+towerHeightRequired.style.display = 'none';
+tallestPointRequired.style.display = 'none';
+towerHeightInput.removeAttribute('required');
+tallestPointInput.removeAttribute('required');
+heightRequirementText.innerHTML = '<strong style="color: #1565c0;">OPCIONAL</strong> - Instalación debajo de 10\' del tope';
 } else {
-requirementsDiv.style.display = 'none';
-}
-} else {
-requirementsDiv.style.display = 'none';
+// No se ha seleccionado nada
+heightRequirementText.textContent = 'Seleccione "Tower Top Installation" para ver requisitos';
 }
 }
 
@@ -1300,12 +1205,13 @@ updateReview();
 window.scrollTo(0, 0);
 }
 
-// Validation functions - ACTUALIZADO PARA GPS OBLIGATORIO Y EQUIPOS
+// Validation functions - ACTUALIZADO PARA GPS Y MEDICIONES OBLIGATORIAS
 function validateCurrentStep() {
 switch(currentStep) {
 case 1:
 const requiredFields = ['siteId', 'siteName', 'customerSiteId', 'customerSiteName',
-'radiosInstalled', 'antennasInstalled', 'cablesInstalled', 'teamLeader', 'completionDate'];
+'radiosInstalled', 'antennasInstalled', 'teamLeader', 'towerTop',
+'completionDate', 'tpTenant'];
 for (let field of requiredFields) {
 if (!document.getElementById(field).value) {
 showNotification('Por favor complete todos los campos requeridos', 'error');
@@ -1326,6 +1232,35 @@ showManualGPS();
 document.getElementById('gpsStatus').scrollIntoView({ behavior: 'smooth', block: 'center' });
 return false;
 }
+
+// VALIDAR TAPE DROP DE SECTORES (SIEMPRE OBLIGATORIO)
+const sectorFields = ['sector1TapeDrop', 'sector2TapeDrop', 'sector3TapeDrop'];
+for (let field of sectorFields) {
+if (!document.getElementById(field).value) {
+showNotification('⚠️ Las mediciones Tape Drop de TODOS los sectores son OBLIGATORIAS', 'error');
+document.getElementById(field).focus();
+document.getElementById(field).scrollIntoView({ behavior: 'smooth', block: 'center' });
+return false;
+}
+}
+
+// VALIDAR TOWER HEIGHT Y TALLEST POINT SI ESTÁ EN EL TOPE O CERCA
+const towerTopValue = document.getElementById('towerTop').value;
+if (towerTopValue === 'yes' || towerTopValue === 'near-top') {
+if (!document.getElementById('towerHeight').value) {
+showNotification('⚠️ Tower Height es OBLIGATORIO para instalaciones en el tope o cerca del tope', 'error');
+document.getElementById('towerHeight').focus();
+document.getElementById('towerHeight').scrollIntoView({ behavior: 'smooth', block: 'center' });
+return false;
+}
+if (!document.getElementById('tallestPoint').value) {
+showNotification('⚠️ Tallest Point es OBLIGATORIO para instalaciones en el tope o cerca del tope', 'error');
+document.getElementById('tallestPoint').focus();
+document.getElementById('tallestPoint').scrollIntoView({ behavior: 'smooth', block: 'center' });
+return false;
+}
+}
+
 return true;
 
 case 2:
@@ -1333,31 +1268,6 @@ if (reportData.appurtenances.length === 0) {
 showNotification('Por favor agregue al menos un equipo', 'error');
 return false;
 }
-  
-// Validar cantidades mínimas de radios, antenas y cables
-const radiosNeeded = parseInt(document.getElementById('radiosInstalled').value) || 0;
-const antennasNeeded = parseInt(document.getElementById('antennasInstalled').value) || 0;
-const cablesNeeded = parseInt(document.getElementById('cablesInstalled').value) || 0;
-  
-const radioCount = reportData.appurtenances.filter(app => app.type === 'Radio').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-const antennaCount = reportData.appurtenances.filter(app => app.type === 'Antenna').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-const cableCount = reportData.appurtenances.filter(app => app.type === 'Cable').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-  
-if (radioCount < radiosNeeded) {
-showNotification(`Debe agregar al menos ${radiosNeeded} radio(s). Actualmente tiene ${radioCount}`, 'error');
-return false;
-}
-  
-if (antennaCount < antennasNeeded) {
-showNotification(`Debe agregar al menos ${antennasNeeded} antena(s). Actualmente tiene ${antennaCount}`, 'error');
-return false;
-}
-  
-if (cableCount < cablesNeeded) {
-showNotification(`Debe agregar al menos ${cablesNeeded} cable(s). Actualmente tiene ${cableCount}`, 'error');
-return false;
-}
-  
 return true;
 
 case 3:
@@ -1394,17 +1304,17 @@ customerSiteId: document.getElementById('customerSiteId').value,
 customerSiteName: document.getElementById('customerSiteName').value,
 radiosInstalled: document.getElementById('radiosInstalled').value,
 antennasInstalled: document.getElementById('antennasInstalled').value,
-cablesInstalled: document.getElementById('cablesInstalled').value,
 teamLeader: document.getElementById('teamLeader').value,
 towerTop: document.getElementById('towerTop').value,
 completionDate: document.getElementById('completionDate').value,
+tpTenant: document.getElementById('tpTenant').value,
 submittedBy: reportData.metadata.submittedBy || 'Unknown User',
 submittedByEmail: reportData.metadata.submittedByEmail || 'unknown@email.com',
 submissionTimestamp: new Date().toISOString(),
 uniqueReportId: `RPT-${timestamp}-${randomNum}`
 };
 
-// Guardar mediciones si existen
+// Guardar mediciones (ahora algunas son obligatorias)
 reportData.measurements = {
 towerHeight: document.getElementById('towerHeight').value || '',
 sector1TapeDrop: document.getElementById('sector1TapeDrop').value || '',
@@ -1451,6 +1361,10 @@ if (element && key !== 'submittedBy' && key !== 'submittedByEmail') {
 element.value = reportData.basic[key];
 }
 });
+// Actualizar requisitos de medición si hay un valor de towerTop guardado
+if (reportData.basic.towerTop) {
+updateMeasurementRequirements();
+}
 }
 if (reportData.measurements) {
 Object.keys(reportData.measurements).forEach(key => {
@@ -1465,7 +1379,6 @@ showGPSStatus(true);
 }
 updateAppurtenanceList();
 updatePhotoCounts();
-updateEquipmentRequirements();
 }
 }
 
@@ -1542,7 +1455,7 @@ if (confirm('¿Eliminar todos los datos guardados? Esto borrará reportes anteri
 const keysToRemove = [];
 for (let i = 0; i < localStorage.length; i++) {
 const key = localStorage.key(i);
-if (key && key !== 'isAuthenticated' && key !== 'userAccount' && key !== 'userName' && key !== 'userEmail') {
+if (key && key !== 'towerReportSession') {
 keysToRemove.push(key);
 }
 }
@@ -1555,10 +1468,7 @@ appurtenances: [],
 photos: {},
 metadata: {
 submittedBy: reportData.metadata.submittedBy,
-submittedByEmail: reportData.metadata.submittedByEmail,
-appVersion: '4.2',
-deviceInfo: navigator.userAgent,
-createdAt: new Date().toISOString()
+submittedByEmail: reportData.metadata.submittedByEmail
 }
 };
 showNotification('Datos eliminados correctamente', 'success');
@@ -1640,7 +1550,7 @@ function showManualGPS() {
 const statusDiv = document.getElementById('gpsStatus');
 statusDiv.innerHTML = `
 <div style="background: #fff3cd; padding: 15px; border-radius: 6px; margin-top: 10px;">
-<h4 style="color: #856404;">✏️ Ingreso Manual de Coordenadas (OBLIGATORIO)</h4>
+<h4 style="color: #856404;">📍 Ingreso Manual de Coordenadas (OBLIGATORIO)</h4>
 <p style="font-size: 12px; color: #666; margin-bottom: 10px;">
 Ingrese las coordenadas del sitio. Puede obtenerlas de Google Maps manteniendo presionado un punto en el mapa.
 </p>
@@ -1756,14 +1666,7 @@ document.getElementById('appurtenanceForm').style.display = 'block';
 function cancelAppurtenance() {
 document.getElementById('appurtenanceForm').style.display = 'none';
 ['appType', 'appRadCenter', 'appManufacturer', 'appModel', 'appQuantity', 'appCoaxSize'].forEach(id => {
-const element = document.getElementById(id);
-if (id === 'appQuantity') {
-element.value = '1';
-} else if (id === 'appCoaxSize') {
-element.value = 'N/A';
-} else {
-element.value = '';
-}
+document.getElementById(id).value = id === 'appQuantity' ? '1' : '';
 });
 }
 
@@ -1779,7 +1682,6 @@ coaxSize: document.getElementById('appCoaxSize').value
 
 reportData.appurtenances.push(appurtenance);
 updateAppurtenanceList();
-updateEquipmentCounter();
 cancelAppurtenance();
 saveCurrentStep();
 }
@@ -1794,7 +1696,7 @@ item.className = 'appurtenance-item';
 item.innerHTML = `
 <div class="appurtenance-info">
 <h4>${app.type} - ${app.manufacturer}</h4>
-<p>Model: ${app.model} | Qty: ${app.quantity} | Rad: ${app.radCenter} | Coax: ${app.coaxSize}</p>
+<p>Model: ${app.model} | Qty: ${app.quantity} | Rad: ${app.radCenter}</p>
 </div>
 <button class="btn btn-danger" onclick="removeAppurtenance(${index})">×</button>
 `;
@@ -1805,7 +1707,6 @@ listDiv.appendChild(item);
 function removeAppurtenance(index) {
 reportData.appurtenances.splice(index, 1);
 updateAppurtenanceList();
-updateEquipmentCounter();
 saveCurrentStep();
 }
 
@@ -1979,6 +1880,12 @@ siteReview.innerHTML = `
 <span class="review-value">${reportData.basic.teamLeader || 'N/A'}</span>
 </div>
 <div class="review-item">
+<span class="review-label">Tower Top Installation:</span>
+<span class="review-value">${reportData.basic.towerTop === 'yes' ? 'Yes - At Tower Top' : 
+reportData.basic.towerTop === 'near-top' ? 'Near Top (Within 10\' of top)' : 
+'No - Below 10\' from top'}</span>
+</div>
+<div class="review-item">
 <span class="review-label">Submitted By:</span>
 <span class="review-value">${reportData.basic.submittedBy || 'N/A'}</span>
 </div>
@@ -1999,13 +1906,23 @@ equipmentReview.innerHTML = `
 <span class="review-value">${reportData.basic.antennasInstalled || 'N/A'}</span>
 </div>
 <div class="review-item">
-<span class="review-label">Cables:</span>
-<span class="review-value">${reportData.basic.cablesInstalled || 'N/A'}</span>
-</div>
-<div class="review-item">
 <span class="review-label">Equipment Items:</span>
 <span class="review-value">${reportData.appurtenances.length} tipos</span>
 </div>
+<div class="review-item">
+<span class="review-label">Tape Drop Measurements:</span>
+<span class="review-value">S1: ${reportData.measurements.sector1TapeDrop || 'N/A'}, S2: ${reportData.measurements.sector2TapeDrop || 'N/A'}, S3: ${reportData.measurements.sector3TapeDrop || 'N/A'}</span>
+</div>
+${(reportData.basic.towerTop === 'yes' || reportData.basic.towerTop === 'near-top') ? `
+<div class="review-item">
+<span class="review-label">Tower Height:</span>
+<span class="review-value">${reportData.measurements.towerHeight || 'N/A'}</span>
+</div>
+<div class="review-item">
+<span class="review-label">Tallest Point:</span>
+<span class="review-value">${reportData.measurements.tallestPoint || 'N/A'}</span>
+</div>
+` : ''}
 `;
 
 const photoReview = document.getElementById('photoReview');
@@ -2075,6 +1992,12 @@ category: photoTypes.find(t => t.id === category)?.name || category
 });
 });
 
+// Interpretar el valor de towerTop para SharePoint
+let towerTopBoolean = false;
+if (reportData.basic.towerTop === 'yes' || reportData.basic.towerTop === 'near-top') {
+towerTopBoolean = true;
+}
+
 const dataToSend = {
 Title: reportData.basic.teamLeader || 'Field Technician',
 SubmittedBy: reportData.basic.submittedBy || 'Field Technician',
@@ -2087,10 +2010,11 @@ CustomerSiteID: reportData.basic.customerSiteId || '',
 CustomerSiteName: reportData.basic.customerSiteName || '',
 RadiosInstalled: parseInt(reportData.basic.radiosInstalled) || 0,
 AntennasInstalled: parseInt(reportData.basic.antennasInstalled) || 0,
-CablesInstalled: parseInt(reportData.basic.cablesInstalled) || 0,
 TeamLeader: reportData.basic.teamLeader || '',
-TowerTopInstallation: reportData.basic.towerTop === 'yes',
+TowerTopInstallation: towerTopBoolean,
+TowerTopInstallationDetails: reportData.basic.towerTop || 'no',
 CompletionDate: reportData.basic.completionDate || new Date().toISOString().split('T')[0],
+TPTenant: reportData.basic.tpTenant || '',
 Latitude: reportData.gps.latitude || 0,
 Longitude: reportData.gps.longitude || 0,
 AppurtenanceData: JSON.stringify(appurtenanceDataJSON),
@@ -2251,7 +2175,7 @@ appurtenances: [],
 photos: {},
 metadata: {
 ...userInfo,
-appVersion: '4.2',
+appVersion: '6.0',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -2262,8 +2186,6 @@ if (field.type === 'date') {
 field.value = new Date().toISOString().split('T')[0];
 } else if (field.id === 'appQuantity') {
 field.value = '1';
-} else if (field.id === 'appCoaxSize') {
-field.value = 'N/A';
 } else {
 field.value = '';
 }
@@ -2276,7 +2198,7 @@ document.getElementById('gpsStatus').innerHTML = '';
 document.getElementById('appurtenanceList').innerHTML = '';
 
 generatePhotoGrid();
-updateEquipmentCounter();
+updateMeasurementRequirements();
 
 showNotification('Nuevo reporte iniciado', 'success');
 }
@@ -2300,26 +2222,31 @@ const summaryHTML = `
 <p><strong>Team Leader:</strong> ${reportData.basic.teamLeader || 'N/A'}</p>
 <p><strong>Enviado por:</strong> ${reportData.metadata.submittedBy || 'N/A'}</p>
 <p><strong>Fecha:</strong> ${reportData.basic.completionDate || 'N/A'}</p>
+<p><strong>Tower Top Installation:</strong> ${reportData.basic.towerTop === 'yes' ? 'Yes - At Tower Top' : 
+reportData.basic.towerTop === 'near-top' ? 'Near Top (Within 10\' of top)' : 
+'No - Below 10\' from top'}</p>
 </div>
 
 <div style="margin-bottom: 15px;">
 <h4 style="color: #333;">Equipos Instalados</h4>
 <p><strong>Radios:</strong> ${reportData.basic.radiosInstalled || 0}</p>
 <p><strong>Antenas:</strong> ${reportData.basic.antennasInstalled || 0}</p>
-<p><strong>Cables:</strong> ${reportData.basic.cablesInstalled || 0}</p>
 <p><strong>Equipos registrados:</strong> ${reportData.appurtenances.length}</p>
 </div>
 
-${reportData.measurements && (reportData.measurements.towerHeight || reportData.measurements.sector1TapeDrop) ? `
 <div style="margin-bottom: 15px;">
-<h4 style="color: #333;">Mediciones</h4>
-${reportData.measurements.towerHeight ? `<p><strong>Tower Height:</strong> ${reportData.measurements.towerHeight}</p>` : ''}
-${reportData.measurements.sector1TapeDrop ? `<p><strong>Sector 1:</strong> ${reportData.measurements.sector1TapeDrop}</p>` : ''}
-${reportData.measurements.sector2TapeDrop ? `<p><strong>Sector 2:</strong> ${reportData.measurements.sector2TapeDrop}</p>` : ''}
-${reportData.measurements.sector3TapeDrop ? `<p><strong>Sector 3:</strong> ${reportData.measurements.sector3TapeDrop}</p>` : ''}
-${reportData.measurements.tallestPoint ? `<p><strong>Tallest Point:</strong> ${reportData.measurements.tallestPoint}</p>` : ''}
+<h4 style="color: #333;">Mediciones (OBLIGATORIAS)</h4>
+<p><strong>Sector 1 Tape Drop:</strong> ${reportData.measurements.sector1TapeDrop || 'N/A'}</p>
+<p><strong>Sector 2 Tape Drop:</strong> ${reportData.measurements.sector2TapeDrop || 'N/A'}</p>
+<p><strong>Sector 3 Tape Drop:</strong> ${reportData.measurements.sector3TapeDrop || 'N/A'}</p>
+${(reportData.basic.towerTop === 'yes' || reportData.basic.towerTop === 'near-top') ? `
+<p><strong>Tower Height:</strong> ${reportData.measurements.towerHeight || 'N/A'} (OBLIGATORIO)</p>
+<p><strong>Tallest Point:</strong> ${reportData.measurements.tallestPoint || 'N/A'} (OBLIGATORIO)</p>
+` : `
+<p><strong>Tower Height:</strong> ${reportData.measurements.towerHeight || 'No aplicable'}</p>
+<p><strong>Tallest Point:</strong> ${reportData.measurements.tallestPoint || 'No aplicable'}</p>
+`}
 </div>
-` : ''}
 
 <div style="margin-bottom: 15px;">
 <h4 style="color: #333;">Ubicación GPS</h4>
@@ -2332,6 +2259,7 @@ ${!reportData.gps.manual && reportData.gps.accuracy ? `<p><strong>Precisión:</s
 <div>
 <h4 style="color: #333;">Documentación</h4>
 <p><strong>Total de fotos:</strong> ${totalPhotos}</p>
+<p><strong>Versión del reporte:</strong> 6.0</p>
 </div>
 
 <button class="btn btn-secondary" onclick="closeReportSummary()" style="margin-top: 15px;">
@@ -2353,8 +2281,8 @@ function sendDetailedEmail(reportId) {
 const emailSubject = `Tower Provider Report - ${reportData.basic.siteName || reportId}`;
 
 const emailBody = `
-TOWER PROVIDER REPORT
-=====================
+TOWER PROVIDER REPORT v6.0
+==========================
 
 SITE INFORMATION:
 - Site ID: ${reportData.basic.siteId || 'N/A'}
@@ -2365,10 +2293,12 @@ SITE INFORMATION:
 INSTALLATION DETAILS:
 - Radios Installed: ${reportData.basic.radiosInstalled || '0'}
 - Antennas Installed: ${reportData.basic.antennasInstalled || '0'}
-- Cables Installed: ${reportData.basic.cablesInstalled || '0'}
 - Team Leader: ${reportData.basic.teamLeader || 'N/A'}
-- Tower Top Installation: ${reportData.basic.towerTop || 'N/A'}
+- Tower Top Installation: ${reportData.basic.towerTop === 'yes' ? 'Yes - At Tower Top' : 
+reportData.basic.towerTop === 'near-top' ? 'Near Top (Within 10\' of top)' : 
+'No - Below 10\' from top'}
 - Completion Date: ${reportData.basic.completionDate || 'N/A'}
+- TP Tenant: ${reportData.basic.tpTenant || 'N/A'}
 
 GPS LOCATION (REQUIRED):
 - Latitude: ${reportData.gps.latitude || 'N/A'}
@@ -2376,18 +2306,16 @@ GPS LOCATION (REQUIRED):
 - Method: ${reportData.gps.manual ? 'Manual Entry' : 'Automatic GPS'}
 - Accuracy: ${reportData.gps.accuracy ? `±${reportData.gps.accuracy.toFixed(1)}m` : 'N/A'}
 
-${reportData.measurements && (reportData.measurements.towerHeight || reportData.measurements.sector1TapeDrop) ? `
-MEASUREMENTS:
-- Tower Height: ${reportData.measurements.towerHeight || 'N/A'}
-- Sector 1 Tape Drop: ${reportData.measurements.sector1TapeDrop || 'N/A'}
-- Sector 2 Tape Drop: ${reportData.measurements.sector2TapeDrop || 'N/A'}
-- Sector 3 Tape Drop: ${reportData.measurements.sector3TapeDrop || 'N/A'}
-- Tallest Point: ${reportData.measurements.tallestPoint || 'N/A'}
-` : ''}
+MEASUREMENTS (REQUIRED):
+- Sector 1 Tape Drop: ${reportData.measurements.sector1TapeDrop || 'N/A'} (REQUIRED)
+- Sector 2 Tape Drop: ${reportData.measurements.sector2TapeDrop || 'N/A'} (REQUIRED)
+- Sector 3 Tape Drop: ${reportData.measurements.sector3TapeDrop || 'N/A'} (REQUIRED)
+- Tower Height: ${reportData.measurements.towerHeight || 'N/A'} ${(reportData.basic.towerTop === 'yes' || reportData.basic.towerTop === 'near-top') ? '(REQUIRED)' : '(Optional)'}
+- Tallest Point: ${reportData.measurements.tallestPoint || 'N/A'} ${(reportData.basic.towerTop === 'yes' || reportData.basic.towerTop === 'near-top') ? '(REQUIRED)' : '(Optional)'}
 
 EQUIPMENT INSTALLED (${reportData.appurtenances.length} items):
 ${reportData.appurtenances.map((app, i) =>
-`${i + 1}. ${app.type} - ${app.manufacturer} ${app.model} (Qty: ${app.quantity}, Coax: ${app.coaxSize})`
+`${i + 1}. ${app.type} - ${app.manufacturer} ${app.model} (Qty: ${app.quantity})`
 ).join('\n')}
 
 PHOTO DOCUMENTATION:
@@ -2402,10 +2330,12 @@ REPORT DETAILS:
 - Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 - Email: ${reportData.basic.submittedByEmail || 'N/A'}
 - Submission Time: ${new Date().toLocaleString()}
+- Report Version: 6.0
 
 ---
 This report has been submitted to SharePoint.
 GPS coordinates were ${reportData.gps.manual ? 'manually entered' : 'automatically captured'}.
+All required measurements have been completed.
 
 Newcomm Management Services Corp.
 PO Box 4116, Vega Baja PR 00694
@@ -2418,10 +2348,11 @@ const mailtoLink = `mailto:accounting@newcomm2000.com?subject=${encodeURICompone
 
 if (mailtoLink.length > 2000) {
 const shortBody = `
-Tower Provider Report - ${reportData.basic.siteName || 'N/A'}
+Tower Provider Report v6.0 - ${reportData.basic.siteName || 'N/A'}
 Site ID: ${reportData.basic.siteId || 'N/A'}
 Report ID: ${reportId}
 GPS: ${reportData.gps.latitude || 'N/A'}, ${reportData.gps.longitude || 'N/A'}
+Tower Top: ${reportData.basic.towerTop === 'yes' ? 'Yes' : reportData.basic.towerTop === 'near-top' ? 'Near Top' : 'No'}
 Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 
 Please check SharePoint for the complete report with all details and photos.
