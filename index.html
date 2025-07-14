@@ -7,7 +7,7 @@
 <meta name="author" content="Newcomm Management Services Corp.">
 <meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
 <meta name="description" content="Tower Provider Report - Professional Mobile Application">
-<title>Tower Report Mobile v8.0 - SharePoint Auth</title>
+<title>Tower Report Mobile v9.10 - SharePoint Auth</title>
 
 <!-- MSAL.js desde CDN -->
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
@@ -1081,12 +1081,13 @@ description: `Labels for all ${radiosCount} radios`
 });
 }
 
-// Compound post pictures - siempre 4 fotos
+// Compound post pictures - 1 per sector from ground
+if (sectorsCount > 0) {
 photoTypes.push({
 id: 'compound_post',
 name: 'Compound Post Pictures',
-required: 4, // Siempre 4 fotos
-description: '4 compound post photos (always required)'
+required: 4, // siempre 4 fotos
+description: `4 compound post photos (always required)`
 });
 }
 
