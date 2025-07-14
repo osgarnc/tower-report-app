@@ -7,19 +7,10 @@
 <meta name="author" content="Newcomm Management Services Corp.">
 <meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
 <meta name="description" content="Tower Provider Report - Professional Mobile Application">
-<title>Tower Report Mobile v9.4 - Working Version</title><!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0066cc">
-<meta name="author" content="Newcomm Management Services Corp.">
-<meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
-<meta name="description" content="Tower Provider Report - Professional Mobile Application">
-<title>Tower Report Mobile v9.6 - SharePoint Auth</title>
+<title>Tower Report Mobile v9.7 - SharePoint Auth</title>
 
 <!-- MSAL.js desde CDN -->
-<script src="https://alcdn.msauth.net/browser/2.39.6/js/msal-browser.min.js"></script>
+<script src="https://alcdn.msauth.net/browser/2.39.7/js/msal-browser.min.js"></script>
 
 <style>
 * {
@@ -658,7 +649,7 @@ Iniciar sesión con Microsoft
 <div id="loginError" style="display: none;" class="login-error"></div>
 
 <div style="margin-top: 20px; font-size: 12px; color: #666;">
-<p>Versión 9.6 - Mapeo Dinámico de Fotos</p>
+<p>Versión 9.7 - Mapeo Dinámico de Fotos</p>
 </div>
 </div>
 </div>
@@ -672,7 +663,7 @@ Iniciar sesión con Microsoft
 
 <header class="header">
 <h1>Tower Provider Report</h1>
-<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 9.6 - Mapeo Dinámico de Fotos</div>
+<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 9.7 - Mapeo Dinámico de Fotos</div>
 </header>
 
 <div class="step-indicator">
@@ -695,7 +686,7 @@ Iniciar sesión con Microsoft
 Limpiar datos
 </button>
 </div>
-<div style="font-size: 11px; color: #666; margin-top: 5px;">App v9.6 - Mapeo Dinámico</div>
+<div style="font-size: 11px; color: #666; margin-top: 5px;">App v9.7 - Mapeo Dinámico</div>
 </div>
 
 <div class="form-group">
@@ -985,7 +976,7 @@ Al enviar, se generará el reporte y se enviará automáticamente a accounting@n
 
 <!-- Copyright Footer -->
 <div class="copyright-footer">
-© 2025 Newcomm Management Services Corp. • All rights reserved • v9.6
+© 2025 Newcomm Management Services Corp. • All rights reserved • v9.7
 </div>
 </div>
 
@@ -1032,7 +1023,7 @@ appurtenances: [],
 photos: {},
 measurements: {},
 metadata: {
-appVersion: '9.6',
+appVersion: '9.7',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -1166,7 +1157,7 @@ generatePhotoGrid();
 }
 }
 
-// Función para mapear fotos dinámicamente según sectores - NUEVA FUNCIONALIDAD v9.6
+// Función para mapear fotos dinámicamente según sectores - NUEVA FUNCIONALIDAD v9.7
 function mapPhotosForSharePoint(reportData) {
 const sectorsCount = parseInt(reportData.basic.sectorsCount) || 0;
 
@@ -1962,7 +1953,7 @@ if (confirm('¿Eliminar todos los datos guardados? Esto borrará reportes anteri
         metadata: {
             submittedBy: reportData.metadata.submittedBy,
             submittedByEmail: reportData.metadata.submittedByEmail,
-            appVersion: '9.6',
+            appVersion: '9.7',
             deviceInfo: navigator.userAgent,
             createdAt: new Date().toISOString()
         }
@@ -2565,7 +2556,7 @@ photoReview.innerHTML = `
 `;
 }
 
-// Submit and SharePoint Functions - ACTUALIZADO PARA v9.6 CON MAPEO DINÁMICO
+// Submit and SharePoint Functions - ACTUALIZADO PARA v9.7 CON MAPEO DINÁMICO
 async function sendToSharePoint(reportData) {
 const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
 
@@ -2573,7 +2564,7 @@ const timestamp = Date.now();
 const randomNum = Math.floor(Math.random() * 100000);
 const uniqueReportID = `RPT-${timestamp}-${randomNum}`;
 
-// Mapear las fotos dinámicamente - NUEVA FUNCIONALIDAD v9.6
+// Mapear las fotos dinámicamente - NUEVA FUNCIONALIDAD v9.7
 const photoMapping = mapPhotosForSharePoint(reportData);
 
 const appurtenanceDataJSON = {
@@ -2643,7 +2634,7 @@ const dataToSend = {
     PhotoLinks: JSON.stringify(photoLinksJSON),
     ReportStatus: 'DraftSubmittedPDF',
 
-    // Incluir todas las fotos mapeadas dinámicamente - NUEVA FUNCIONALIDAD v9.6
+    // Incluir todas las fotos mapeadas dinámicamente - NUEVA FUNCIONALIDAD v9.7
     ...photoMapping
 };
 
@@ -2695,7 +2686,7 @@ try {
         <p style="margin-top: 15px;">
         <strong>✓ Guardado localmente</strong><br>
         <strong>✓ Enviado a SharePoint</strong><br>
-        <strong>✓ Fotos mapeadas dinámicamente (v9.6)</strong>
+        <strong>✓ Fotos mapeadas dinámicamente (v9.7)</strong>
         </p>
         <div style="display: flex; gap: 10px; margin-top: 20px;">
         <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
@@ -2802,7 +2793,7 @@ reportData = {
     measurements: {},
     metadata: {
         ...userInfo,
-        appVersion: '9.6',
+        appVersion: '9.7',
         deviceInfo: navigator.userAgent,
         createdAt: new Date().toISOString()
     }
@@ -2851,7 +2842,7 @@ for (let i = 1; i <= sectorsCount; i++) {
 
 const summaryHTML = `
 <div style="background: #f5f5f5; padding: 20px; border-radius: 6px; margin: 20px 0;">
-<h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte v9.6</h3>
+<h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte v9.7</h3>
 
 <div style="margin-bottom: 15px;">
 <h4 style="color: #333;">Información del Sitio</h4>
@@ -2897,7 +2888,7 @@ ${!reportData.gps.manual && reportData.gps.accuracy ? `<p><strong>Precisión:</s
 <div>
 <h4 style="color: #333;">Documentación</h4>
 <p><strong>Total de fotos:</strong> ${totalPhotos}</p>
-<p><strong>Versión del reporte:</strong> 9.6 - Mapeo Dinámico de Fotos</p>
+<p><strong>Versión del reporte:</strong> 9.7 - Mapeo Dinámico de Fotos</p>
 </div>
 
 <button class="btn btn-secondary" onclick="closeReportSummary()" style="margin-top: 15px;">
@@ -2922,10 +2913,10 @@ for (let i = 1; i <= sectorsCount; i++) {
     sectorMeasurements += `- Sector ${i} Tape Drop: ${reportData.measurements[`sector${i}TapeDrop`] || 'N/A'} (REQUIRED)\n`;
 }
 
-const emailSubject = `Tower Provider Report v9.6 - ${reportData.basic.siteName || reportId}`;
+const emailSubject = `Tower Provider Report v9.7 - ${reportData.basic.siteName || reportId}`;
 
 const emailBody = `
-TOWER PROVIDER REPORT v9.6 - MAPEO DINÁMICO DE FOTOS
+TOWER PROVIDER REPORT v9.7 - MAPEO DINÁMICO DE FOTOS
 =====================================================
 
 SITE INFORMATION:
@@ -2960,7 +2951,7 @@ ${reportData.appurtenances.map((app, i) =>
     `${i + 1}. ${app.type} - ${app.manufacturer} ${app.model} (Qty: ${app.quantity}, Coax: ${app.coaxSize})`
 ).join('\n')}
 
-PHOTO DOCUMENTATION (v9.6 - Dynamic Mapping):
+PHOTO DOCUMENTATION (v9.7 - Dynamic Mapping):
 - Total Photos: ${Object.values(reportData.photos).reduce((sum, arr) => sum + (arr ? arr.length : 0), 0)}
 ${Object.entries(reportData.photos).map(([category, photos]) => {
     const catName = photoTypes.find(t => t.id === category)?.name || category;
@@ -2972,7 +2963,7 @@ REPORT DETAILS:
 - Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 - Email: ${reportData.basic.submittedByEmail || 'N/A'}
 - Submission Time: ${new Date().toLocaleString()}
-- Report Version: 9.6 - Dynamic Photo Mapping
+- Report Version: 9.7 - Dynamic Photo Mapping
 
 ---
 This report has been submitted to SharePoint with dynamic photo mapping.
@@ -2991,7 +2982,7 @@ const mailtoLink = `mailto:accounting@newcomm2000.com?subject=${encodeURICompone
 
 if (mailtoLink.length > 2000) {
     const shortBody = `
-Tower Provider Report v9.6 - ${reportData.basic.siteName || 'N/A'}
+Tower Provider Report v9.7 - ${reportData.basic.siteName || 'N/A'}
 Site ID: ${reportData.basic.siteId || 'N/A'}
 Sectors: ${sectorsCount}
 Report ID: ${reportId}
@@ -3002,7 +2993,7 @@ Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 Please check SharePoint for the complete report with all details and dynamically mapped photos.
 
 Date: ${new Date().toLocaleString()}
-Version: 9.6 - Dynamic Photo Mapping
+Version: 9.7 - Dynamic Photo Mapping
     `.trim();
 
     window.location.href = `mailto:accounting@newcomm2000.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(shortBody)}`;
@@ -3075,630 +3066,6 @@ if (currentStep > 1 && Object.keys(reportData.basic).length > 0) {
     e.preventDefault();
     e.returnValue = '¿Estás seguro de que quieres salir? Los datos no guardados se perderán.';
 }
-});
-</script>
-</body>
-</html>
-
-<style>
-* {
-margin: 0;
-padding: 0;
-box-sizing: border-box;
-}
-
-body {
-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-background-color: #f5f5f5;
-color: #333;
-overflow-x: hidden;
-}
-
-.app-container {
-max-width: 600px;
-margin: 0 auto;
-background-color: white;
-min-height: 100vh;
-position: relative;
-}
-
-.user-info {
-background-color: #e3f2fd;
-padding: 10px 15px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-font-size: 14px;
-}
-
-.user-info strong {
-color: #1565c0;
-}
-
-.header {
-background-color: #0066cc;
-color: white;
-padding: 15px;
-text-align: center;
-position: sticky;
-top: 0;
-z-index: 100;
-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.header h1 {
-font-size: 20px;
-font-weight: 500;
-}
-
-.step-indicator {
-display: flex;
-justify-content: center;
-padding: 20px;
-gap: 10px;
-}
-
-.step {
-width: 30px;
-height: 30px;
-border-radius: 50%;
-background-color: #e0e0e0;
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 14px;
-transition: all 0.3s;
-}
-
-.step.active {
-background-color: #0066cc;
-color: white;
-}
-
-.step.completed {
-background-color: #4caf50;
-color: white;
-}
-
-.form-section {
-display: none;
-padding: 20px;
-animation: slideIn 0.3s ease-out;
-}
-
-.form-section.active {
-display: block;
-}
-
-@keyframes slideIn {
-from {
-opacity: 0;
-transform: translateX(20px);
-}
-to {
-opacity: 1;
-transform: translateX(0);
-}
-}
-
-.form-group {
-margin-bottom: 20px;
-}
-
-label {
-display: block;
-margin-bottom: 5px;
-font-weight: 500;
-color: #555;
-}
-
-input[type="text"],
-input[type="number"],
-input[type="date"],
-select,
-textarea {
-width: 100%;
-padding: 12px;
-border: 1px solid #ddd;
-border-radius: 6px;
-font-size: 16px;
-transition: border-color 0.3s;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-outline: none;
-border-color: #0066cc;
-}
-
-.required {
-color: #f44336;
-}
-
-.btn {
-padding: 12px 24px;
-border: none;
-border-radius: 6px;
-font-size: 16px;
-font-weight: 500;
-cursor: pointer;
-transition: all 0.3s;
-text-align: center;
-display: inline-block;
-}
-
-.btn-primary {
-background-color: #0066cc;
-color: white;
-}
-
-.btn-primary:hover {
-background-color: #0052a3;
-}
-
-.btn-success {
-background-color: #4caf50;
-color: white;
-}
-
-.btn-secondary {
-background-color: #757575;
-color: white;
-}
-
-.btn-danger {
-background-color: #f44336;
-color: white;
-}
-
-.btn:disabled {
-opacity: 0.6;
-cursor: not-allowed;
-}
-
-.btn-block {
-width: 100%;
-display: block;
-}
-
-.btn-group {
-display: flex;
-gap: 10px;
-margin-top: 30px;
-}
-
-.notification {
-position: fixed;
-top: 70px;
-left: 50%;
-transform: translateX(-50%);
-padding: 15px 20px;
-border-radius: 6px;
-color: white;
-font-weight: 500;
-z-index: 1000;
-animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-from {
-opacity: 0;
-transform: translate(-50%, -20px);
-}
-to {
-opacity: 1;
-transform: translate(-50%, 0);
-}
-}
-
-.notification.success {
-background-color: #4caf50;
-}
-
-.notification.error {
-background-color: #f44336;
-}
-
-.notification.info {
-background-color: #2196f3;
-}
-
-.copyright-footer {
-text-align: center;
-padding: 20px;
-font-size: 12px;
-color: #999;
-border-top: 1px solid #eee;
-margin-top: 40px;
-}
-
-.success-message {
-background: #e8f5e9;
-border: 1px solid #4caf50;
-color: #2e7d32;
-padding: 20px;
-border-radius: 8px;
-text-align: center;
-}
-
-.success-message h2 {
-color: #2e7d32;
-margin-bottom: 15px;
-}
-
-@media (max-width: 480px) {
-.header h1 {
-font-size: 18px;
-}
-
-.btn {
-font-size: 14px;
-padding: 10px 20px;
-}
-}
-</style>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-</head>
-<body>
-
-<div class="app-container">
-<div class="user-info">
-<span>Usuario: <strong id="userDisplayName">Demo User</strong></span>
-<span style="font-size: 12px; color: #666;">v9.4 - Sin Autenticación</span>
-</div>
-
-<header class="header">
-<h1>Tower Provider Report</h1>
-<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 9.4 - Demo (Sin Auth)</div>
-</header>
-
-<div class="step-indicator">
-<div class="step active" id="step1">1</div>
-<div class="step" id="step2">2</div>
-<div class="step" id="step3">3</div>
-<div class="step" id="step4">4</div>
-<div class="step" id="step5">5</div>
-</div>
-
-<!-- Step 1: Basic Information -->
-<div class="form-section active" id="section1">
-<h2>Información Básica</h2>
-
-<div class="form-group">
-<label>Tower Provider Site ID <span class="required">*</span></label>
-<input type="text" id="siteId" placeholder="ej: 10028307" required>
-</div>
-
-<div class="form-group">
-<label>Tower Provider Site Name <span class="required">*</span></label>
-<input type="text" id="siteName" placeholder="ej: Vega Baja DT" required>
-</div>
-
-<div class="form-group">
-<label>Customer Site ID <span class="required">*</span></label>
-<input type="text" id="customerSiteId" placeholder="ej: 10028307" required>
-</div>
-
-<div class="form-group">
-<label>Customer Site Name <span class="required">*</span></label>
-<input type="text" id="customerSiteName" placeholder="ej: Vega Baja DT" required>
-</div>
-
-<div class="form-group" style="background: #e3f2fd; padding: 15px; border-radius: 6px;">
-<label>Number of Sectors <span class="required">*</span></label>
-<select id="sectorsCount" required>
-<option value="">Seleccione cantidad de sectores</option>
-<option value="1">1 Sector</option>
-<option value="2">2 Sectores</option>
-<option value="3">3 Sectores</option>
-<option value="4">4 Sectores</option>
-<option value="5">5 Sectores</option>
-<option value="6">6 Sectores</option>
-</select>
-</div>
-
-<div class="form-group">
-<label>Team Leader <span class="required">*</span></label>
-<input type="text" id="teamLeader" placeholder="ej: Christopher Rodriguez" required>
-</div>
-
-<div class="form-group">
-<label>Completion Date <span class="required">*</span></label>
-<input type="date" id="completionDate" required>
-</div>
-
-<div class="btn-group">
-<button class="btn btn-primary" onclick="nextStep()" style="margin-left: auto;">
-Siguiente →
-</button>
-</div>
-</div>
-
-<!-- Step 2: Quick Info -->
-<div class="form-section" id="section2">
-<h2>Información Adicional</h2>
-
-<div class="form-group">
-<label>Radios Installed</label>
-<input type="number" id="radiosInstalled" min="0" placeholder="3">
-</div>
-
-<div class="form-group">
-<label>Antennas Installed</label>
-<input type="number" id="antennasInstalled" min="0" placeholder="6">
-</div>
-
-<div class="form-group">
-<label>GPS Coordinates (Optional)</label>
-<input type="text" id="gpsCoords" placeholder="18.4671, -67.0185">
-</div>
-
-<div class="btn-group">
-<button class="btn btn-secondary" onclick="previousStep()">
-← Anterior
-</button>
-<button class="btn btn-primary" onclick="nextStep()">
-Siguiente →
-</button>
-</div>
-</div>
-
-<!-- Step 3: Demo Photos -->
-<div class="form-section" id="section3">
-<h2>Documentación Fotográfica (Demo)</h2>
-
-<div style="background: #fff3cd; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
-<h4>📸 Modo Demo</h4>
-<p>Esta versión demo simula el proceso de toma de fotos. En la versión completa, aquí tomarías fotos reales usando la cámara.</p>
-<button class="btn btn-primary" onclick="simulatePhotos()">
-Simular Fotos Completadas
-</button>
-</div>
-
-<div id="photoStatus" style="margin-top: 20px;"></div>
-
-<div class="btn-group">
-<button class="btn btn-secondary" onclick="previousStep()">
-← Anterior
-</button>
-<button class="btn btn-primary" onclick="nextStep()">
-Siguiente →
-</button>
-</div>
-</div>
-
-<!-- Step 4: Review -->
-<div class="form-section" id="section4">
-<h2>Revisar Información</h2>
-
-<div style="background: #f5f5f5; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-<h3 style="color: #0066cc;">Información del Sitio</h3>
-<div id="siteReview"></div>
-</div>
-
-<div class="btn-group">
-<button class="btn btn-secondary" onclick="previousStep()">
-← Anterior
-</button>
-<button class="btn btn-primary" onclick="nextStep()">
-Siguiente →
-</button>
-</div>
-</div>
-
-<!-- Step 5: Success -->
-<div class="form-section" id="section5">
-<div class="success-message">
-<h2>✅ Reporte Completado</h2>
-<p>Su reporte ha sido generado exitosamente en modo demo.</p>
-<p><strong>ID:</strong> <span id="reportId"></span></p>
-<p style="margin-top: 15px;">En la versión completa, el reporte se enviaría automáticamente a SharePoint.</p>
-<button class="btn btn-primary" onclick="startNewReport()" style="margin-top: 20px;">
-➕ Crear Nuevo Reporte
-</button>
-</div>
-</div>
-
-<!-- Copyright Footer -->
-<div class="copyright-footer">
-© 2025 Newcomm Management Services Corp. • All rights reserved • v9.4 Demo
-</div>
-</div>
-
-<script>
-// Global variables
-let currentStep = 1;
-let reportData = {
-basic: {},
-metadata: {
-appVersion: '9.4-demo',
-deviceInfo: navigator.userAgent,
-createdAt: new Date().toISOString()
-}
-};
-
-// Navigation functions
-function nextStep() {
-if (validateCurrentStep()) {
-saveCurrentStep();
-if (currentStep < 5) {
-currentStep++;
-showStep(currentStep);
-}
-}
-}
-
-function previousStep() {
-if (currentStep > 1) {
-currentStep--;
-showStep(currentStep);
-}
-}
-
-function showStep(step) {
-document.querySelectorAll('.form-section').forEach(section => {
-section.classList.remove('active');
-});
-
-document.getElementById('section' + step).classList.add('active');
-
-document.querySelectorAll('.step').forEach((stepEl, index) => {
-stepEl.classList.remove('active', 'completed');
-if (index + 1 < step) {
-stepEl.classList.add('completed');
-} else if (index + 1 === step) {
-stepEl.classList.add('active');
-}
-});
-
-if (step === 4) {
-updateReview();
-}
-
-if (step === 5) {
-generateReportId();
-}
-
-window.scrollTo(0, 0);
-}
-
-function validateCurrentStep() {
-switch(currentStep) {
-case 1:
-const requiredFields = ['siteId', 'siteName', 'customerSiteId', 'customerSiteName', 'sectorsCount', 'teamLeader', 'completionDate'];
-for (let field of requiredFields) {
-if (!document.getElementById(field).value) {
-showNotification('Por favor complete todos los campos requeridos', 'error');
-document.getElementById(field).focus();
-return false;
-}
-}
-return true;
-default:
-return true;
-}
-}
-
-function saveCurrentStep() {
-switch(currentStep) {
-case 1:
-reportData.basic = {
-siteId: document.getElementById('siteId').value,
-siteName: document.getElementById('siteName').value,
-customerSiteId: document.getElementById('customerSiteId').value,
-customerSiteName: document.getElementById('customerSiteName').value,
-sectorsCount: document.getElementById('sectorsCount').value,
-teamLeader: document.getElementById('teamLeader').value,
-completionDate: document.getElementById('completionDate').value,
-submittedBy: 'Demo User',
-submittedByEmail: 'demo@newcomm2000.com'
-};
-break;
-case 2:
-reportData.additional = {
-radiosInstalled: document.getElementById('radiosInstalled').value || '0',
-antennasInstalled: document.getElementById('antennasInstalled').value || '0',
-gpsCoords: document.getElementById('gpsCoords').value || 'N/A'
-};
-break;
-}
-}
-
-function simulatePhotos() {
-const photoStatus = document.getElementById('photoStatus');
-photoStatus.innerHTML = `
-<div style="background: #e8f5e9; padding: 15px; border-radius: 6px; border: 1px solid #4caf50;">
-<h4 style="color: #2e7d32;">✅ Fotos Simuladas Completadas</h4>
-<ul style="margin: 10px 0; color: #2e7d32;">
-<li>📸 Post Equipment Room: 4 fotos</li>
-<li>📡 Antenna Labels: ${reportData.additional?.antennasInstalled || 3} fotos</li>
-<li>📻 Radio Labels: ${reportData.additional?.radiosInstalled || 3} fotos</li>
-<li>🏗️ Compound Post Pictures: 4 fotos</li>
-<li>📏 Tape Drop Measurements: ${(parseInt(reportData.basic.sectorsCount) || 1) * 2} fotos</li>
-<li>🚨 Beacon Photos: 2 fotos</li>
-</ul>
-<p><strong>Total:</strong> ${calculateTotalPhotos()} fotos simuladas</p>
-</div>
-`;
-}
-
-function calculateTotalPhotos() {
-const sectors = parseInt(reportData.basic.sectorsCount) || 1;
-const antennas = parseInt(reportData.additional?.antennasInstalled) || 3;
-const radios = parseInt(reportData.additional?.radiosInstalled) || 3;
-return 4 + antennas + radios + 4 + (sectors * 2) + 2;
-}
-
-function updateReview() {
-const siteReview = document.getElementById('siteReview');
-siteReview.innerHTML = `
-<p><strong>Site ID:</strong> ${reportData.basic.siteId}</p>
-<p><strong>Site Name:</strong> ${reportData.basic.siteName}</p>
-<p><strong>Sectors:</strong> ${reportData.basic.sectorsCount}</p>
-<p><strong>Team Leader:</strong> ${reportData.basic.teamLeader}</p>
-<p><strong>Date:</strong> ${reportData.basic.completionDate}</p>
-<p><strong>Total Photos:</strong> ${calculateTotalPhotos()} (simulated)</p>
-`;
-}
-
-function generateReportId() {
-const timestamp = Date.now();
-const randomNum = Math.floor(Math.random() * 1000);
-const reportId = `DEMO-${timestamp}-${randomNum}`;
-document.getElementById('reportId').textContent = reportId;
-}
-
-function startNewReport() {
-// Reset data
-reportData = {
-basic: {},
-metadata: {
-appVersion: '9.4-demo',
-deviceInfo: navigator.userAgent,
-createdAt: new Date().toISOString()
-}
-};
-
-// Reset form
-document.querySelectorAll('input, select, textarea').forEach(field => {
-if (field.type === 'date') {
-field.value = new Date().toISOString().split('T')[0];
-} else {
-field.value = '';
-}
-});
-
-// Reset steps
-currentStep = 1;
-showStep(1);
-document.getElementById('photoStatus').innerHTML = '';
-
-showNotification('Nuevo reporte iniciado', 'success');
-}
-
-function showNotification(message, type = 'info') {
-const existing = document.querySelector('.notification');
-if (existing) {
-existing.remove();
-}
-
-const notification = document.createElement('div');
-notification.className = `notification ${type}`;
-notification.textContent = message;
-document.body.appendChild(notification);
-
-setTimeout(() => {
-notification.remove();
-}, 3000);
-}
-
-// Initialize app
-window.addEventListener('load', () => {
-console.log('Tower Report Demo v9.4 loaded successfully');
-document.getElementById('completionDate').value = new Date().toISOString().split('T')[0];
-showNotification('Aplicación demo cargada correctamente', 'success');
 });
 </script>
 </body>
