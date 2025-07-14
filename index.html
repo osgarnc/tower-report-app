@@ -7,7 +7,7 @@
 <meta name="author" content="Newcomm Management Services Corp.">
 <meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
 <meta name="description" content="Tower Provider Report - Professional Mobile Application">
-<title>Tower Report Mobile v9.9 - SharePoint Auth</title>
+<title>Tower Report Mobile v8.0 - SharePoint Auth</title>
 
 <!-- MSAL.js desde CDN -->
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
@@ -649,7 +649,7 @@ Iniciar sesión con Microsoft
 <div id="loginError" style="display: none;" class="login-error"></div>
 
 <div style="margin-top: 20px; font-size: 12px; color: #666;">
-<p>Versión 9.9 - Mapeo Dinámico de Fotos</p>
+<p>Versión 8.0 - Mapeo Dinámico de Fotos</p>
 </div>
 </div>
 </div>
@@ -663,7 +663,7 @@ Iniciar sesión con Microsoft
 
 <header class="header">
 <h1>Tower Provider Report</h1>
-<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 9.9 - Mapeo Dinámico de Fotos</div>
+<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 8.0 - Mapeo Dinámico de Fotos</div>
 </header>
 
 <div class="step-indicator">
@@ -686,7 +686,7 @@ Iniciar sesión con Microsoft
 Limpiar datos
 </button>
 </div>
-<div style="font-size: 11px; color: #666; margin-top: 5px;">App v9.9 - Mapeo Dinámico</div>
+<div style="font-size: 11px; color: #666; margin-top: 5px;">App v8.0 - Mapeo Dinámico</div>
 </div>
 
 <div class="form-group">
@@ -977,7 +977,7 @@ Al enviar, se generará un reporte y se enviará automáticamente a accounting@n
 
 <!-- Copyright Footer -->
 <div class="copyright-footer">
-© 2025 Newcomm Management Services Corp. • All rights reserved • v9.9
+© 2025 Newcomm Management Services Corp. • All rights reserved • v8.0
 </div>
 </div>
 
@@ -1024,7 +1024,7 @@ appurtenances: [],
 photos: {},
 measurements: {},
 metadata: {
-appVersion: '9.9',
+appVersion: '8.0',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -1081,12 +1081,12 @@ description: `Labels for all ${radiosCount} radios`
 });
 }
 
-// Compound post pictures - 1 per sector from ground
+// Compound post pictures - siempre 4 fotos
 photoTypes.push({
-    id: 'compound_post',
-    name: 'Compound Post Pictures',
-    required: 4, // SIEMPRE 4 FOTOS, no condicionales
-    description: '4 compound post photos (always required)'
+id: 'compound_post',
+name: 'Compound Post Pictures',
+required: 4, // Siempre 4 fotos
+description: '4 compound post photos (always required)'
 });
 }
 
@@ -1165,7 +1165,7 @@ generatePhotoGrid();
 }
 }
 
-// Función para mapear fotos dinámicamente según sectores - NUEVA FUNCIONALIDAD v9.9
+// Función para mapear fotos dinámicamente según sectores - NUEVA FUNCIONALIDAD v8.0
 function mapPhotosForSharePoint(reportData) {
 const sectorsCount = parseInt(reportData.basic.sectorsCount) || 0;
 
@@ -1961,7 +1961,7 @@ if (confirm('¿Eliminar todos los datos guardados? Esto borrará reportes anteri
         metadata: {
             submittedBy: reportData.metadata.submittedBy,
             submittedByEmail: reportData.metadata.submittedByEmail,
-            appVersion: '9.9',
+            appVersion: '8.0',
             deviceInfo: navigator.userAgent,
             createdAt: new Date().toISOString()
         }
@@ -2564,7 +2564,7 @@ photoReview.innerHTML = `
 `;
 }
 
-// Submit and SharePoint Functions - ACTUALIZADO PARA v9.9 CON MAPEO DINÁMICO
+// Submit and SharePoint Functions - ACTUALIZADO PARA v8.0 CON MAPEO DINÁMICO
 async function sendToSharePoint(reportData) {
 const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
 
@@ -2572,7 +2572,7 @@ const timestamp = Date.now();
 const randomNum = Math.floor(Math.random() * 100000);
 const uniqueReportID = `RPT-${timestamp}-${randomNum}`;
 
-// Mapear las fotos dinámicamente - NUEVA FUNCIONALIDAD v9.9
+// Mapear las fotos dinámicamente - NUEVA FUNCIONALIDAD v8.0
 const photoMapping = mapPhotosForSharePoint(reportData);
 
 const appurtenanceDataJSON = {
@@ -2642,7 +2642,7 @@ const dataToSend = {
     PhotoLinks: JSON.stringify(photoLinksJSON),
     ReportStatus: 'DraftSubmittedPDF',
 
-    // Incluir todas las fotos mapeadas dinámicamente - NUEVA FUNCIONALIDAD v9.9
+    // Incluir todas las fotos mapeadas dinámicamente - NUEVA FUNCIONALIDAD v8.0
     ...photoMapping
 };
 
@@ -2694,7 +2694,7 @@ try {
         <p style="margin-top: 15px;">
         <strong>✓ Guardado localmente</strong><br>
         <strong>✓ Enviado a SharePoint</strong><br>
-        <strong>✓ Fotos mapeadas dinámicamente (v9.9)</strong>
+        <strong>✓ Fotos mapeadas dinámicamente (v8.0)</strong>
         </p>
         <div style="display: flex; gap: 10px; margin-top: 20px;">
         <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
@@ -2801,7 +2801,7 @@ reportData = {
     measurements: {},
     metadata: {
         ...userInfo,
-        appVersion: '9.9',
+        appVersion: '8.0',
         deviceInfo: navigator.userAgent,
         createdAt: new Date().toISOString()
     }
@@ -2850,7 +2850,7 @@ for (let i = 1; i <= sectorsCount; i++) {
 
 const summaryHTML = `
 <div style="background: #f5f5f5; padding: 20px; border-radius: 6px; margin: 20px 0;">
-<h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte v9.9</h3>
+<h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte v8.0</h3>
 
 <div style="margin-bottom: 15px;">
 <h4 style="color: #333;">Información del Sitio</h4>
@@ -2896,7 +2896,7 @@ ${!reportData.gps.manual && reportData.gps.accuracy ? `<p><strong>Precisión:</s
 <div>
 <h4 style="color: #333;">Documentación</h4>
 <p><strong>Total de fotos:</strong> ${totalPhotos}</p>
-<p><strong>Versión del reporte:</strong> 9.9 - Mapeo Dinámico de Fotos</p>
+<p><strong>Versión del reporte:</strong> 8.0 - Mapeo Dinámico de Fotos</p>
 </div>
 
 <button class="btn btn-secondary" onclick="closeReportSummary()" style="margin-top: 15px;">
@@ -2921,10 +2921,10 @@ for (let i = 1; i <= sectorsCount; i++) {
     sectorMeasurements += `- Sector ${i} Tape Drop: ${reportData.measurements[`sector${i}TapeDrop`] || 'N/A'} (REQUIRED)\n`;
 }
 
-const emailSubject = `Tower Provider Report v9.9 - ${reportData.basic.siteName || reportId}`;
+const emailSubject = `Tower Provider Report v8.0 - ${reportData.basic.siteName || reportId}`;
 
 const emailBody = `
-TOWER PROVIDER REPORT v9.9 - MAPEO DINÁMICO DE FOTOS
+TOWER PROVIDER REPORT v8.0 - MAPEO DINÁMICO DE FOTOS
 =====================================================
 
 SITE INFORMATION:
@@ -2959,7 +2959,7 @@ ${reportData.appurtenances.map((app, i) =>
     `${i + 1}. ${app.type} - ${app.manufacturer} ${app.model} (Qty: ${app.quantity}, Coax: ${app.coaxSize})`
 ).join('\n')}
 
-PHOTO DOCUMENTATION (v9.9 - Dynamic Mapping):
+PHOTO DOCUMENTATION (v8.0 - Dynamic Mapping):
 - Total Photos: ${Object.values(reportData.photos).reduce((sum, arr) => sum + (arr ? arr.length : 0), 0)}
 ${Object.entries(reportData.photos).map(([category, photos]) => {
     const catName = photoTypes.find(t => t.id === category)?.name || category;
@@ -2971,7 +2971,7 @@ REPORT DETAILS:
 - Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 - Email: ${reportData.basic.submittedByEmail || 'N/A'}
 - Submission Time: ${new Date().toLocaleString()}
-- Report Version: 9.9 - Dynamic Photo Mapping
+- Report Version: 8.0 - Dynamic Photo Mapping
 
 ---
 This report has been submitted to SharePoint with dynamic photo mapping.
@@ -2990,7 +2990,7 @@ const mailtoLink = `mailto:accounting@newcomm2000.com?subject=${encodeURICompone
 
 if (mailtoLink.length > 2000) {
     const shortBody = `
-Tower Provider Report v9.9 - ${reportData.basic.siteName || 'N/A'}
+Tower Provider Report v8.0 - ${reportData.basic.siteName || 'N/A'}
 Site ID: ${reportData.basic.siteId || 'N/A'}
 Sectors: ${sectorsCount}
 Report ID: ${reportId}
@@ -3001,7 +3001,7 @@ Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 Please check SharePoint for the complete report with all details and dynamically mapped photos.
 
 Date: ${new Date().toLocaleString()}
-Version: 9.9 - Dynamic Photo Mapping
+Version: 8.0 - Dynamic Photo Mapping
     `.trim();
 
     window.location.href = `mailto:accounting@newcomm2000.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(shortBody)}`;
