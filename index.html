@@ -7,10 +7,10 @@
 <meta name="author" content="Newcomm Management Services Corp.">
 <meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
 <meta name="description" content="Tower Provider Report - Professional Mobile Application">
-<title>Tower Report Mobile v9.0 - SharePoint Auth</title>
+<title>Tower Report Mobile v9.1 - SharePoint Auth</title>
 
 <!-- MSAL.js desde CDN -->
-<script src="https://alcdn.msauth.net/browser/2.39.0/js/msal-browser.min.js"></script>
+<script src="https://alcdn.msauth.net/browser/2.39.1/js/msal-browser.min.js"></script>
 
 <style>
 * {
@@ -649,7 +649,7 @@ Iniciar sesión con Microsoft
 <div id="loginError" style="display: none;" class="login-error"></div>
 
 <div style="margin-top: 20px; font-size: 12px; color: #666;">
-<p>Versión 9.0 - Mapeo Dinámico de Fotos</p>
+<p>Versión 9.1 - Mapeo Dinámico de Fotos</p>
 </div>
 </div>
 </div>
@@ -663,7 +663,7 @@ Iniciar sesión con Microsoft
 
 <header class="header">
 <h1>Tower Provider Report</h1>
-<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 9.0 - Mapeo Dinámico de Fotos</div>
+<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 9.1 - Mapeo Dinámico de Fotos</div>
 </header>
 
 <div class="step-indicator">
@@ -686,7 +686,7 @@ Iniciar sesión con Microsoft
 Limpiar datos
 </button>
 </div>
-<div style="font-size: 11px; color: #666; margin-top: 5px;">App v9.0 - Mapeo Dinámico</div>
+<div style="font-size: 11px; color: #666; margin-top: 5px;">App v9.1 - Mapeo Dinámico</div>
 </div>
 
 <div class="form-group">
@@ -977,7 +977,7 @@ Al enviar, se generará el reporte y se enviará automáticamente a accounting@n
 
 <!-- Copyright Footer -->
 <div class="copyright-footer">
-© 2025 Newcomm Management Services Corp. • All rights reserved • v9.0
+© 2025 Newcomm Management Services Corp. • All rights reserved • v9.1
 </div>
 </div>
 
@@ -1005,8 +1005,14 @@ logLevel: msal.LogLevel.Warning
 }
 };
 
-// Create MSAL instance
-const msalInstance = new msal.PublicClientApplication(msalConfig);
+// Create MSAL instance with error handling
+let msalInstance;
+
+try {
+msalInstance = new msal.PublicClientApplication(msalConfig);
+} catch (error) {
+console.error('Failed to create MSAL instance:', error);
+}
 
 // Login request configuration
 const loginRequest = {
@@ -1024,7 +1030,7 @@ appurtenances: [],
 photos: {},
 measurements: {},
 metadata: {
-appVersion: '9.0',
+appVersion: '9.1',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -1164,7 +1170,7 @@ generatePhotoGrid();
 }
 }
 
-// Función para mapear fotos dinámicamente según sectores - NUEVA FUNCIONALIDAD v9.0
+// Función para mapear fotos dinámicamente según sectores - NUEVA FUNCIONALIDAD v9.1
 function mapPhotosForSharePoint(reportData) {
 const sectorsCount = parseInt(reportData.basic.sectorsCount) || 0;
 
@@ -1302,9 +1308,14 @@ sectorTapeDropsDiv.innerHTML = '<p style="text-align: center; color: #666;">Sele
 updatePhotoTypes();
 }
 
-// Initialize MSAL - Mejorado para móviles
+// Initialize MSAL - Corregido para evitar errores de inicialización
 async function initializeMsal() {
 try {
+// Verificar que MSAL esté disponible
+if (typeof msal === 'undefined') {
+throw new Error('MSAL library not loaded');
+}
+
 // Esperar a que MSAL esté completamente inicializado
 await msalInstance.initialize();
 
@@ -1372,33 +1383,21 @@ showLoginError('Error durante inicialización: ' + error.message);
 }
 }
 
-// Sign in function - Optimizado para móviles
+// Sign in function - Corregido para evitar popup blocks
 async function signIn() {
 try {
+// Verificar que MSAL esté inicializado
+if (!msalInstance) {
+throw new Error('MSAL instance not initialized');
+}
+
 // Detectar si es móvil
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-if (isMobile) {
-// En móviles, usar redirect en lugar de popup
+// SIEMPRE usar redirect en lugar de popup para evitar bloqueos
+console.log('Using redirect login...');
 await msalInstance.loginRedirect(loginRequest);
-} else {
-// En desktop, intentar popup primero
-try {
-const response = await msalInstance.loginPopup(loginRequest);
-currentAccount = response.account;
-msalInstance.setActiveAccount(currentAccount);
 
-// Guardar estado de autenticación
-localStorage.setItem('isAuthenticated', 'true');
-localStorage.setItem('userAccount', JSON.stringify(currentAccount));
-
-await getUserDetails();
-showMainApp();
-} catch (popupError) {
-console.error('Popup blocked, using redirect:', popupError);
-await msalInstance.loginRedirect(loginRequest);
-}
-}
 } catch (error) {
 console.error('Login error:', error);
 showLoginError('Error al iniciar sesión: ' + error.message);
@@ -1964,7 +1963,7 @@ photos: {},
 metadata: {
 submittedBy: reportData.metadata.submittedBy,
 submittedByEmail: reportData.metadata.submittedByEmail,
-appVersion: '9.0',
+appVersion: '9.1',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -2567,7 +2566,7 @@ photoReview.innerHTML = `
 `;
 }
 
-// Submit and SharePoint Functions - ACTUALIZADO PARA v9.0 CON MAPEO DINÁMICO
+// Submit and SharePoint Functions - ACTUALIZADO PARA v9.1 CON MAPEO DINÁMICO
 async function sendToSharePoint(reportData) {
 const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
 
@@ -2575,7 +2574,7 @@ const timestamp = Date.now();
 const randomNum = Math.floor(Math.random() * 100000);
 const uniqueReportID = `RPT-${timestamp}-${randomNum}`;
 
-// Mapear las fotos dinámicamente - NUEVA FUNCIONALIDAD v9.0
+// Mapear las fotos dinámicamente - NUEVA FUNCIONALIDAD v9.1
 const photoMapping = mapPhotosForSharePoint(reportData);
 
 const appurtenanceDataJSON = {
@@ -2645,7 +2644,7 @@ AppurtenanceData: JSON.stringify(appurtenanceDataJSON),
 PhotoLinks: JSON.stringify(photoLinksJSON),
 ReportStatus: 'DraftSubmittedPDF',
 
-// Incluir todas las fotos mapeadas dinámicamente - NUEVA FUNCIONALIDAD v9.0
+// Incluir todas las fotos mapeadas dinámicamente - NUEVA FUNCIONALIDAD v9.1
 ...photoMapping
 };
 
@@ -2697,7 +2696,7 @@ statusDiv.innerHTML = `
 <p style="margin-top: 15px;">
 <strong>✓ Guardado localmente</strong><br>
 <strong>✓ Enviado a SharePoint</strong><br>
-<strong>✓ Fotos mapeadas dinámicamente (v9.0)</strong>
+<strong>✓ Fotos mapeadas dinámicamente (v9.1)</strong>
 </p>
 <div style="display: flex; gap: 10px; margin-top: 20px;">
 <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
@@ -2804,7 +2803,7 @@ photos: {},
 measurements: {},
 metadata: {
 ...userInfo,
-appVersion: '9.0',
+appVersion: '9.1',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -2853,7 +2852,7 @@ tapeDrpsHTML += `<p><strong>Sector ${i} Tape Drop:</strong> ${reportData.measure
 
 const summaryHTML = `
 <div style="background: #f5f5f5; padding: 20px; border-radius: 6px; margin: 20px 0;">
-<h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte v9.0</h3>
+<h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte v9.1</h3>
 
 <div style="margin-bottom: 15px;">
 <h4 style="color: #333;">Información del Sitio</h4>
@@ -2899,7 +2898,7 @@ ${!reportData.gps.manual && reportData.gps.accuracy ? `<p><strong>Precisión:</s
 <div>
 <h4 style="color: #333;">Documentación</h4>
 <p><strong>Total de fotos:</strong> ${totalPhotos}</p>
-<p><strong>Versión del reporte:</strong> 9.0 - Mapeo Dinámico de Fotos</p>
+<p><strong>Versión del reporte:</strong> 9.1 - Mapeo Dinámico de Fotos</p>
 </div>
 
 <button class="btn btn-secondary" onclick="closeReportSummary()" style="margin-top: 15px;">
@@ -2924,10 +2923,10 @@ for (let i = 1; i <= sectorsCount; i++) {
 sectorMeasurements += `- Sector ${i} Tape Drop: ${reportData.measurements[`sector${i}TapeDrop`] || 'N/A'} (REQUIRED)\n`;
 }
 
-const emailSubject = `Tower Provider Report v9.0 - ${reportData.basic.siteName || reportId}`;
+const emailSubject = `Tower Provider Report v9.1 - ${reportData.basic.siteName || reportId}`;
 
 const emailBody = `
-TOWER PROVIDER REPORT v9.0 - MAPEO DINÁMICO DE FOTOS
+TOWER PROVIDER REPORT v9.1 - MAPEO DINÁMICO DE FOTOS
 =====================================================
 
 SITE INFORMATION:
@@ -2962,7 +2961,7 @@ ${reportData.appurtenances.map((app, i) =>
 `${i + 1}. ${app.type} - ${app.manufacturer} ${app.model} (Qty: ${app.quantity}, Coax: ${app.coaxSize})`
 ).join('\n')}
 
-PHOTO DOCUMENTATION (v9.0 - Dynamic Mapping):
+PHOTO DOCUMENTATION (v9.1 - Dynamic Mapping):
 - Total Photos: ${Object.values(reportData.photos).reduce((sum, arr) => sum + (arr ? arr.length : 0), 0)}
 ${Object.entries(reportData.photos).map(([category, photos]) => {
 const catName = photoTypes.find(t => t.id === category)?.name || category;
@@ -2974,7 +2973,7 @@ REPORT DETAILS:
 - Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 - Email: ${reportData.basic.submittedByEmail || 'N/A'}
 - Submission Time: ${new Date().toLocaleString()}
-- Report Version: 9.0 - Dynamic Photo Mapping
+- Report Version: 9.1 - Dynamic Photo Mapping
 
 ---
 This report has been submitted to SharePoint with dynamic photo mapping.
@@ -2993,7 +2992,7 @@ const mailtoLink = `mailto:accounting@newcomm2000.com?subject=${encodeURICompone
 
 if (mailtoLink.length > 2000) {
 const shortBody = `
-Tower Provider Report v9.0 - ${reportData.basic.siteName || 'N/A'}
+Tower Provider Report v9.1 - ${reportData.basic.siteName || 'N/A'}
 Site ID: ${reportData.basic.siteId || 'N/A'}
 Sectors: ${sectorsCount}
 Report ID: ${reportId}
@@ -3004,7 +3003,7 @@ Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 Please check SharePoint for the complete report with all details and dynamically mapped photos.
 
 Date: ${new Date().toLocaleString()}
-Version: 9.0 - Dynamic Photo Mapping
+Version: 9.1 - Dynamic Photo Mapping
 `.trim();
 
 window.location.href = `mailto:accounting@newcomm2000.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(shortBody)}`;
@@ -3032,9 +3031,16 @@ notification.remove();
 }, 3000);
 }
 
-// Initialize on page load - Mejorado para móviles
+// Initialize on page load - Corregido para manejo de errores
 window.addEventListener('load', async () => {
-console.log('Page loaded, initializing MSAL...');
+console.log('Page loaded, checking MSAL availability...');
+
+// Verificar que MSAL esté cargado
+if (typeof msal === 'undefined') {
+console.error('MSAL library not loaded');
+showLoginError('Error: No se pudo cargar la biblioteca de autenticación. Verifique su conexión a internet.');
+return;
+}
 
 // Verificar si ya estábamos en la app principal
 const appState = sessionStorage.getItem('appState');
@@ -3053,7 +3059,13 @@ console.error('Error restoring session:', e);
 }
 }
 
+// Inicializar MSAL
+try {
 await initializeMsal();
+} catch (error) {
+console.error('MSAL initialization failed:', error);
+showLoginError('Error al inicializar el sistema de autenticación: ' + error.message);
+}
 });
 
 // Manejar eventos de visibilidad de página (importante para móviles)
