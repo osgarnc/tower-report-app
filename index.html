@@ -7,64 +7,7 @@
 <meta name="author" content="Newcomm Management Services Corp.">
 <meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
 <meta name="description" content="Tower Provider Report - Professional Mobile Application">
-<title>Tower Report Mobile v9.3 V - SharePoint Auth</title>
-
-<!-- MSAL.js desde CDN con fallback -->
-<script src="https://alcdn.msauth.net/browser/2.39.3 V/js/msal-browser.min.js" 
-        onload="console.log('MSAL loaded successfully')" 
-        onerror="loadMsalFallback()"></script>
-
-<script>
-// Fallback para cargar MSAL desde CDN alternativo
-function loadMsalFallback() {
-    console.log('Primary MSAL CDN failed, trying fallback...');
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.39.3 V/lib/msal-browser.min.js';
-    script.onload = () => console.log('MSAL fallback loaded successfully');
-    script.onerror = () => {
-        console.error('All MSAL CDNs failed');
-        showMsalError();
-    };
-    document.head.appendChild(script);
-}
-
-// Mostrar error si MSAL no se puede cargar
-function showMsalError() {
-    const errorDiv = document.getElementById('loginError');
-    if (errorDiv) {
-        errorDiv.innerHTML = `
-        <div style="margin-top: 10px; padding: 15px; background: #ffebee; border: 1px solid #f44336; border-radius: 6px; color: #c62828;">
-            <strong>Error de Red:</strong> No se puede cargar el sistema de autenticación.
-            <br><br>
-            <strong>Posibles causas:</strong>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Conexión a Internet intermitente</li>
-                <li>Bloqueador de anuncios/scripts activo</li>
-                <li>Firewall corporativo</li>
-            </ul>
-            <button onclick="location.reload()" style="background: #f44336; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; margin-right: 10px;">
-                Reintentar
-            </button>
-            <button onclick="checkNetwork()" style="background: #2196f3; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
-                Verificar Red
-            </button>
-        </div>
-        `;
-        errorDiv.style.display = 'block';
-    }
-}
-
-// Verificar conectividad de red
-function checkNetwork() {
-    fetch('https://www.google.com/favicon.ico')
-        .then(() => {
-            alert('Conexión a Internet: ✅ OK\n\nEl problema puede ser un bloqueador de scripts. Intente:\n1. Desactivar bloqueadores de anuncios\n2. Agregar este sitio a excepciones\n3. Usar una red diferente');
-        })
-        .catch(() => {
-            alert('❌ Sin conexión a Internet\n\nVerifique su conexión y reintente.');
-        });
-}
-</script>
+<title>Tower Report Mobile v9.4 - Working Version</title>
 
 <style>
 * {
@@ -88,87 +31,6 @@ min-height: 100vh;
 position: relative;
 }
 
-/* Login Screen */
-.login-screen {
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-min-height: 100vh;
-padding: 20px;
-background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
-color: white;
-}
-
-.login-container {
-background: white;
-padding: 40px;
-border-radius: 10px;
-box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-max-width: 400px;
-width: 100%;
-text-align: center;
-}
-
-.login-logo {
-width: 150px;
-margin-bottom: 30px;
-}
-
-.login-title {
-color: #333;
-font-size: 24px;
-margin-bottom: 10px;
-}
-
-.login-subtitle {
-color: #666;
-font-size: 14px;
-margin-bottom: 30px;
-}
-
-.login-btn {
-background-color: #0066cc;
-color: white;
-padding: 15px 30px;
-border: none;
-border-radius: 6px;
-font-size: 16px;
-font-weight: 500;
-cursor: pointer;
-width: 100%;
-display: flex;
-align-items: center;
-justify-content: center;
-gap: 10px;
-transition: all 0.3s;
-}
-
-.login-btn:hover {
-background-color: #0052a3;
-transform: translateY(-2px);
-box-shadow: 0 4px 12px rgba(0,102,204,0.3);
-}
-
-.login-error {
-background-color: #ffebee;
-color: #c62828;
-padding: 10px;
-border-radius: 6px;
-margin-top: 20px;
-font-size: 14px;
-}
-
-.login-info {
-background-color: #e3f2fd;
-color: #1565c0;
-padding: 15px;
-border-radius: 6px;
-margin-bottom: 20px;
-font-size: 14px;
-text-align: left;
-}
-
 .user-info {
 background-color: #e3f2fd;
 padding: 10px 15px;
@@ -182,17 +44,6 @@ font-size: 14px;
 color: #1565c0;
 }
 
-.logout-btn {
-background-color: #f44336;
-color: white;
-padding: 5px 15px;
-border: none;
-border-radius: 4px;
-font-size: 12px;
-cursor: pointer;
-}
-
-/* Header */
 .header {
 background-color: #0066cc;
 color: white;
@@ -238,7 +89,6 @@ background-color: #4caf50;
 color: white;
 }
 
-/* Form Sections */
 .form-section {
 display: none;
 padding: 20px;
@@ -295,32 +145,6 @@ border-color: #0066cc;
 color: #f44336;
 }
 
-/* Equipment Requirements Notice */
-.equipment-requirements {
-background-color: #fff3cd;
-border: 1px solid #ffeaa7;
-color: #856404;
-padding: 15px;
-border-radius: 6px;
-margin-bottom: 20px;
-font-size: 14px;
-}
-
-.equipment-requirements h4 {
-margin-bottom: 10px;
-color: #856404;
-}
-
-.equipment-requirements ul {
-margin-left: 20px;
-margin-bottom: 0;
-}
-
-.equipment-requirements li {
-margin-bottom: 5px;
-}
-
-/* Buttons */
 .btn {
 padding: 12px 24px;
 border: none;
@@ -373,237 +197,6 @@ gap: 10px;
 margin-top: 30px;
 }
 
-/* GPS Status */
-.gps-status {
-padding: 10px;
-border-radius: 6px;
-margin-top: 10px;
-font-size: 14px;
-}
-
-.gps-status.success {
-background-color: #e8f5e9;
-color: #2e7d32;
-}
-
-.gps-status.error {
-background-color: #ffebee;
-color: #c62828;
-}
-
-.gps-status.warning {
-background-color: #fff3cd;
-color: #856404;
-}
-
-/* Appurtenance List */
-.appurtenance-list {
-margin-top: 20px;
-}
-
-.appurtenance-item {
-background-color: #f5f5f5;
-padding: 15px;
-border-radius: 6px;
-margin-bottom: 10px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-}
-
-.appurtenance-info h4 {
-margin: 0 0 5px 0;
-color: #0066cc;
-}
-
-.appurtenance-info p {
-margin: 0;
-font-size: 14px;
-color: #666;
-}
-
-.equipment-counter {
-background-color: #e3f2fd;
-padding: 15px;
-border-radius: 6px;
-margin-bottom: 20px;
-}
-
-.equipment-counter h4 {
-color: #1565c0;
-margin-bottom: 10px;
-}
-
-.counter-item {
-display: flex;
-justify-content: space-between;
-padding: 5px 0;
-}
-
-.counter-item.complete {
-color: #2e7d32;
-}
-
-.counter-item.incomplete {
-color: #f44336;
-}
-
-/* Photo Section */
-.photo-requirements {
-background-color: #e3f2fd;
-padding: 15px;
-border-radius: 6px;
-margin-bottom: 20px;
-}
-
-.photo-requirements h3 {
-margin-bottom: 10px;
-color: #1565c0;
-}
-
-.photo-requirements ul {
-margin-left: 20px;
-}
-
-.photo-grid {
-display: grid;
-gap: 15px;
-}
-
-.photo-item {
-background-color: #f5f5f5;
-padding: 15px;
-border-radius: 6px;
-text-align: center;
-}
-
-.photo-item h4 {
-margin-bottom: 10px;
-color: #333;
-font-size: 16px;
-}
-
-.photo-capture {
-position: relative;
-margin-bottom: 10px;
-}
-
-.camera-input {
-display: none;
-}
-
-.camera-btn {
-background-color: #0066cc;
-color: white;
-padding: 10px 20px;
-border-radius: 6px;
-cursor: pointer;
-display: inline-flex;
-align-items: center;
-gap: 8px;
-}
-
-.camera-btn:hover {
-background-color: #0052a3;
-}
-
-.photo-preview {
-margin-top: 10px;
-max-width: 100%;
-max-height: 200px;
-border-radius: 6px;
-box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.photo-count {
-font-size: 14px;
-color: #666;
-margin-top: 5px;
-}
-
-.photo-status {
-display: inline-block;
-padding: 4px 8px;
-border-radius: 4px;
-font-size: 12px;
-margin-top: 5px;
-}
-
-.photo-status.complete {
-background-color: #4caf50;
-color: white;
-}
-
-.photo-status.pending {
-background-color: #ff9800;
-color: white;
-}
-
-/* Estilos para las secciones de sectores */
-.sector-photo-section {
-margin: 20px 0;
-padding: 15px;
-background-color: #f8f9fa;
-border-radius: 8px;
-border-left: 4px solid #0066cc;
-}
-
-.sector-photo-section h4 {
-color: #0066cc;
-margin-bottom: 15px;
-font-size: 18px;
-}
-
-/* Review Section */
-.review-section {
-background-color: #f5f5f5;
-padding: 15px;
-border-radius: 6px;
-margin-bottom: 15px;
-}
-
-.review-section h3 {
-margin-bottom: 10px;
-color: #0066cc;
-}
-
-.review-item {
-display: flex;
-justify-content: space-between;
-padding: 5px 0;
-border-bottom: 1px solid #e0e0e0;
-}
-
-.review-item:last-child {
-border-bottom: none;
-}
-
-.review-label {
-font-weight: 500;
-color: #666;
-}
-
-.review-value {
-color: #333;
-}
-
-/* Loading Spinner */
-.spinner {
-border: 3px solid #f3f3f3;
-border-top: 3px solid #0066cc;
-border-radius: 50%;
-width: 40px;
-height: 40px;
-animation: spin 1s linear infinite;
-margin: 20px auto;
-}
-
-@keyframes spin {
-0% { transform: rotate(0deg); }
-100% { transform: rotate(360deg); }
-}
-
-/* Notifications */
 .notification {
 position: fixed;
 top: 70px;
@@ -640,7 +233,6 @@ background-color: #f44336;
 background-color: #2196f3;
 }
 
-/* Copyright Footer */
 .copyright-footer {
 text-align: center;
 padding: 20px;
@@ -650,26 +242,20 @@ border-top: 1px solid #eee;
 margin-top: 40px;
 }
 
-/* Dynamic Sectors Styles */
-.sectors-info {
-background-color: #e3f2fd;
-padding: 15px;
-border-radius: 6px;
-margin-bottom: 20px;
+.success-message {
+background: #e8f5e9;
+border: 1px solid #4caf50;
+color: #2e7d32;
+padding: 20px;
+border-radius: 8px;
+text-align: center;
 }
 
-.sectors-info h4 {
-color: #1565c0;
-margin-bottom: 10px;
+.success-message h2 {
+color: #2e7d32;
+margin-bottom: 15px;
 }
 
-.sector-tape-inputs {
-display: grid;
-gap: 10px;
-margin-top: 10px;
-}
-
-/* Responsive */
 @media (max-width: 480px) {
 .header h1 {
 font-size: 18px;
@@ -681,43 +267,20 @@ padding: 10px 20px;
 }
 }
 </style>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-<!-- Login Screen -->
-<div id="loginScreen" class="login-screen">
-<div class="login-container">
-<h2 class="login-title">Tower Provider Report</h2>
-<p class="login-subtitle">Inicie sesión con su cuenta de Microsoft 365</p>
 
-<button class="login-btn" onclick="signIn()">
-<svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="1" y="1" width="9" height="9" fill="#F25022"/>
-<rect x="11" y="1" width="9" height="9" fill="#7FBA00"/>
-<rect x="1" y="11" width="9" height="9" fill="#00A4EF"/>
-<rect x="11" y="11" width="9" height="9" fill="#FFB900"/>
-</svg>
-Iniciar sesión con Microsoft
-</button>
-
-<div id="loginError" style="display: none;" class="login-error"></div>
-
-<div style="margin-top: 20px; font-size: 12px; color: #666;">
-<p>Versión 9.3 V - Mapeo Dinámico de Fotos</p>
-</div>
-</div>
-</div>
-
-<!-- Main App (Hidden until authenticated) -->
-<div id="mainApp" class="app-container" style="display: none;">
+<div class="app-container">
 <div class="user-info">
-<span>Usuario: <strong id="userDisplayName">-</strong></span>
-<button class="logout-btn" onclick="signOut()">Cerrar Sesión</button>
+<span>Usuario: <strong id="userDisplayName">Demo User</strong></span>
+<span style="font-size: 12px; color: #666;">v9.4 - Sin Autenticación</span>
 </div>
 
 <header class="header">
 <h1>Tower Provider Report</h1>
-<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 9.3 V - Mapeo Dinámico de Fotos</div>
+<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 9.4 - Demo (Sin Auth)</div>
 </header>
 
 <div class="step-indicator">
@@ -731,17 +294,6 @@ Iniciar sesión con Microsoft
 <!-- Step 1: Basic Information -->
 <div class="form-section active" id="section1">
 <h2>Información Básica</h2>
-
-<!-- Storage management -->
-<div style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-size: 14px;">
-<div style="display: flex; justify-content: space-between; align-items: center;">
-<span>Espacio usado: <span id="storageIndicator">calculando...</span></span>
-<button class="btn btn-secondary" onclick="clearAllData()" style="font-size: 12px; padding: 5px 10px;">
-Limpiar datos
-</button>
-</div>
-<div style="font-size: 11px; color: #666; margin-top: 5px;">App v9.3 V - Mapeo Dinámico</div>
-</div>
 
 <div class="form-group">
 <label>Tower Provider Site ID <span class="required">*</span></label>
@@ -763,10 +315,9 @@ Limpiar datos
 <input type="text" id="customerSiteName" placeholder="ej: Vega Baja DT" required>
 </div>
 
-<!-- Nueva sección para cantidad de sectores -->
 <div class="form-group" style="background: #e3f2fd; padding: 15px; border-radius: 6px;">
 <label>Number of Sectors <span class="required">*</span></label>
-<select id="sectorsCount" required onchange="updateSectorRequirements()">
+<select id="sectorsCount" required>
 <option value="">Seleccione cantidad de sectores</option>
 <option value="1">1 Sector</option>
 <option value="2">2 Sectores</option>
@@ -775,24 +326,6 @@ Limpiar datos
 <option value="5">5 Sectores</option>
 <option value="6">6 Sectores</option>
 </select>
-<p style="font-size: 12px; color: #1565c0; margin-top: 10px;">
-La cantidad de sectores determinará las mediciones de tape drop y fotos requeridas
-</p>
-</div>
-
-<div class="form-group">
-<label>Radios Installed <span class="required">*</span></label>
-<input type="number" id="radiosInstalled" min="0" placeholder="3" required onchange="updateEquipmentRequirements()">
-</div>
-
-<div class="form-group">
-<label>Antennas Installed <span class="required">*</span></label>
-<input type="number" id="antennasInstalled" min="0" placeholder="6" required onchange="updateEquipmentRequirements()">
-</div>
-
-<div class="form-group">
-<label>Cables Installed <span class="required">*</span></label>
-<input type="number" id="cablesInstalled" min="0" placeholder="12" required onchange="updateEquipmentRequirements()">
 </div>
 
 <div class="form-group">
@@ -801,54 +334,8 @@ La cantidad de sectores determinará las mediciones de tape drop y fotos requeri
 </div>
 
 <div class="form-group">
-<label>Tower Top Installation <span class="required">*</span></label>
-<select id="towerTop" required onchange="updateMeasurementRequirements()">
-<option value="">Seleccione una opción</option>
-<option value="yes">Yes - At Tower Top</option>
-<option value="near-top">Near Top (Within 10' of top)</option>
-<option value="no">No - Below 10' from top</option>
-</select>
-</div>
-
-<div class="form-group">
 <label>Completion Date <span class="required">*</span></label>
 <input type="date" id="completionDate" required>
-</div>
-
-<!-- GPS Section - Now Required -->
-<div style="background: #ffebee; padding: 15px; border-radius: 6px; margin-top: 20px; margin-bottom: 20px;">
-<h3 style="color: #c62828; margin-bottom: 10px;">📍 Ubicación GPS (OBLIGATORIO)</h3>
-<p style="font-size: 14px; color: #666; margin-bottom: 15px;">
-La ubicación GPS es <strong>obligatoria</strong> para continuar. Si el GPS automático falla, debe ingresar las coordenadas manualmente.
-</p>
-<button class="btn btn-success btn-block" onclick="getGPSLocation()">
-📍 Obtener Ubicación GPS
-</button>
-<div id="gpsStatus"></div>
-</div>
-
-<!-- Sección de mediciones actualizada - AHORA OBLIGATORIA y DINÁMICA -->
-<div style="background: #ffebee; padding: 15px; border-radius: 6px; margin-top: 20px;">
-<h3 style="color: #c62828; margin-bottom: 15px;">📏 Mediciones de Torre (OBLIGATORIO)</h3>
-<p style="font-size: 14px; color: #666; margin-bottom: 15px;">
-<strong>Tape Drop de Sectores:</strong> Siempre obligatorio para todos los sectores.<br>
-<strong>Tower Height y Tallest Point:</strong> <span id="heightRequirementText">Seleccione "Tower Top Installation" para ver requisitos</span>
-</p>
-
-<div class="form-group">
-<label>Tower Height (ft) <span id="towerHeightRequired" style="display: none;" class="required">*</span></label>
-<input type="text" id="towerHeight" placeholder="ej: 38.220">
-</div>
-
-<!-- Tape drop dinámico según cantidad de sectores -->
-<div id="sectorTapeDrops" class="sector-tape-inputs">
-<p style="text-align: center; color: #666;">Seleccione la cantidad de sectores para ver los campos de tape drop</p>
-</div>
-
-<div class="form-group">
-<label>Tallest Point Measurement (ft) <span id="tallestPointRequired" style="display: none;" class="required">*</span></label>
-<input type="text" id="tallestPoint" placeholder="ej: 15.570">
-</div>
 </div>
 
 <div class="btn-group">
@@ -858,70 +345,24 @@ Siguiente →
 </div>
 </div>
 
-<!-- Step 2: Appurtenance Information -->
+<!-- Step 2: Quick Info -->
 <div class="form-section" id="section2">
-<h2>Información de Equipos</h2>
+<h2>Información Adicional</h2>
 
-<!-- Equipment Requirements Alert -->
-<div class="equipment-requirements" id="equipmentRequirements" style="display: none;">
-<h4>⚠️ Requisitos de Equipos</h4>
-<ul id="requirementsList"></ul>
-</div>
-
-<!-- Equipment Counter -->
-<div class="equipment-counter">
-<h4>Contador de Equipos</h4>
-<div id="equipmentCounter"></div>
-</div>
-
-<button class="btn btn-primary btn-block" onclick="showAppurtenanceForm()">
-+ Agregar Equipo
-</button>
-
-<div id="appurtenanceForm" style="display: none; margin-top: 20px;">
 <div class="form-group">
-<label>Type</label>
-<select id="appType">
-<option value="Antenna">Antenna</option>
-<option value="Radio">Radio</option>
-<option value="Cable">Cable</option>
-</select>
+<label>Radios Installed</label>
+<input type="number" id="radiosInstalled" min="0" placeholder="3">
 </div>
 
 <div class="form-group">
-<label>Rad Center</label>
-<input type="text" id="appRadCenter" placeholder="50">
+<label>Antennas Installed</label>
+<input type="number" id="antennasInstalled" min="0" placeholder="6">
 </div>
 
 <div class="form-group">
-<label>Manufacturer</label>
-<input type="text" id="appManufacturer" placeholder="ej: Ericsson">
+<label>GPS Coordinates (Optional)</label>
+<input type="text" id="gpsCoords" placeholder="18.4671, -67.0185">
 </div>
-
-<div class="form-group">
-<label>Model</label>
-<input type="text" id="appModel" placeholder="ej: 840590003">
-</div>
-
-<div class="form-group">
-<label>Quantity</label>
-<input type="number" id="appQuantity" min="1" value="1">
-</div>
-
-<div class="form-group">
-<label>Coax Size</label>
-<select id="appCoaxSize">
-<option value="N/A">N/A</option>
-<option value="7/8">7/8</option>
-<option value="1 5/8">1 5/8</option>
-</select>
-</div>
-
-<button class="btn btn-success" onclick="addAppurtenance()">Guardar</button>
-<button class="btn btn-secondary" onclick="cancelAppurtenance()">Cancelar</button>
-</div>
-
-<div class="appurtenance-list" id="appurtenanceList"></div>
 
 <div class="btn-group">
 <button class="btn btn-secondary" onclick="previousStep()">
@@ -933,29 +374,19 @@ Siguiente →
 </div>
 </div>
 
-<!-- Step 3: Photo Documentation -->
+<!-- Step 3: Demo Photos -->
 <div class="form-section" id="section3">
-<h2>Documentación Fotográfica</h2>
+<h2>Documentación Fotográfica (Demo)</h2>
 
-<div class="photo-requirements">
-<h3>📸 Fotos Requeridas</h3>
-<ul>
-<li>Las fotos se organizan por categorías y sectores</li>
-<li>Cada sector tiene su propia sección de fotos</li>
-<li>Puede tomar múltiples fotos por categoría si es necesario</li>
-<li>Las fotos se guardan automáticamente</li>
-</ul>
-<div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px;">
-<strong>Modo Demo:</strong>
-<button class="btn btn-secondary" onclick="skipPhotoValidation()" style="margin-left: 10px;">
-Saltar validación de fotos
+<div style="background: #fff3cd; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+<h4>📸 Modo Demo</h4>
+<p>Esta versión demo simula el proceso de toma de fotos. En la versión completa, aquí tomarías fotos reales usando la cámara.</p>
+<button class="btn btn-primary" onclick="simulatePhotos()">
+Simular Fotos Completadas
 </button>
 </div>
-</div>
 
-<div class="photo-grid" id="photoGrid">
-<!-- Photo items will be generated by JavaScript dynamically -->
-</div>
+<div id="photoStatus" style="margin-top: 20px;"></div>
 
 <div class="btn-group">
 <button class="btn btn-secondary" onclick="previousStep()">
@@ -971,24 +402,9 @@ Siguiente →
 <div class="form-section" id="section4">
 <h2>Revisar Información</h2>
 
-<div class="review-section">
-<h3>Información del Sitio</h3>
+<div style="background: #f5f5f5; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+<h3 style="color: #0066cc;">Información del Sitio</h3>
 <div id="siteReview"></div>
-</div>
-
-<div class="review-section">
-<h3>Equipos Instalados</h3>
-<div id="equipmentReview"></div>
-</div>
-
-<div class="review-section">
-<h3>Mediciones Obligatorias</h3>
-<div id="measurementsReview"></div>
-</div>
-
-<div class="review-section">
-<h3>Documentación Fotográfica</h3>
-<div id="photoReview"></div>
 </div>
 
 <div class="btn-group">
@@ -1001,682 +417,36 @@ Siguiente →
 </div>
 </div>
 
-<!-- Step 5: Submit -->
+<!-- Step 5: Success -->
 <div class="form-section" id="section5">
-<h2>Enviar Reporte</h2>
-
-<div style="text-align: center; padding: 40px 20px;">
-<h3>¿Está listo para enviar el reporte?</h3>
-<p style="margin: 20px 0; color: #666;">
-Al enviar, se generará el reporte y se enviará automáticamente a accounting@newcomm2000.com
-</p>
-
-<button class="btn btn-primary btn-block" onclick="showReportSummary()" style="margin-bottom: 10px; font-size: 16px;">
-📋 Ver Resumen del Reporte
-</button>
-
-<button class="btn btn-success btn-block" onclick="submitReport()" style="font-size: 18px; padding: 15px;">
-✓ Enviar Reporte
-</button>
-
-<div id="submitStatus" style="margin-top: 20px;"></div>
-</div>
-
-<div class="btn-group">
-<button class="btn btn-secondary" onclick="previousStep()">
-← Anterior
+<div class="success-message">
+<h2>✅ Reporte Completado</h2>
+<p>Su reporte ha sido generado exitosamente en modo demo.</p>
+<p><strong>ID:</strong> <span id="reportId"></span></p>
+<p style="margin-top: 15px;">En la versión completa, el reporte se enviaría automáticamente a SharePoint.</p>
+<button class="btn btn-primary" onclick="startNewReport()" style="margin-top: 20px;">
+➕ Crear Nuevo Reporte
 </button>
 </div>
 </div>
 
 <!-- Copyright Footer -->
 <div class="copyright-footer">
-© 2025 Newcomm Management Services Corp. • All rights reserved • v9.3 V
+© 2025 Newcomm Management Services Corp. • All rights reserved • v9.4 Demo
 </div>
 </div>
 
 <script>
-// MSAL Configuration - Optimizado para móviles
-const msalConfig = {
-auth: {
-clientId: '928a4b98-5894-4a97-b8b1-d8c489c22216',
-authority: 'https://login.microsoftonline.com/93a307af-2b18-419b-82a4-da0d26ae31d0',
-redirectUri: window.location.origin + window.location.pathname,
-navigateToLoginRequestUrl: false // Importante para móviles
-},
-cache: {
-cacheLocation: 'localStorage', // Cambiado a localStorage para persistencia
-storeAuthStateInCookie: true // Habilitado para mejor compatibilidad móvil
-},
-system: {
-loggerOptions: {
-loggerCallback: (level, message, containsPii) => {
-if (containsPii) return;
-console.log(message);
-},
-logLevel: msal.LogLevel.Warning
-}
-}
-};
-
-// Create MSAL instance with enhanced verification
-function createMsalInstance() {
-    try {
-        // Verificación más detallada
-        if (typeof window.msal === 'undefined') {
-            throw new Error('window.msal is undefined');
-        }
-        
-        if (!window.msal.PublicClientApplication) {
-            throw new Error('PublicClientApplication not found in msal object');
-        }
-
-        console.log('Creating MSAL instance with config:', msalConfig);
-        msalInstance = new window.msal.PublicClientApplication(msalConfig);
-        console.log('MSAL instance created successfully:', msalInstance);
-        return true;
-        
-    } catch (error) {
-        console.error('Failed to create MSAL instance:', error);
-        console.error('Available window.msal:', window.msal);
-        showLoginError(`Error al crear instancia MSAL: ${error.message}`);
-        return false;
-    }
-}
-
-// Login request configuration
-const loginRequest = {
-scopes: ['User.Read'],
-prompt: 'select_account' // Fuerza selección de cuenta en móviles
-};
-
 // Global variables
-let currentAccount = null;
 let currentStep = 1;
-let msalInstance = null; // Inicializar como null
 let reportData = {
 basic: {},
-gps: {},
-appurtenances: [],
-photos: {},
-measurements: {},
 metadata: {
-appVersion: '9.3 V',
+appVersion: '9.4-demo',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
 };
-
-// Base photo types configuration (será modificado dinámicamente)
-let photoTypes = [];
-
-// Function to update photo types based on sectors, antennas, and radios
-function updatePhotoTypes() {
-const sectorsCount = parseInt(document.getElementById('sectorsCount').value) || 0;
-const antennasCount = parseInt(document.getElementById('antennasInstalled').value) || 0;
-const radiosCount = parseInt(document.getElementById('radiosInstalled').value) || 0;
-
-// Reset photo types
-photoTypes = [
-{
-id: 'equipment_room',
-name: 'Post Equipment Room or Pad',
-required: 4, // Siempre 4 fotos como solicitaste
-description: 'Equipment room/pad photos (4 photos required)'
-},
-{
-id: 'cabinet_doors',
-name: 'Cabinet or Shelter Doors',
-required: 2,
-description: 'Open and closed door photos'
-},
-{
-id: 'safety_lines',
-name: 'Safety Lines',
-required: 4,
-description: 'All safety line assemblies'
-}
-];
-
-// Antenna labels based on antenna count
-if (antennasCount > 0) {
-photoTypes.push({
-id: 'antenna_labels',
-name: 'Antenna Labels',
-required: antennasCount, // Dinámico según cantidad de antenas
-description: `Labels for all ${antennasCount} antennas`
-});
-}
-
-// Radio labels based on radio count
-if (radiosCount > 0) {
-photoTypes.push({
-id: 'radio_labels',
-name: 'Radio Labels',
-required: radiosCount, // Dinámico según cantidad de radios
-description: `Labels for all ${radiosCount} radios`
-});
-}
-
-// COMPOUND POST PICTURES - SIEMPRE 4 FOTOS REQUERIDAS (NO CONDICIONALES)
-photoTypes.push({
-id: 'compound_post',
-name: 'Compound Post Pictures',
-required: 4, // SIEMPRE 4 fotos, no condicionales
-description: '4 compound post photos (always required)'
-});
-
-// Sectors from ground
-if (sectorsCount > 0) {
-photoTypes.push({
-id: 'sectors_ground',
-name: 'Sectors from Ground',
-required: sectorsCount, // Dinámico según cantidad de sectores
-description: `All ${sectorsCount} sectors`
-});
-}
-
-// Crear categorías individuales para cada sector - Post Pictures
-for (let i = 1; i <= sectorsCount; i++) {
-photoTypes.push({
-id: `sector_${i}_general_view`,
-name: `Sector ${i} - General View from Behind`,
-required: 1,
-description: `General view from behind of Sector ${i}`,
-sectorGroup: true,
-sectorNumber: i,
-photoType: 'general_view'
-});
-photoTypes.push({
-id: `sector_${i}_cables_back`,
-name: `Sector ${i} - Cables Going Back`,
-required: 1,
-description: `Cables going back for Sector ${i}`,
-sectorGroup: true,
-sectorNumber: i,
-photoType: 'cables_back'
-});
-photoTypes.push({
-id: `sector_${i}_sector_view`,
-name: `Sector ${i} - Sector View`,
-required: 1,
-description: `Sector view for Sector ${i}`,
-sectorGroup: true,
-sectorNumber: i,
-photoType: 'sector_view'
-});
-}
-
-// Crear categorías individuales para tape drop por sector
-for (let i = 1; i <= sectorsCount; i++) {
-photoTypes.push({
-id: `sector_${i}_tapedrop`,
-name: `Sector ${i} - Tape Drop Measurements`,
-required: 2,
-description: `Tape drop measurement photos for Sector ${i} (2 photos required)`,
-tapeDropGroup: true,
-sectorNumber: i
-});
-}
-
-// Tower measurements
-photoTypes.push({
-id: 'tower_measurements',
-name: 'Tower Height Measurements',
-required: 2,
-description: 'Tower and tallest point'
-});
-
-// Beacon photos
-photoTypes.push({
-id: 'beacon',
-name: 'Beacon Photos',
-required: 2,
-description: 'Beacon and label'
-});
-
-// Regenerate photo grid if we're on step 3
-if (currentStep === 3) {
-generatePhotoGrid();
-}
-}
-
-// Función para mapear fotos dinámicamente según sectores - NUEVA FUNCIONALIDAD v9.3 V
-function mapPhotosForSharePoint(reportData) {
-const sectorsCount = parseInt(reportData.basic.sectorsCount) || 0;
-
-// Helper function para obtener foto por índice
-function getPhotoByIndex(category, index) {
-const photos = reportData.photos[category] || [];
-return photos[index] ? photos[index].data : 'N/A';
-}
-
-function getPhotoTimestamp(category, index) {
-const photos = reportData.photos[category] || [];
-return photos[index] ? photos[index].timestamp : '';
-}
-
-// Mapeo base de fotos (no dependen de sectores)
-const photoMapping = {
-// Antenna photos - dinámico según cantidad instalada
-antenna1Photo: getPhotoByIndex('antenna_labels', 0),
-antenna2Photo: getPhotoByIndex('antenna_labels', 1),
-antenna3Photo: getPhotoByIndex('antenna_labels', 2),
-antenna4Photo: getPhotoByIndex('antenna_labels', 3),
-antenna5Photo: getPhotoByIndex('antenna_labels', 4),
-antenna6Photo: getPhotoByIndex('antenna_labels', 5),
-
-// Radio photos - dinámico según cantidad instalada
-radio1Photo: getPhotoByIndex('radio_labels', 0),
-radio2Photo: getPhotoByIndex('radio_labels', 1),
-radio3Photo: getPhotoByIndex('radio_labels', 2),
-
-// Post equipment room photos (siempre 4 requeridas)
-postPhoto1: getPhotoByIndex('equipment_room', 0),
-postPhoto2: getPhotoByIndex('equipment_room', 1),
-postPhoto3: getPhotoByIndex('equipment_room', 2),
-postPhoto4: getPhotoByIndex('equipment_room', 3),
-
-// Timestamps para post photos
-postPhoto1Timestamp: getPhotoTimestamp('equipment_room', 0),
-postPhoto2Timestamp: getPhotoTimestamp('equipment_room', 1),
-postPhoto3Timestamp: getPhotoTimestamp('equipment_room', 2),
-postPhoto4Timestamp: getPhotoTimestamp('equipment_room', 3),
-
-// Cabinet photos (siempre 2)
-cabinetOpenPhoto: getPhotoByIndex('cabinet_doors', 0),
-cabinetClosePhoto: getPhotoByIndex('cabinet_doors', 1),
-cabinetOpenTimestamp: getPhotoTimestamp('cabinet_doors', 0),
-cabinetCloseTimestamp: getPhotoTimestamp('cabinet_doors', 1),
-
-// Safety line photos (siempre 4)
-safetyTopPhoto: getPhotoByIndex('safety_lines', 0),
-safetySectorPhoto: getPhotoByIndex('safety_lines', 1),
-safetyUpPhoto: getPhotoByIndex('safety_lines', 2),
-safetyBottomPhoto: getPhotoByIndex('safety_lines', 3),
-safetyTopTimestamp: getPhotoTimestamp('safety_lines', 0),
-safetySectorTimestamp: getPhotoTimestamp('safety_lines', 1),
-safetyUpTimestamp: getPhotoTimestamp('safety_lines', 2),
-safetyBottomTimestamp: getPhotoTimestamp('safety_lines', 3),
-
-// COMPOUND POST PICTURES - SIEMPRE 4 FOTOS
-compoundPhoto1: getPhotoByIndex('compound_post', 0),
-compoundPhoto2: getPhotoByIndex('compound_post', 1),
-compoundPhoto3: getPhotoByIndex('compound_post', 2),
-compoundPhoto4: getPhotoByIndex('compound_post', 3),
-compoundPhoto1Timestamp: getPhotoTimestamp('compound_post', 0),
-compoundPhoto2Timestamp: getPhotoTimestamp('compound_post', 1),
-compoundPhoto3Timestamp: getPhotoTimestamp('compound_post', 2),
-compoundPhoto4Timestamp: getPhotoTimestamp('compound_post', 3),
-
-// Tower measurements (siempre 2)
-towerTapeDropPhoto: getPhotoByIndex('tower_measurements', 0),
-tallestPointPhoto: getPhotoByIndex('tower_measurements', 1),
-
-// Beacon photos (siempre 2)
-beaconPhoto: getPhotoByIndex('beacon', 0),
-beaconLabelPhoto: getPhotoByIndex('beacon', 1)
-};
-
-// Agregar fotos de sectores desde el suelo (dinámico)
-for (let i = 1; i <= Math.max(sectorsCount, 6); i++) {
-photoMapping[`sector${i}GroundPhoto`] = getPhotoByIndex('sectors_ground', i - 1);
-}
-
-// Agregar fotos específicas por sector (dinámico)
-for (let i = 1; i <= sectorsCount; i++) {
-// General view from behind
-photoMapping[`sector${i}GeneralViewPhoto`] = getPhotoByIndex(`sector_${i}_general_view`, 0);
-
-// Cables going back
-photoMapping[`sector${i}CablesBackPhoto`] = getPhotoByIndex(`sector_${i}_cables_back`, 0);
-
-// Sector view
-photoMapping[`sector${i}SectorViewPhoto`] = getPhotoByIndex(`sector_${i}_sector_view`, 0);
-
-// Tape drop photos (2 por sector)
-photoMapping[`sector${i}TapeDropPhoto1`] = getPhotoByIndex(`sector_${i}_tapedrop`, 0);
-photoMapping[`sector${i}TapeDropPhoto2`] = getPhotoByIndex(`sector_${i}_tapedrop`, 1);
-
-// Timestamps para tape drop
-photoMapping[`sector${i}TapeDropPhoto1Timestamp`] = getPhotoTimestamp(`sector_${i}_tapedrop`, 0);
-photoMapping[`sector${i}TapeDropPhoto2Timestamp`] = getPhotoTimestamp(`sector_${i}_tapedrop`, 1);
-}
-
-return photoMapping;
-}
-
-// Update sector requirements when sector count changes
-function updateSectorRequirements() {
-const sectorsCount = parseInt(document.getElementById('sectorsCount').value) || 0;
-const sectorTapeDropsDiv = document.getElementById('sectorTapeDrops');
-
-
-// Clear existing inputs
-sectorTapeDropsDiv.innerHTML = '';
-
-
-if (sectorsCount > 0) {
-const gridStyle = sectorsCount <= 3 ? `grid-template-columns: repeat(${sectorsCount}, 1fr)` : 'grid-template-columns: repeat(3, 1fr)';
-sectorTapeDropsDiv.style.display = 'grid';
-sectorTapeDropsDiv.style.gridTemplateColumns = sectorsCount <= 3 ? `repeat(${sectorsCount}, 1fr)` : 'repeat(3, 1fr)';
-sectorTapeDropsDiv.style.gap = '10px';
-
-for (let i = 1; i <= sectorsCount; i++) {
-const div = document.createElement('div');
-div.className = 'form-group';
-div.innerHTML = `
-<label>Sector ${i} Tape Drop <span class="required">*</span></label>
-<input type="text" id="sector${i}TapeDrop" placeholder="ej: ${15 + Math.random() * 2}0 ft" required>
-`;
-sectorTapeDropsDiv.appendChild(div);
-}
-} else {
-sectorTapeDropsDiv.innerHTML = '<p style="text-align: center; color: #666;">Seleccione la cantidad de sectores para ver los campos de tape drop</p>';
-}
-
-// Update photo types when sector count changes
-updatePhotoTypes();
-}
-
-// Initialize MSAL - Completamente reescrito
-async function initializeMsal() {
-try {
-// Primero crear la instancia MSAL
-if (!createMsalInstance()) {
-return;
-}
-
-// Esperar a que MSAL esté completamente inicializado
-await msalInstance.initialize();
-
-// Manejar el redirect promise
-const response = await msalInstance.handleRedirectPromise();
-
-if (response) {
-// Usuario viene de un redirect
-currentAccount = response.account;
-// Guardar el estado de autenticación
-localStorage.setItem('isAuthenticated', 'true');
-localStorage.setItem('userAccount', JSON.stringify(currentAccount));
-await getUserDetails();
-showMainApp();
-} else {
-// Verificar si hay cuentas en caché
-const accounts = msalInstance.getAllAccounts();
-if (accounts.length > 0) {
-currentAccount = accounts[0];
-msalInstance.setActiveAccount(currentAccount);
-
-// Verificar si tenemos un token válido
-try {
-await msalInstance.acquireTokenSilent({
-...loginRequest,
-account: currentAccount
-});
-await getUserDetails();
-showMainApp();
-} catch (error) {
-// Token expirado, necesita login
-console.log('Token expired, need to login again');
-localStorage.removeItem('isAuthenticated');
-localStorage.removeItem('userAccount');
-}
-} else {
-// Verificar localStorage para sesión persistente
-const savedAuth = localStorage.getItem('isAuthenticated');
-const savedAccount = localStorage.getItem('userAccount');
-
-if (savedAuth === 'true' && savedAccount) {
-try {
-currentAccount = JSON.parse(savedAccount);
-// Intentar obtener token silenciosamente
-const tokenResponse = await msalInstance.acquireTokenSilent({
-...loginRequest,
-account: currentAccount,
-forceRefresh: true
-});
-if (tokenResponse) {
-await getUserDetails();
-showMainApp();
-}
-} catch (error) {
-console.log('Silent token acquisition failed:', error);
-localStorage.removeItem('isAuthenticated');
-localStorage.removeItem('userAccount');
-}
-}
-}
-}
-} catch (error) {
-console.error('Error during initialization:', error);
-showLoginError('Error durante inicialización: ' + error.message);
-}
-}
-
-// Sign in function - Corregido para evitar popup blocks
-async function signIn() {
-try {
-// Verificar que MSAL esté inicializado
-if (!msalInstance) {
-throw new Error('MSAL instance not initialized');
-}
-
-// Detectar si es móvil
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-// SIEMPRE usar redirect en lugar de popup para evitar bloqueos
-console.log('Using redirect login...');
-await msalInstance.loginRedirect(loginRequest);
-
-} catch (error) {
-console.error('Login error:', error);
-showLoginError('Error al iniciar sesión: ' + error.message);
-}
-}
-
-// Sign out function - Actualizado
-async function signOut() {
-// Limpiar localStorage
-localStorage.removeItem('isAuthenticated');
-localStorage.removeItem('userAccount');
-localStorage.removeItem('towerReport');
-
-const logoutRequest = {
-account: currentAccount,
-postLogoutRedirectUri: window.location.origin + window.location.pathname
-};
-await msalInstance.logoutRedirect(logoutRequest);
-}
-
-// Get user details - Mejorado con reintentos
-async function getUserDetails() {
-try {
-const tokenResponse = await msalInstance.acquireTokenSilent({
-scopes: ['User.Read'],
-account: currentAccount
-});
-
-const response = await fetch('https://graph.microsoft.com/v1.0/me', {
-headers: {
-'Authorization': `Bearer ${tokenResponse.accessToken}`
-}
-});
-
-if (response.ok) {
-const userData = await response.json();
-document.getElementById('userDisplayName').textContent = userData.displayName || currentAccount.name;
-
-// Store user info for reports
-reportData.metadata.submittedBy = userData.displayName || currentAccount.name;
-reportData.metadata.submittedByEmail = userData.mail || userData.userPrincipalName || currentAccount.username;
-
-// Guardar información del usuario
-localStorage.setItem('userName', userData.displayName || currentAccount.name);
-localStorage.setItem('userEmail', userData.mail || userData.userPrincipalName || currentAccount.username);
-}
-} catch (error) {
-console.error('Error getting user details:', error);
-
-// Usar información guardada si está disponible
-const savedName = localStorage.getItem('userName');
-const savedEmail = localStorage.getItem('userEmail');
-
-if (savedName) {
-document.getElementById('userDisplayName').textContent = savedName;
-reportData.metadata.submittedBy = savedName;
-reportData.metadata.submittedByEmail = savedEmail || currentAccount.username;
-} else {
-document.getElementById('userDisplayName').textContent = currentAccount.name || 'Usuario';
-reportData.metadata.submittedBy = currentAccount.name || 'Usuario';
-reportData.metadata.submittedByEmail = currentAccount.username || 'unknown@email.com';
-}
-}
-}
-
-// Show login error with better styling
-function showLoginError(message) {
-const errorDiv = document.getElementById('loginError');
-errorDiv.innerHTML = `
-<div style="margin-top: 10px; padding: 15px; background: #ffebee; border: 1px solid #f44336; border-radius: 6px; color: #c62828;">
-<strong>Error:</strong> ${message}
-<br><br>
-<button onclick="location.reload()" style="background: #f44336; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
-Recargar Página
-</button>
-</div>
-`;
-errorDiv.style.display = 'block';
-}
-
-// Show main app - Con verificación adicional
-function showMainApp() {
-console.log('Showing main app for user:', currentAccount?.name);
-
-// Asegurar que tenemos una cuenta válida
-if (!currentAccount) {
-console.error('No current account found');
-location.reload();
-return;
-}
-
-document.getElementById('loginScreen').style.display = 'none';
-document.getElementById('mainApp').style.display = 'block';
-
-// Prevenir el botón de retroceso en móviles
-if (window.history && window.history.pushState) {
-window.history.pushState(null, null, window.location.href);
-window.onpopstate = function () {
-window.history.pushState(null, null, window.location.href);
-};
-}
-
-// Initialize app
-document.getElementById('completionDate').value = new Date().toISOString().split('T')[0];
-// No generar photo grid aquí, esperar a que se seleccionen sectores
-loadSavedData();
-updateStorageIndicator();
-updateEquipmentCounter();
-optimizeStorage();
-
-// Guardar estado de la aplicación
-sessionStorage.setItem('appState', 'mainApp');
-}
-
-// Update equipment requirements display
-function updateEquipmentRequirements() {
-const radios = parseInt(document.getElementById('radiosInstalled').value) || 0;
-const antennas = parseInt(document.getElementById('antennasInstalled').value) || 0;
-const cables = parseInt(document.getElementById('cablesInstalled').value) || 0;
-
-updateEquipmentCounter();
-updatePhotoTypes(); // Actualizar tipos de fotos cuando cambian los equipos
-}
-
-// Update equipment counter
-function updateEquipmentCounter() {
-const radios = parseInt(document.getElementById('radiosInstalled').value) || 0;
-const antennas = parseInt(document.getElementById('antennasInstalled').value) || 0;
-const cables = parseInt(document.getElementById('cablesInstalled').value) || 0;
-
-const counterDiv = document.getElementById('equipmentCounter');
-
-// Count equipment by type
-const radioCount = reportData.appurtenances.filter(app => app.type === 'Radio').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-const antennaCount = reportData.appurtenances.filter(app => app.type === 'Antenna').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-const cableCount = reportData.appurtenances.filter(app => app.type === 'Cable').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-
-counterDiv.innerHTML = `
-<div class="counter-item ${radioCount >= radios ? 'complete' : 'incomplete'}">
-<span>Radios:</span>
-<span>${radioCount} / ${radios} ${radioCount >= radios ? '✓' : '⚠️'}</span>
-</div>
-<div class="counter-item ${antennaCount >= antennas ? 'complete' : 'incomplete'}">
-<span>Antenas:</span>
-<span>${antennaCount} / ${antennas} ${antennaCount >= antennas ? '✓' : '⚠️'}</span>
-</div>
-<div class="counter-item ${cableCount >= cables ? 'complete' : 'incomplete'}">
-<span>Cables:</span>
-<span>${cableCount} / ${cables} ${cableCount >= cables ? '✓' : '⚠️'}</span>
-</div>
-`;
-
-// Show requirements alert if needed
-const requirementsDiv = document.getElementById('equipmentRequirements');
-const requirementsList = document.getElementById('requirementsList');
-
-if (radios > 0 || antennas > 0 || cables > 0) {
-const requirements = [];
-if (radioCount < radios) {
-requirements.push(`Debe agregar ${radios - radioCount} radio(s) más`);
-}
-if (antennaCount < antennas) {
-requirements.push(`Debe agregar ${antennas - antennaCount} antena(s) más`);
-}
-if (cableCount < cables) {
-requirements.push(`Debe agregar ${cables - cableCount} cable(s) más`);
-}
-
-if (requirements.length > 0) {
-requirementsList.innerHTML = requirements.map(req => `<li>${req}</li>`).join('');
-requirementsDiv.style.display = 'block';
-} else {
-requirementsDiv.style.display = 'none';
-}
-} else {
-requirementsDiv.style.display = 'none';
-}
-}
-
-// Función para actualizar los requisitos de medición según Tower Top Installation
-function updateMeasurementRequirements() {
-const towerTopValue = document.getElementById('towerTop').value;
-const towerHeightRequired = document.getElementById('towerHeightRequired');
-const tallestPointRequired = document.getElementById('tallestPointRequired');
-const heightRequirementText = document.getElementById('heightRequirementText');
-
-const towerHeightInput = document.getElementById('towerHeight');
-const tallestPointInput = document.getElementById('tallestPoint');
-
-if (towerTopValue === 'yes' || towerTopValue === 'near-top') {
-// Si está en el tope o cerca del tope, tower height y tallest point son obligatorios
-towerHeightRequired.style.display = 'inline';
-tallestPointRequired.style.display = 'inline';
-towerHeightInput.setAttribute('required', 'required');
-tallestPointInput.setAttribute('required', 'required');
-heightRequirementText.innerHTML = '<strong style="color: #c62828;">OBLIGATORIO</strong> - Instalación en el tope o cerca del tope';
-} else if (towerTopValue === 'no') {
-// Si no está en el tope, son opcionales
-towerHeightRequired.style.display = 'none';
-tallestPointRequired.style.display = 'none';
-towerHeightInput.removeAttribute('required');
-tallestPointInput.removeAttribute('required');
-heightRequirementText.innerHTML = '<strong style="color: #1565c0;">OPCIONAL</strong> - Instalación debajo de 10\' del tope';
-} else {
-// No se ha seleccionado nada
-heightRequirementText.textContent = 'Seleccione "Tower Top Installation" para ver requisitos';
-}
-}
 
 // Navigation functions
 function nextStep() {
@@ -1712,24 +482,21 @@ stepEl.classList.add('active');
 }
 });
 
-// Generate photo grid when entering step 3
-if (step === 3) {
-generatePhotoGrid();
-}
-
 if (step === 4) {
 updateReview();
+}
+
+if (step === 5) {
+generateReportId();
 }
 
 window.scrollTo(0, 0);
 }
 
-// Validation functions - ACTUALIZADO PARA GPS OBLIGATORIO, EQUIPOS, SECTORES Y MEDICIONES
 function validateCurrentStep() {
 switch(currentStep) {
 case 1:
-const requiredFields = ['siteId', 'siteName', 'customerSiteId', 'customerSiteName',
-'sectorsCount', 'radiosInstalled', 'antennasInstalled', 'cablesInstalled', 'teamLeader', 'towerTop', 'completionDate'];
+const requiredFields = ['siteId', 'siteName', 'customerSiteId', 'customerSiteName', 'sectorsCount', 'teamLeader', 'completionDate'];
 for (let field of requiredFields) {
 if (!document.getElementById(field).value) {
 showNotification('Por favor complete todos los campos requeridos', 'error');
@@ -1737,1363 +504,109 @@ document.getElementById(field).focus();
 return false;
 }
 }
-
-// Validar cantidad de sectores
-const sectorsCount = parseInt(document.getElementById('sectorsCount').value) || 0;
-if (sectorsCount === 0) {
-showNotification('⚠️ Debe seleccionar la cantidad de sectores', 'error');
-document.getElementById('sectorsCount').focus();
-return false;
-}
-
-// GPS ES OBLIGATORIO - NO SE PUEDE CONTINUAR SIN GPS
-if (!reportData.gps.latitude || !reportData.gps.longitude) {
-showNotification('⚠️ DEBE capturar o ingresar las coordenadas GPS para continuar', 'error');
-// Mostrar opción manual si aún no está visible
-const statusDiv = document.getElementById('gpsStatus');
-if (!statusDiv.querySelector('#manualLat')) {
-showManualGPS();
-}
-// Scroll hasta la sección de GPS
-document.getElementById('gpsStatus').scrollIntoView({ behavior: 'smooth', block: 'center' });
-return false;
-}
-
-// VALIDAR TAPE DROP DE SECTORES (SIEMPRE OBLIGATORIO)
-for (let i = 1; i <= sectorsCount; i++) {
-const tapeDrop = document.getElementById(`sector${i}TapeDrop`);
-if (!tapeDrop || !tapeDrop.value) {
-showNotification(`⚠️ El Tape Drop del Sector ${i} es OBLIGATORIO`, 'error');
-if (tapeDrop) {
-tapeDrop.focus();
-tapeDrop.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-return false;
-}
-}
-
-// VALIDAR TOWER HEIGHT Y TALLEST POINT SI ESTÁ EN EL TOPE O CERCA
-const towerTopValue = document.getElementById('towerTop').value;
-if (towerTopValue === 'yes' || towerTopValue === 'near-top') {
-if (!document.getElementById('towerHeight').value) {
-showNotification('⚠️ Tower Height es OBLIGATORIO para instalaciones en el tope o cerca del tope', 'error');
-document.getElementById('towerHeight').focus();
-document.getElementById('towerHeight').scrollIntoView({ behavior: 'smooth', block: 'center' });
-return false;
-}
-if (!document.getElementById('tallestPoint').value) {
-showNotification('⚠️ Tallest Point es OBLIGATORIO para instalaciones en el tope o cerca del tope', 'error');
-document.getElementById('tallestPoint').focus();
-document.getElementById('tallestPoint').scrollIntoView({ behavior: 'smooth', block: 'center' });
-return false;
-}
-}
-
 return true;
-
-case 2:
-if (reportData.appurtenances.length === 0) {
-showNotification('Por favor agregue al menos un equipo', 'error');
-return false;
-}
-
-// Validar cantidades mínimas de radios, antenas y cables
-const radiosNeeded = parseInt(document.getElementById('radiosInstalled').value) || 0;
-const antennasNeeded = parseInt(document.getElementById('antennasInstalled').value) || 0;
-const cablesNeeded = parseInt(document.getElementById('cablesInstalled').value) || 0;
-
-const radioCount = reportData.appurtenances.filter(app => app.type === 'Radio').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-const antennaCount = reportData.appurtenances.filter(app => app.type === 'Antenna').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-const cableCount = reportData.appurtenances.filter(app => app.type === 'Cable').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-
-if (radioCount < radiosNeeded) {
-showNotification(`Debe agregar al menos ${radiosNeeded} radio(s). Actualmente tiene ${radioCount}`, 'error');
-return false;
-}
-
-if (antennaCount < antennasNeeded) {
-showNotification(`Debe agregar al menos ${antennasNeeded} antena(s). Actualmente tiene ${antennaCount}`, 'error');
-return false;
-}
-
-if (cableCount < cablesNeeded) {
-showNotification(`Debe agregar al menos ${cablesNeeded} cable(s). Actualmente tiene ${cableCount}`, 'error');
-return false;
-}
-
-return true;
-
-case 3:
-let totalPhotos = 0;
-let missingCategories = [];
-
-// Verificar cada categoría de fotos
-photoTypes.forEach(type => {
-const photos = reportData.photos[type.id] || [];
-totalPhotos += photos.length;
-
-
-if (photos.length < type.required) {
-missingCategories.push(`${type.name}: ${photos.length}/${type.required}`);
-}
-});
-
-if (missingCategories.length > 0) {
-showNotification(`Fotos faltantes en: ${missingCategories.join(', ')}`, 'error');
-return false;
-}
-
-return true;
-
 default:
 return true;
 }
 }
 
 function saveCurrentStep() {
-try {
 switch(currentStep) {
 case 1:
-const timestamp = Date.now();
-const randomNum = Math.floor(Math.random() * 1000);
-const autoSiteId = document.getElementById('siteId').value || `AUTO-${timestamp}-${randomNum}`;
-const sectorsCount = parseInt(document.getElementById('sectorsCount').value) || 0;
-
 reportData.basic = {
-siteId: autoSiteId,
+siteId: document.getElementById('siteId').value,
 siteName: document.getElementById('siteName').value,
 customerSiteId: document.getElementById('customerSiteId').value,
 customerSiteName: document.getElementById('customerSiteName').value,
-sectorsCount: sectorsCount,
-radiosInstalled: document.getElementById('radiosInstalled').value,
-antennasInstalled: document.getElementById('antennasInstalled').value,
-cablesInstalled: document.getElementById('cablesInstalled').value,
+sectorsCount: document.getElementById('sectorsCount').value,
 teamLeader: document.getElementById('teamLeader').value,
-towerTop: document.getElementById('towerTop').value,
 completionDate: document.getElementById('completionDate').value,
-submittedBy: reportData.metadata.submittedBy || 'Unknown User',
-submittedByEmail: reportData.metadata.submittedByEmail || 'unknown@email.com',
-submissionTimestamp: new Date().toISOString(),
-uniqueReportId: `RPT-${timestamp}-${randomNum}`
+submittedBy: 'Demo User',
+submittedByEmail: 'demo@newcomm2000.com'
 };
-
-// Guardar mediciones dinámicas según sectores
-reportData.measurements = {
-towerHeight: document.getElementById('towerHeight').value || '',
-tallestPoint: document.getElementById('tallestPoint').value || ''
-};
-
-// Guardar tape drops dinámicos
-for (let i = 1; i <= sectorsCount; i++) {
-const tapeDrop = document.getElementById(`sector${i}TapeDrop`);
-if (tapeDrop) {
-reportData.measurements[`sector${i}TapeDrop`] = tapeDrop.value || '';
-}
-}
-break;
-}
-
-try {
-localStorage.setItem('towerReport', JSON.stringify(reportData));
-} catch (e) {
-if (e.name === 'QuotaExceededError') {
-clearOldReports();
-try {
-localStorage.setItem('towerReport', JSON.stringify(reportData));
-} catch (e2) {
-showNotification('Almacenamiento lleno. Algunas fotos no se guardaron.', 'error');
-const minimalData = {
-basic: reportData.basic,
-gps: reportData.gps,
-appurtenances: reportData.appurtenances,
-photos: {}
-};
-localStorage.setItem('towerReport', JSON.stringify(minimalData));
-}
-}
-}
-} catch (error) {
-console.error('Error saving data:', error);
-showNotification('Error al guardar. Continuando sin guardar.', 'error');
-}
-}
-
-function loadSavedData() {
-const saved = localStorage.getItem('towerReport');
-if (saved) {
-reportData = JSON.parse(saved);
-if (reportData.basic) {
-Object.keys(reportData.basic).forEach(key => {
-const element = document.getElementById(key);
-if (element && key !== 'submittedBy' && key !== 'submittedByEmail') {
-element.value = reportData.basic[key];
-}
-});
-// Actualizar requisitos de medición si hay un valor de towerTop guardado
-if (reportData.basic.towerTop) {
-updateMeasurementRequirements();
-}
-// Actualizar sectores si hay un valor guardado
-if (reportData.basic.sectorsCount) {
-updateSectorRequirements();
-}
-}
-if (reportData.measurements) {
-Object.keys(reportData.measurements).forEach(key => {
-const element = document.getElementById(key);
-if (element) {
-element.value = reportData.measurements[key];
-}
-});
-}
-if (reportData.gps.latitude) {
-showGPSStatus(true);
-}
-updateAppurtenanceList();
-updatePhotoCounts();
-updateEquipmentRequirements();
-}
-}
-
-// Storage management functions
-function checkStorageSpace() {
-try {
-let totalSize = 0;
-for (let key in localStorage) {
-if (localStorage.hasOwnProperty(key)) {
-totalSize += localStorage[key].length;
-}
-}
-return (totalSize / 1024 / 1024).toFixed(2);
-} catch (e) {
-return 'Unknown';
-}
-}
-
-function updateStorageIndicator() {
-const indicator = document.getElementById('storageIndicator');
-if (indicator) {
-const usedMB = checkStorageSpace();
-const usedNum = parseFloat(usedMB);
-
-indicator.textContent = `${usedMB} MB`;
-
-if (usedNum > 4.5) {
-indicator.style.color = 'red';
-indicator.textContent += ' (CRÍTICO)';
-} else if (usedNum > 3) {
-indicator.style.color = 'orange';
-indicator.textContent += ' (alto)';
-} else {
-indicator.style.color = 'green';
-}
-}
-}
-
-function optimizeStorage() {
-const currentSize = parseFloat(checkStorageSpace());
-
-if (currentSize > 4) {
-showNotification('Optimizando almacenamiento...', 'info');
-clearOldReports();
-
-if (parseFloat(checkStorageSpace()) > 3) {
-Object.keys(reportData.photos).forEach(photoType => {
-const photos = reportData.photos[photoType];
-if (photos && photos.length > 2) {
-reportData.photos[photoType] = photos.slice(-2);
-}
-});
-updatePhotoCounts();
-}
-
-updateStorageIndicator();
-showNotification('Almacenamiento optimizado', 'success');
-}
-}
-
-function clearOldReports() {
-const keysToRemove = [];
-for (let i = 0; i < localStorage.length; i++) {
-const key = localStorage.key(i);
-if (key && key.startsWith('RPT-') && key !== 'towerReportSession') {
-keysToRemove.push(key);
-}
-}
-keysToRemove.forEach(key => localStorage.removeItem(key));
-}
-
-function clearAllData() {
-if (confirm('¿Eliminar todos los datos guardados? Esto borrará reportes anteriores pero mantendrá su sesión activa.')) {
-const keysToRemove = [];
-for (let i = 0; i < localStorage.length; i++) {
-const key = localStorage.key(i);
-if (key && key !== 'isAuthenticated' && key !== 'userAccount' && key !== 'userName' && key !== 'userEmail') {
-keysToRemove.push(key);
-}
-}
-keysToRemove.forEach(key => localStorage.removeItem(key));
-
-reportData = {
-basic: {},
-gps: {},
-appurtenances: [],
-photos: {},
-metadata: {
-submittedBy: reportData.metadata.submittedBy,
-submittedByEmail: reportData.metadata.submittedByEmail,
-appVersion: '9.3 V',
-deviceInfo: navigator.userAgent,
-createdAt: new Date().toISOString()
-}
-};
-showNotification('Datos eliminados correctamente', 'success');
-updateStorageIndicator();
-location.reload();
-}
-}
-
-// Generate Google Maps URLs
-function generateGoogleMapsUrl(lat, lng) {
-// URL para ver en Google Maps
-const viewUrl = `https://www.google.com/maps?q=${lat},${lng}&z=18&t=k`;
-
-// URL para Google Static Maps API (requiere API key)
-// const staticUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=18&size=600x400&maptype=satellite&markers=color:red%7C${lat},${lng}&key=YOUR_API_KEY`;
-
-return {
-view: viewUrl,
-// static: staticUrl // Descomentar cuando tengas API key
-};
-}
-
-// GPS Functions - ACTUALIZADO PARA SER OBLIGATORIO
-function getGPSLocation() {
-const statusDiv = document.getElementById('gpsStatus');
-statusDiv.innerHTML = '<div class="spinner"></div><p>Obteniendo ubicación GPS...</p>';
-
-if (!navigator.geolocation) {
-showGPSStatus(false, 'Geolocalización no soportada. Use la opción manual.');
-showManualGPS();
-return;
-}
-
-const options = {
-enableHighAccuracy: true, // Cambiado a true para mayor precisión
-timeout: 15000, // Aumentado a 15 segundos
-maximumAge: 0 // Sin caché para obtener ubicación actual
-};
-
-navigator.geolocation.getCurrentPosition(
-(position) => {
-reportData.gps = {
-latitude: position.coords.latitude,
-longitude: position.coords.longitude,
-altitude: position.coords.altitude || 0,
-accuracy: position.coords.accuracy
-};
-showGPSStatus(true);
-saveCurrentStep();
-showNotification('✓ GPS capturado exitosamente', 'success');
-},
-(error) => {
-console.error('GPS Error:', error);
-let errorMessage = 'Error desconocido';
-
-switch(error.code) {
-case 1:
-errorMessage = 'Permisos de ubicación denegados. Active la ubicación en su dispositivo o use la opción manual.';
 break;
 case 2:
-errorMessage = 'Ubicación no disponible. Intente en un área con mejor señal o use la opción manual.';
+reportData.additional = {
+radiosInstalled: document.getElementById('radiosInstalled').value || '0',
+antennasInstalled: document.getElementById('antennasInstalled').value || '0',
+gpsCoords: document.getElementById('gpsCoords').value || 'N/A'
+};
 break;
-case 3:
-errorMessage = 'Tiempo agotado obteniendo ubicación. Use la opción manual para continuar.';
-break;
-default:
-errorMessage = `Error de ubicación: ${error.message || 'Desconocido'}. Use la opción manual.`;
-}
-
-showGPSStatus(false, errorMessage);
-// Mostrar automáticamente la opción manual cuando falla
-showManualGPS();
-},
-options
-);
-}
-
-function showManualGPS() {
-const statusDiv = document.getElementById('gpsStatus');
-statusDiv.innerHTML = `
-<div style="background: #fff3cd; padding: 15px; border-radius: 6px; margin-top: 10px;">
-<h4 style="color: #856404;">✏️ Ingreso Manual de Coordenadas (OBLIGATORIO)</h4>
-<p style="font-size: 12px; color: #666; margin-bottom: 10px;">
-Ingrese las coordenadas del sitio. Puede obtenerlas de Google Maps manteniendo presionado un punto en el mapa.
-</p>
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0;">
-<div>
-<label style="font-size: 12px; color: #856404;">Latitud <span class="required">*</span></label>
-<input type="number" id="manualLat" placeholder="ej: 18.4671" step="any" style="padding: 8px; width: 100%;" required>
-</div>
-<div>
-<label style="font-size: 12px; color: #856404;">Longitud <span class="required">*</span></label>
-<input type="number" id="manualLng" placeholder="ej: -67.0185" step="any" style="padding: 8px; width: 100%;" required>
-</div>
-</div>
-<div style="display: flex; gap: 10px;">
-<button class="btn btn-success" onclick="saveManualGPS()" style="font-size: 14px;">
-✓ Guardar Coordenadas
-</button>
-<button class="btn btn-primary" onclick="getGPSLocation()" style="font-size: 14px;">
-🔄 Reintentar GPS Auto
-</button>
-</div>
-<div style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin-top: 10px;">
-<p style="font-size: 11px; color: #1565c0; margin: 0;">
-<strong>Consejo:</strong> En Google Maps (móvil), mantenga presionado el sitio de la torre,
-luego toque las coordenadas que aparecen arriba para copiarlas.
-</p>
-</div>
-</div>
-`;
-
-// Focus en el primer campo
-setTimeout(() => {
-const latInput = document.getElementById('manualLat');
-if (latInput) latInput.focus();
-}, 100);
-}
-
-function saveManualGPS() {
-const lat = document.getElementById('manualLat').value;
-const lng = document.getElementById('manualLng').value;
-
-if (!lat || !lng) {
-showNotification('⚠️ Debe ingresar tanto latitud como longitud', 'error');
-return;
-}
-
-const latNum = parseFloat(lat);
-const lngNum = parseFloat(lng);
-
-// Validación de rangos
-if (Math.abs(latNum) > 90) {
-showNotification('Latitud inválida. Debe estar entre -90 y 90', 'error');
-document.getElementById('manualLat').focus();
-return;
-}
-
-if (Math.abs(lngNum) > 180) {
-showNotification('Longitud inválida. Debe estar entre -180 y 180', 'error');
-document.getElementById('manualLng').focus();
-return;
-}
-
-// Validación específica para Puerto Rico (aproximada)
-if (latNum < 17.5 || latNum > 19 || lngNum < -68 || lngNum > -65) {
-const confirmOutside = confirm('Las coordenadas parecen estar fuera de Puerto Rico. ¿Desea continuar?');
-if (!confirmOutside) {
-return;
 }
 }
 
-reportData.gps = {
-latitude: latNum,
-longitude: lngNum,
-altitude: 0,
-accuracy: 0,
-manual: true,
-mapUrl: generateGoogleMapsUrl(latNum, lngNum)
-};
-
-showGPSStatus(true);
-saveCurrentStep();
-showNotification('✓ Coordenadas GPS guardadas correctamente', 'success');
-}
-
-function showGPSStatus(success, message = '') {
-const statusDiv = document.getElementById('gpsStatus');
-if (success) {
-const isManual = reportData.gps.manual ? ' (Manual)' : '';
-statusDiv.innerHTML = `
-<div class="gps-status success">
-✓ GPS Capturado${isManual}: ${reportData.gps.latitude.toFixed(7)}, ${reportData.gps.longitude.toFixed(7)}
-${!reportData.gps.manual ? `<br>Precisión: ±${reportData.gps.accuracy.toFixed(1)}m` : ''}
-<br>
-<button class="btn btn-secondary" onclick="showManualGPS()" style="margin-top: 10px; font-size: 12px;">
-✏️ Editar Coordenadas
-</button>
-</div>
-`;
-} else {
-statusDiv.innerHTML = `
-<div class="gps-status error">
-✗ ${message}
+function simulatePhotos() {
+const photoStatus = document.getElementById('photoStatus');
+photoStatus.innerHTML = `
+<div style="background: #e8f5e9; padding: 15px; border-radius: 6px; border: 1px solid #4caf50;">
+<h4 style="color: #2e7d32;">✅ Fotos Simuladas Completadas</h4>
+<ul style="margin: 10px 0; color: #2e7d32;">
+<li>📸 Post Equipment Room: 4 fotos</li>
+<li>📡 Antenna Labels: ${reportData.additional?.antennasInstalled || 3} fotos</li>
+<li>📻 Radio Labels: ${reportData.additional?.radiosInstalled || 3} fotos</li>
+<li>🏗️ Compound Post Pictures: 4 fotos</li>
+<li>📏 Tape Drop Measurements: ${(parseInt(reportData.basic.sectorsCount) || 1) * 2} fotos</li>
+<li>🚨 Beacon Photos: 2 fotos</li>
+</ul>
+<p><strong>Total:</strong> ${calculateTotalPhotos()} fotos simuladas</p>
 </div>
 `;
 }
+
+function calculateTotalPhotos() {
+const sectors = parseInt(reportData.basic.sectorsCount) || 1;
+const antennas = parseInt(reportData.additional?.antennasInstalled) || 3;
+const radios = parseInt(reportData.additional?.radiosInstalled) || 3;
+return 4 + antennas + radios + 4 + (sectors * 2) + 2;
 }
 
-// Appurtenance Functions
-function showAppurtenanceForm() {
-document.getElementById('appurtenanceForm').style.display = 'block';
-}
-
-function cancelAppurtenance() {
-document.getElementById('appurtenanceForm').style.display = 'none';
-['appType', 'appRadCenter', 'appManufacturer', 'appModel', 'appQuantity', 'appCoaxSize'].forEach(id => {
-const element = document.getElementById(id);
-if (id === 'appQuantity') {
-element.value = '1';
-} else if (id === 'appCoaxSize') {
-element.value = 'N/A';
-} else {
-element.value = '';
-}
-});
-}
-
-function addAppurtenance() {
-const appurtenance = {
-type: document.getElementById('appType').value,
-radCenter: document.getElementById('appRadCenter').value,
-manufacturer: document.getElementById('appManufacturer').value,
-model: document.getElementById('appModel').value,
-quantity: document.getElementById('appQuantity').value,
-coaxSize: document.getElementById('appCoaxSize').value
-};
-
-reportData.appurtenances.push(appurtenance);
-updateAppurtenanceList();
-updateEquipmentCounter();
-cancelAppurtenance();
-saveCurrentStep();
-}
-
-function updateAppurtenanceList() {
-const listDiv = document.getElementById('appurtenanceList');
-listDiv.innerHTML = '';
-
-reportData.appurtenances.forEach((app, index) => {
-const item = document.createElement('div');
-item.className = 'appurtenance-item';
-item.innerHTML = `
-<div class="appurtenance-info">
-<h4>${app.type} - ${app.manufacturer}</h4>
-<p>Model: ${app.model} | Qty: ${app.quantity} | Rad: ${app.radCenter} | Coax: ${app.coaxSize}</p>
-</div>
-<button class="btn btn-danger" onclick="removeAppurtenance(${index})">×</button>
-`;
-listDiv.appendChild(item);
-});
-}
-
-function removeAppurtenance(index) {
-reportData.appurtenances.splice(index, 1);
-updateAppurtenanceList();
-updateEquipmentCounter();
-saveCurrentStep();
-}
-
-// Photo Functions
-function generatePhotoGrid() {
-const grid = document.getElementById('photoGrid');
-grid.innerHTML = '';
-
-// Make sure we have photo types defined
-if (photoTypes.length === 0) {
-updatePhotoTypes();
-}
-
-// Organizar fotos por grupos
-const generalPhotos = [];
-const sectorPhotos = {};
-const tapeDropPhotos = {};
-
-photoTypes.forEach(type => {
-if (type.sectorGroup) {
-if (!sectorPhotos[type.sectorNumber]) {
-sectorPhotos[type.sectorNumber] = [];
-}
-sectorPhotos[type.sectorNumber].push(type);
-} else if (type.tapeDropGroup) {
-tapeDropPhotos[type.sectorNumber] = type;
-} else {
-generalPhotos.push(type);
-}
-});
-
-// Crear sección de fotos generales
-const generalSection = document.createElement('div');
-generalSection.innerHTML = '<h3 style="color: #0066cc; margin: 20px 0 10px 0;">Fotos Generales</h3>';
-grid.appendChild(generalSection);
-
-generalPhotos.forEach(type => {
-const photoItem = createPhotoItem(type);
-grid.appendChild(photoItem);
-});
-
-// Crear sección de fotos por sector
-if (Object.keys(sectorPhotos).length > 0) {
-const sectorSection = document.createElement('div');
-sectorSection.innerHTML = '<h3 style="color: #0066cc; margin: 30px 0 10px 0;">Fotos de Sectores - Post Pictures</h3>';
-grid.appendChild(sectorSection);
-
-// Para cada sector
-Object.keys(sectorPhotos).sort((a, b) => parseInt(a) - parseInt(b)).forEach(sectorNum => {
-// Crear título del sector
-const sectorTitle = document.createElement('div');
-sectorTitle.innerHTML = `<h4 style="background: #e3f2fd; color: #1565c0; padding: 10px; margin: 20px 0 10px 0; border-radius: 6px;">Sector ${sectorNum}</h4>`;
-grid.appendChild(sectorTitle);
-
-// Agregar cada tipo de foto para este sector
-sectorPhotos[sectorNum].forEach(type => {
-const photoItem = createPhotoItem(type);
-grid.appendChild(photoItem);
-});
-});
-}
-
-// Crear sección de tape drop
-if (Object.keys(tapeDropPhotos).length > 0) {
-const tapeDropSection = document.createElement('div');
-tapeDropSection.innerHTML = '<h3 style="color: #0066cc; margin: 30px 0 10px 0;">Tape Drop Measurements</h3>';
-grid.appendChild(tapeDropSection);
-
-// Para cada sector
-Object.keys(tapeDropPhotos).sort((a, b) => parseInt(a) - parseInt(b)).forEach(sectorNum => {
-const type = tapeDropPhotos[sectorNum];
-const photoItem = createPhotoItem(type);
-grid.appendChild(photoItem);
-});
-}
-
-updatePhotoCounts();
-}
-
-function createPhotoItem(type) {
-const photoItem = document.createElement('div');
-photoItem.className = 'photo-item';
-photoItem.innerHTML = `
-<h4>${type.name}</h4>
-<p style="font-size: 12px; color: #666; margin-bottom: 10px;">${type.description}</p>
-<div class="photo-capture">
-<input type="file"
-accept="image/*"
-capture="environment"
-multiple
-class="camera-input"
-id="photo_${type.id}"
-onchange="handlePhotoCapture('${type.id}', this)">
-<label for="photo_${type.id}" class="camera-btn">
-📷 Tomar Foto (${type.required} ${type.required === 1 ? 'requerida' : 'requeridas'})
-</label>
-</div>
-<div id="preview_${type.id}"></div>
-<div class="photo-count">
-<span id="count_${type.id}">0</span> de ${type.required} fotos
-</div>
-<div class="photo-status ${(reportData.photos[type.id] || []).length >= type.required ? 'complete' : 'pending'}" id="status_${type.id}">
-${(reportData.photos[type.id] || []).length >= type.required ? '✓ Completo' : '⏱ Pendiente'}
-</div>
-`;
-return photoItem;
-}
-
-function handlePhotoCapture(typeId, input) {
-const files = Array.from(input.files);
-if (!reportData.photos[typeId]) {
-reportData.photos[typeId] = [];
-}
-
-files.forEach(file => {
-const currentSize = checkStorageSpace();
-if (parseFloat(currentSize) > 4.5) {
-showNotification('Almacenamiento casi lleno. Limpiando fotos antiguas...', 'info');
-clearOldReports();
-}
-
-compressImage(file, 400, 0.5, (compressedDataUrl) => {
-try {
-reportData.photos[typeId].push({
-data: compressedDataUrl,
-timestamp: new Date().toISOString(),
-name: file.name
-});
-updatePhotoPreview(typeId);
-updatePhotoCounts();
-saveCurrentStep();
-} catch (error) {
-if (error.name === 'QuotaExceededError') {
-showNotification('Almacenamiento lleno. Use "Limpiar datos" primero.', 'error');
-}
-}
-});
-});
-}
-
-function compressImage(file, maxWidth, quality, callback) {
-const reader = new FileReader();
-reader.onload = function(e) {
-const img = new Image();
-img.onload = function() {
-const canvas = document.createElement('canvas');
-let width = img.width;
-let height = img.height;
-
-const maxSize = 400;
-if (width > height) {
-if (width > maxSize) {
-height = (maxSize / width) * height;
-width = maxSize;
-}
-} else {
-if (height > maxSize) {
-width = (maxSize / height) * width;
-height = maxSize;
-}
-}
-
-canvas.width = width;
-canvas.height = height;
-
-const ctx = canvas.getContext('2d');
-ctx.drawImage(img, 0, 0, width, height);
-
-const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
-callback(compressedDataUrl);
-};
-img.src = e.target.result;
-};
-reader.readAsDataURL(file);
-}
-
-function updatePhotoPreview(typeId) {
-const previewDiv = document.getElementById(`preview_${typeId}`);
-const photos = reportData.photos[typeId] || [];
-
-previewDiv.innerHTML = photos.map((photo, index) => `
-<img src="${photo.data}" class="photo-preview" alt="Photo ${index + 1}" style="width: 100px; height: 100px; object-fit: cover; margin: 5px;">
-`).join('');
-}
-
-function updatePhotoCounts() {
-photoTypes.forEach(type => {
-const photos = reportData.photos[type.id] || [];
-const countSpan = document.getElementById(`count_${type.id}`);
-const statusDiv = document.getElementById(`status_${type.id}`);
-
-if (countSpan) {
-countSpan.textContent = photos.length;
-}
-
-if (statusDiv) {
-if (photos.length >= type.required) {
-statusDiv.className = 'photo-status complete';
-statusDiv.textContent = '✓ Completo';
-} else {
-statusDiv.className = 'photo-status pending';
-statusDiv.textContent = '⏱ Pendiente';
-}
-}
-});
-}
-
-function skipPhotoValidation() {
-photoTypes.forEach(type => {
-if (!reportData.photos[type.id]) {
-reportData.photos[type.id] = [];
-}
-// Agregar fotos dummy hasta cumplir con el requisito
-const currentCount = reportData.photos[type.id].length;
-const needed = type.required - currentCount;
-
-for (let i = 0; i < needed; i++) {
-reportData.photos[type.id].push({
-data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-timestamp: new Date().toISOString(),
-name: `demo_photo_${i + 1}.png`
-});
-}
-});
-
-updatePhotoCounts();
-saveCurrentStep();
-showNotification('Fotos de demostración agregadas. Ahora puede continuar.', 'success');
-}
-
-// Review Functions
 function updateReview() {
-const sectorsCount = reportData.basic.sectorsCount || 0;
-
 const siteReview = document.getElementById('siteReview');
 siteReview.innerHTML = `
-<div class="review-item">
-<span class="review-label">Site ID:</span>
-<span class="review-value">${reportData.basic.siteId || 'N/A'}</span>
-</div>
-<div class="review-item">
-<span class="review-label">Site Name:</span>
-<span class="review-value">${reportData.basic.siteName || 'N/A'}</span>
-</div>
-<div class="review-item">
-<span class="review-label">Number of Sectors:</span>
-<span class="review-value">${sectorsCount}</span>
-</div>
-<div class="review-item">
-<span class="review-label">Team Leader:</span>
-<span class="review-value">${reportData.basic.teamLeader || 'N/A'}</span>
-</div>
-<div class="review-item">
-<span class="review-label">Tower Top Installation:</span>
-<span class="review-value">${reportData.basic.towerTop === 'yes' ? 'Yes - At Tower Top' :
-reportData.basic.towerTop === 'near-top' ? 'Near Top (Within 10\' of top)' :
-'No - Below 10\' from top'}</span>
-</div>
-<div class="review-item">
-<span class="review-label">Submitted By:</span>
-<span class="review-value">${reportData.basic.submittedBy || 'N/A'}</span>
-</div>
-<div class="review-item">
-<span class="review-label">GPS Location:</span>
-<span class="review-value">${reportData.gps.latitude ? `${reportData.gps.latitude.toFixed(6)}, ${reportData.gps.longitude.toFixed(6)}` : 'N/A'}</span>
-</div>
-`;
-
-const equipmentReview = document.getElementById('equipmentReview');
-equipmentReview.innerHTML = `
-<div class="review-item">
-<span class="review-label">Radios:</span>
-<span class="review-value">${reportData.basic.radiosInstalled || 'N/A'}</span>
-</div>
-<div class="review-item">
-<span class="review-label">Antennas:</span>
-<span class="review-value">${reportData.basic.antennasInstalled || 'N/A'}</span>
-</div>
-<div class="review-item">
-<span class="review-label">Cables:</span>
-<span class="review-value">${reportData.basic.cablesInstalled || 'N/A'}</span>
-</div>
-<div class="review-item">
-<span class="review-label">Equipment Items:</span>
-<span class="review-value">${reportData.appurtenances.length} tipos</span>
-</div>
-`;
-
-// Nueva sección de mediciones en review
-const measurementsReview = document.getElementById('measurementsReview');
-let measurementsHTML = '';
-
-// Tape drops dinámicos
-for (let i = 1; i <= sectorsCount; i++) {
-measurementsHTML += `
-<div class="review-item">
-<span class="review-label">Sector ${i} Tape Drop:</span>
-<span class="review-value">${reportData.measurements[`sector${i}TapeDrop`] || 'N/A'} (OBLIGATORIO)</span>
-</div>
+<p><strong>Site ID:</strong> ${reportData.basic.siteId}</p>
+<p><strong>Site Name:</strong> ${reportData.basic.siteName}</p>
+<p><strong>Sectors:</strong> ${reportData.basic.sectorsCount}</p>
+<p><strong>Team Leader:</strong> ${reportData.basic.teamLeader}</p>
+<p><strong>Date:</strong> ${reportData.basic.completionDate}</p>
+<p><strong>Total Photos:</strong> ${calculateTotalPhotos()} (simulated)</p>
 `;
 }
 
-// Tower height y tallest point
-if (reportData.basic.towerTop === 'yes' || reportData.basic.towerTop === 'near-top') {
-measurementsHTML += `
-<div class="review-item">
-<span class="review-label">Tower Height:</span>
-<span class="review-value">${reportData.measurements.towerHeight || 'N/A'} (OBLIGATORIO)</span>
-</div>
-<div class="review-item">
-<span class="review-label">Tallest Point:</span>
-<span class="review-value">${reportData.measurements.tallestPoint || 'N/A'} (OBLIGATORIO)</span>
-</div>
-`;
-} else {
-measurementsHTML += `
-<div class="review-item">
-<span class="review-label">Tower Height:</span>
-<span class="review-value">${reportData.measurements.towerHeight || 'No requerido'}</span>
-</div>
-<div class="review-item">
-<span class="review-label">Tallest Point:</span>
-<span class="review-value">${reportData.measurements.tallestPoint || 'No requerido'}</span>
-</div>
-`;
-}
-
-measurementsReview.innerHTML = measurementsHTML;
-
-const photoReview = document.getElementById('photoReview');
-let totalPhotos = 0;
-let completedTypes = 0;
-
-photoTypes.forEach(type => {
-const photos = reportData.photos[type.id] || [];
-totalPhotos += photos.length;
-if (photos.length >= type.required) {
-completedTypes++;
-}
-});
-
-photoReview.innerHTML = `
-<div class="review-item">
-<span class="review-label">Total de fotos:</span>
-<span class="review-value">${totalPhotos}</span>
-</div>
-<div class="review-item">
-<span class="review-label">Categorías completas:</span>
-<span class="review-value">${completedTypes} de ${photoTypes.length}</span>
-</div>
-`;
-}
-
-// Submit and SharePoint Functions - ACTUALIZADO PARA v9.3 V CON MAPEO DINÁMICO
-async function sendToSharePoint(reportData) {
-const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
-
+function generateReportId() {
 const timestamp = Date.now();
-const randomNum = Math.floor(Math.random() * 100000);
-const uniqueReportID = `RPT-${timestamp}-${randomNum}`;
-
-// Mapear las fotos dinámicamente - NUEVA FUNCIONALIDAD v9.3 V
-const photoMapping = mapPhotosForSharePoint(reportData);
-
-const appurtenanceDataJSON = {
-appurtenances: reportData.appurtenances || [],
-measurements: reportData.measurements || {},
-gpsDetails: {
-latitude: reportData.gps.latitude || 0,
-longitude: reportData.gps.longitude || 0,
-altitude: reportData.gps.altitude || 0,
-accuracy: reportData.gps.accuracy || 0,
-method: reportData.gps.manual ? 'manual' : 'auto',
-mapUrl: reportData.gps.mapUrl || null
-},
-metadata: reportData.metadata || {}
-};
-
-const photoLinksJSON = {
-totalPhotos: 0,
-categories: {},
-photoMetadata: {},
-// Agregar las fotos mapeadas también para debug
-photoData: reportData.photos
-};
-
-Object.keys(reportData.photos).forEach(category => {
-const photos = reportData.photos[category] || [];
-photoLinksJSON.totalPhotos += photos.length;
-photoLinksJSON.categories[category] = photos.length;
-
-photos.forEach((photo, index) => {
-const photoKey = `${category}_${index + 1}`;
-photoLinksJSON.photoMetadata[photoKey] = {
-timestamp: photo.timestamp,
-name: photo.name || photoKey,
-category: photoTypes.find(t => t.id === category)?.name || category
-};
-});
-});
-
-// Interpretar el valor de towerTop para SharePoint
-let towerTopBoolean = false;
-if (reportData.basic.towerTop === 'yes' || reportData.basic.towerTop === 'near-top') {
-towerTopBoolean = true;
-}
-
-const dataToSend = {
-Title: reportData.basic.teamLeader || 'Field Technician',
-SubmittedBy: reportData.basic.submittedBy || 'Field Technician',
-SubmittedByEmail: reportData.basic.submittedByEmail || 'unknown@email.com',
-SubmissionTimestamp: new Date().toISOString(),
-ReportID: uniqueReportID,
-TowerProviderSiteID: reportData.basic.siteId || '',
-TowerProviderSiteName: reportData.basic.siteName || '',
-CustomerSiteID: reportData.basic.customerSiteId || '',
-CustomerSiteName: reportData.basic.customerSiteName || '',
-SectorsCount: parseInt(reportData.basic.sectorsCount) || 0,
-RadiosInstalled: parseInt(reportData.basic.radiosInstalled) || 0,
-AntennasInstalled: parseInt(reportData.basic.antennasInstalled) || 0,
-CablesInstalled: parseInt(reportData.basic.cablesInstalled) || 0,
-TeamLeader: reportData.basic.teamLeader || '',
-TowerTopInstallation: towerTopBoolean,
-TowerTopInstallationDetails: reportData.basic.towerTop || 'no',
-CompletionDate: reportData.basic.completionDate || new Date().toISOString().split('T')[0],
-Latitude: reportData.gps.latitude || 0,
-Longitude: reportData.gps.longitude || 0,
-AppurtenanceData: JSON.stringify(appurtenanceDataJSON),
-PhotoLinks: JSON.stringify(photoLinksJSON),
-ReportStatus: 'DraftSubmittedPDF',
-
-// Incluir todas las fotos mapeadas dinámicamente - NUEVA FUNCIONALIDAD v9.3 V
-...photoMapping
-};
-
-try {
-const response = await fetch(POWER_AUTOMATE_URL, {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json',
-'Accept': 'application/json'
-},
-body: JSON.stringify(dataToSend)
-});
-
-if (response.ok) {
-return true;
-} else {
-console.error('Error response:', response.status, response.statusText);
-return false;
-}
-} catch (error) {
-console.error('Network/Connection error:', error);
-return false;
-}
-}
-
-async function submitReport() {
-const submitBtn = event.target;
-const statusDiv = document.getElementById('submitStatus');
-
-// Update submittedBy with current authenticated user
-reportData.basic.submittedBy = reportData.metadata.submittedBy || 'Unknown User';
-reportData.basic.submittedByEmail = reportData.metadata.submittedByEmail || 'unknown@email.com';
-
-submitBtn.disabled = true;
-statusDiv.innerHTML = '<div class="spinner"></div><p>Enviando reporte a SharePoint...</p>';
-
-try {
-const reportId = `RPT-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
-localStorage.setItem(reportId, JSON.stringify(reportData));
-
-const sentToSharePoint = await sendToSharePoint(reportData);
-
-if (sentToSharePoint) {
-statusDiv.innerHTML = `
-<div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: left;">
-<h3 style="color: #2e7d32;">✓ Reporte Enviado a SharePoint</h3>
-<p>ID: ${reportId}</p>
-<p>Enviado por: <strong>${reportData.basic.submittedBy}</strong></p>
-<p style="margin-top: 15px;">
-<strong>✓ Guardado localmente</strong><br>
-<strong>✓ Enviado a SharePoint</strong><br>
-<strong>✓ Fotos mapeadas dinámicamente (v9.3 V)</strong>
-</p>
-<div style="display: flex; gap: 10px; margin-top: 20px;">
-<button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
-➕ Crear Nuevo Reporte
-</button>
-<button class="btn btn-primary" onclick="sendDetailedEmail('${reportId}')" style="flex: 1;">
-📧 Enviar Email Detallado
-</button>
-</div>
-</div>
-`;
-} else {
-statusDiv.innerHTML = `
-<div style="background: #fff3cd; padding: 20px; border-radius: 6px; text-align: left;">
-<h3 style="color: #856404;">⚠️ Guardado Solo Localmente</h3>
-<p>ID: ${reportId}</p>
-<p style="margin-top: 15px;">
-El reporte se guardó en el dispositivo pero no se pudo enviar a SharePoint.
-</p>
-<div style="display: flex; gap: 10px; margin-top: 20px;">
-<button class="btn btn-primary" onclick="retrySharePoint('${reportId}')" style="flex: 1;">
-🔄 Reintentar Envío
-</button>
-<button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
-➕ Nuevo Reporte
-</button>
-</div>
-</div>
-`;
-}
-
-submitBtn.disabled = false;
-
-} catch (error) {
-statusDiv.innerHTML = `
-<div style="background: #ffebee; padding: 20px; border-radius: 6px;">
-<h3 style="color: #c62828;">Error al guardar</h3>
-<p>${error.message}</p>
-<button class="btn btn-primary" onclick="location.reload()">
-Recargar Página
-</button>
-</div>
-`;
-submitBtn.disabled = false;
-}
-}
-
-async function retrySharePoint(reportId) {
-const savedData = localStorage.getItem(reportId);
-if (savedData) {
-const data = JSON.parse(savedData);
-const statusDiv = document.getElementById('submitStatus');
-
-statusDiv.innerHTML = '<div class="spinner"></div><p>Reintentando envío...</p>';
-
-const sent = await sendToSharePoint(data);
-
-if (sent) {
-statusDiv.innerHTML = `
-<div style="background: #e8f5e9; padding: 20px; border-radius: 6px;">
-<h3 style="color: #2e7d32;">✓ Enviado Exitosamente</h3>
-<p>El reporte se envió a SharePoint con mapeo dinámico de fotos.</p>
-<div style="display: flex; gap: 10px; margin-top: 15px;">
-<button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
-➕ Crear Nuevo Reporte
-</button>
-<button class="btn btn-primary" onclick="location.href='mailto:accounting@newcomm2000.com?subject=Tower Report ${reportId}'" style="flex: 1;">
-📧 Enviar por Email
-</button>
-</div>
-</div>
-`;
-} else {
-statusDiv.innerHTML = `
-<div style="background: #ffebee; padding: 20px; border-radius: 6px;">
-<h3 style="color: #c62828;">Error al enviar</h3>
-<p>No se pudo conectar con SharePoint. Verifique su conexión.</p>
-<div style="display: flex; gap: 10px; margin-top: 15px;">
-<button class="btn btn-primary" onclick="retrySharePoint('${reportId}')" style="flex: 1;">
-🔄 Reintentar
-</button>
-<button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
-➕ Nuevo Reporte
-</button>
-</div>
-</div>
-`;
-}
-}
+const randomNum = Math.floor(Math.random() * 1000);
+const reportId = `DEMO-${timestamp}-${randomNum}`;
+document.getElementById('reportId').textContent = reportId;
 }
 
 function startNewReport() {
-// Mantener la información del usuario
-const userInfo = {
-submittedBy: reportData.metadata.submittedBy,
-submittedByEmail: reportData.metadata.submittedByEmail
-};
-
+// Reset data
 reportData = {
 basic: {},
-gps: {},
-appurtenances: [],
-photos: {},
-measurements: {},
 metadata: {
-...userInfo,
-appVersion: '9.3 V',
+appVersion: '9.4-demo',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
 };
 
+// Reset form
 document.querySelectorAll('input, select, textarea').forEach(field => {
 if (field.type === 'date') {
 field.value = new Date().toISOString().split('T')[0];
-} else if (field.id === 'appQuantity') {
-field.value = '1';
-} else if (field.id === 'appCoaxSize') {
-field.value = 'N/A';
 } else {
 field.value = '';
 }
 });
 
+// Reset steps
 currentStep = 1;
 showStep(1);
-
-document.getElementById('gpsStatus').innerHTML = '';
-document.getElementById('appurtenanceList').innerHTML = '';
-document.getElementById('sectorTapeDrops').innerHTML = '<p style="text-align: center; color: #666;">Seleccione la cantidad de sectores para ver los campos de tape drop</p>';
-
-// Reset photo types
-photoTypes = [];
-updateEquipmentCounter();
-updateMeasurementRequirements();
+document.getElementById('photoStatus').innerHTML = '';
 
 showNotification('Nuevo reporte iniciado', 'success');
 }
 
-function showReportSummary() {
-let totalPhotos = 0;
-Object.values(reportData.photos).forEach(photoArray => {
-if (Array.isArray(photoArray)) {
-totalPhotos += photoArray.length;
-}
-});
-
-const sectorsCount = reportData.basic.sectorsCount || 0;
-let tapeDrpsHTML = '';
-for (let i = 1; i <= sectorsCount; i++) {
-tapeDrpsHTML += `<p><strong>Sector ${i} Tape Drop:</strong> ${reportData.measurements[`sector${i}TapeDrop`] || 'N/A'}</p>`;
-}
-
-const summaryHTML = `
-<div style="background: #f5f5f5; padding: 20px; border-radius: 6px; margin: 20px 0;">
-<h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte v9.3 V</h3>
-
-<div style="margin-bottom: 15px;">
-<h4 style="color: #333;">Información del Sitio</h4>
-<p><strong>Site ID:</strong> ${reportData.basic.siteId || 'N/A'}</p>
-<p><strong>Site Name:</strong> ${reportData.basic.siteName || 'N/A'}</p>
-<p><strong>Number of Sectors:</strong> ${sectorsCount}</p>
-<p><strong>Team Leader:</strong> ${reportData.basic.teamLeader || 'N/A'}</p>
-<p><strong>Enviado por:</strong> ${reportData.metadata.submittedBy || 'N/A'}</p>
-<p><strong>Fecha:</strong> ${reportData.basic.completionDate || 'N/A'}</p>
-<p><strong>Tower Top Installation:</strong> ${reportData.basic.towerTop === 'yes' ? 'Yes - At Tower Top' :
-reportData.basic.towerTop === 'near-top' ? 'Near Top (Within 10\' of top)' :
-'No - Below 10\' from top'}</p>
-</div>
-
-<div style="margin-bottom: 15px;">
-<h4 style="color: #333;">Equipos Instalados</h4>
-<p><strong>Radios:</strong> ${reportData.basic.radiosInstalled || 0}</p>
-<p><strong>Antenas:</strong> ${reportData.basic.antennasInstalled || 0}</p>
-<p><strong>Cables:</strong> ${reportData.basic.cablesInstalled || 0}</p>
-<p><strong>Equipos registrados:</strong> ${reportData.appurtenances.length}</p>
-</div>
-
-<div style="margin-bottom: 15px;">
-<h4 style="color: #333;">Mediciones (OBLIGATORIAS)</h4>
-${tapeDrpsHTML}
-${(reportData.basic.towerTop === 'yes' || reportData.basic.towerTop === 'near-top') ? `
-<p><strong>Tower Height:</strong> ${reportData.measurements.towerHeight || 'N/A'} (OBLIGATORIO)</p>
-<p><strong>Tallest Point:</strong> ${reportData.measurements.tallestPoint || 'N/A'} (OBLIGATORIO)</p>
-` : `
-<p><strong>Tower Height:</strong> ${reportData.measurements.towerHeight || 'No aplicable'}</p>
-<p><strong>Tallest Point:</strong> ${reportData.measurements.tallestPoint || 'No aplicable'}</p>
-`}
-</div>
-
-<div style="margin-bottom: 15px;">
-<h4 style="color: #333;">Ubicación GPS</h4>
-<p><strong>Latitud:</strong> ${reportData.gps.latitude ? reportData.gps.latitude.toFixed(7) : 'N/A'}</p>
-<p><strong>Longitud:</strong> ${reportData.gps.longitude ? reportData.gps.longitude.toFixed(7) : 'N/A'}</p>
-<p><strong>Método:</strong> ${reportData.gps.manual ? 'Manual' : 'Automático'}</p>
-${!reportData.gps.manual && reportData.gps.accuracy ? `<p><strong>Precisión:</strong> ±${reportData.gps.accuracy.toFixed(1)}m</p>` : ''}
-</div>
-
-<div>
-<h4 style="color: #333;">Documentación</h4>
-<p><strong>Total de fotos:</strong> ${totalPhotos}</p>
-<p><strong>Versión del reporte:</strong> 9.3 V - Mapeo Dinámico de Fotos</p>
-</div>
-
-<button class="btn btn-secondary" onclick="closeReportSummary()" style="margin-top: 15px;">
-Cerrar Resumen
-</button>
-</div>
-`;
-
-const statusDiv = document.getElementById('submitStatus');
-statusDiv.innerHTML = summaryHTML;
-showNotification('Resumen del reporte mostrado', 'info');
-}
-
-function closeReportSummary() {
-document.getElementById('submitStatus').innerHTML = '';
-}
-
-function sendDetailedEmail(reportId) {
-const sectorsCount = reportData.basic.sectorsCount || 0;
-let sectorMeasurements = '';
-for (let i = 1; i <= sectorsCount; i++) {
-sectorMeasurements += `- Sector ${i} Tape Drop: ${reportData.measurements[`sector${i}TapeDrop`] || 'N/A'} (REQUIRED)\n`;
-}
-
-const emailSubject = `Tower Provider Report v9.3 V - ${reportData.basic.siteName || reportId}`;
-
-const emailBody = `
-TOWER PROVIDER REPORT v9.3 V - MAPEO DINÁMICO DE FOTOS
-=====================================================
-
-SITE INFORMATION:
-- Site ID: ${reportData.basic.siteId || 'N/A'}
-- Site Name: ${reportData.basic.siteName || 'N/A'}
-- Customer Site ID: ${reportData.basic.customerSiteId || 'N/A'}
-- Customer Site Name: ${reportData.basic.customerSiteName || 'N/A'}
-- Number of Sectors: ${sectorsCount}
-
-INSTALLATION DETAILS:
-- Radios Installed: ${reportData.basic.radiosInstalled || '0'}
-- Antennas Installed: ${reportData.basic.antennasInstalled || '0'}
-- Cables Installed: ${reportData.basic.cablesInstalled || '0'}
-- Team Leader: ${reportData.basic.teamLeader || 'N/A'}
-- Tower Top Installation: ${reportData.basic.towerTop === 'yes' ? 'Yes - At Tower Top' :
-reportData.basic.towerTop === 'near-top' ? 'Near Top (Within 10\' of top)' :
-'No - Below 10\' from top'}
-- Completion Date: ${reportData.basic.completionDate || 'N/A'}
-
-GPS LOCATION (REQUIRED):
-- Latitude: ${reportData.gps.latitude || 'N/A'}
-- Longitude: ${reportData.gps.longitude || 'N/A'}
-- Method: ${reportData.gps.manual ? 'Manual Entry' : 'Automatic GPS'}
-- Accuracy: ${reportData.gps.accuracy ? `±${reportData.gps.accuracy.toFixed(1)}m` : 'N/A'}
-
-MEASUREMENTS (REQUIRED):
-${sectorMeasurements}- Tower Height: ${reportData.measurements.towerHeight || 'N/A'} ${(reportData.basic.towerTop === 'yes' || reportData.basic.towerTop === 'near-top') ? '(REQUIRED)' : '(Optional)'}
-- Tallest Point: ${reportData.measurements.tallestPoint || 'N/A'} ${(reportData.basic.towerTop === 'yes' || reportData.basic.towerTop === 'near-top') ? '(REQUIRED)' : '(Optional)'}
-
-EQUIPMENT INSTALLED (${reportData.appurtenances.length} items):
-${reportData.appurtenances.map((app, i) =>
-`${i + 1}. ${app.type} - ${app.manufacturer} ${app.model} (Qty: ${app.quantity}, Coax: ${app.coaxSize})`
-).join('\n')}
-
-PHOTO DOCUMENTATION (v9.3 V - Dynamic Mapping):
-- Total Photos: ${Object.values(reportData.photos).reduce((sum, arr) => sum + (arr ? arr.length : 0), 0)}
-${Object.entries(reportData.photos).map(([category, photos]) => {
-const catName = photoTypes.find(t => t.id === category)?.name || category;
-return `- ${catName}: ${photos ? photos.length : 0} photos`;
-}).join('\n')}
-
-REPORT DETAILS:
-- Report ID: ${reportId}
-- Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
-- Email: ${reportData.basic.submittedByEmail || 'N/A'}
-- Submission Time: ${new Date().toLocaleString()}
-- Report Version: 9.3 V - Dynamic Photo Mapping
-
----
-This report has been submitted to SharePoint with dynamic photo mapping.
-GPS coordinates were ${reportData.gps.manual ? 'manually entered' : 'automatically captured'}.
-All required measurements have been completed.
-Photos are dynamically mapped based on sector count and equipment quantities.
-
-Newcomm Management Services Corp.
-PO Box 4116, Vega Baja PR 00694
-Phone: 787-718-2600
-`.trim();
-
-const encodedBody = encodeURIComponent(emailBody);
-
-const mailtoLink = `mailto:accounting@newcomm2000.com?subject=${encodeURIComponent(emailSubject)}&body=${encodedBody}`;
-
-if (mailtoLink.length > 2000) {
-const shortBody = `
-Tower Provider Report v9.3 V - ${reportData.basic.siteName || 'N/A'}
-Site ID: ${reportData.basic.siteId || 'N/A'}
-Sectors: ${sectorsCount}
-Report ID: ${reportId}
-GPS: ${reportData.gps.latitude || 'N/A'}, ${reportData.gps.longitude || 'N/A'}
-Tower Top: ${reportData.basic.towerTop === 'yes' ? 'Yes' : reportData.basic.towerTop === 'near-top' ? 'Near Top' : 'No'}
-Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
-
-Please check SharePoint for the complete report with all details and dynamically mapped photos.
-
-Date: ${new Date().toLocaleString()}
-Version: 9.3 V - Dynamic Photo Mapping
-`.trim();
-
-window.location.href = `mailto:accounting@newcomm2000.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(shortBody)}`;
-showNotification('Email abierto con resumen corto (límite de caracteres)', 'info');
-} else {
-window.location.href = mailtoLink;
-showNotification('Email abierto con todos los detalles', 'success');
-}
-}
-
-// Notification function
 function showNotification(message, type = 'info') {
 const existing = document.querySelector('.notification');
 if (existing) {
@@ -3110,95 +623,11 @@ notification.remove();
 }, 3000);
 }
 
-// Initialize on page load - Con verificación de red mejorada
-window.addEventListener('load', async () => {
-    console.log('Page loaded, waiting for MSAL library...');
-
-    // Función mejorada para esperar MSAL
-    const waitForMsal = () => {
-        return new Promise((resolve, reject) => {
-            let attempts = 0;
-            const maxAttempts = 20; // Aumentado a 10 segundos
-            
-            const checkMsal = () => {
-                attempts++;
-                console.log(`Checking for MSAL... attempt ${attempts}`);
-
-                // Verificar si MSAL está disponible
-                if (typeof window.msal !== 'undefined' && window.msal.PublicClientApplication) {
-                    console.log('MSAL library found and ready!');
-                    resolve(true);
-                } else if (attempts >= maxAttempts) {
-                    console.error('MSAL library failed to load after 10 seconds');
-                    reject(new Error('MSAL library timeout'));
-                } else {
-                    setTimeout(checkMsal, 500);
-                }
-            };
-            
-            // Empezar a verificar inmediatamente
-            checkMsal();
-        });
-    };
-
-    try {
-        // Esperar a que MSAL esté disponible
-        await waitForMsal();
-
-        // Verificar si ya estábamos en la app principal
-        const appState = sessionStorage.getItem('appState');
-        if (appState === 'mainApp') {
-            const savedAccount = localStorage.getItem('userAccount');
-            if (savedAccount) {
-                try {
-                    currentAccount = JSON.parse(savedAccount);
-                    if (createMsalInstance()) {
-                        await getUserDetails();
-                        showMainApp();
-                        return;
-                    }
-                } catch (e) {
-                    console.error('Error restoring session:', e);
-                }
-            }
-        }
-
-        // Inicializar MSAL
-        await initializeMsal();
-
-    } catch (error) {
-        console.error('Failed to initialize application:', error);
-        
-        // Mostrar error específico según el tipo
-        if (error.message.includes('timeout')) {
-            showMsalError();
-        } else {
-            showLoginError('Error: No se pudo inicializar la aplicación. ' + error.message);
-        }
-    }
-});
-
-// Manejar eventos de visibilidad de página (importante para móviles)
-document.addEventListener('visibilitychange', async () => {
-if (!document.hidden && currentAccount) {
-// La página volvió a ser visible, verificar token
-try {
-await msalInstance.acquireTokenSilent({
-...loginRequest,
-account: currentAccount
-});
-} catch (error) {
-console.log('Token refresh needed');
-}
-}
-});
-
-// Prevenir que la app se cierre accidentalmente
-window.addEventListener('beforeunload', (e) => {
-if (currentStep > 1 && Object.keys(reportData.basic).length > 0) {
-e.preventDefault();
-e.returnValue = '¿Estás seguro de que quieres salir? Los datos no guardados se perderán.';
-}
+// Initialize app
+window.addEventListener('load', () => {
+console.log('Tower Report Demo v9.4 loaded successfully');
+document.getElementById('completionDate').value = new Date().toISOString().split('T')[0];
+showNotification('Aplicación demo cargada correctamente', 'success');
 });
 </script>
 </body>
