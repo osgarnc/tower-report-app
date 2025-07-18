@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Búsqueda de Reportes - Tower Report System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: #0066cc;
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+        
+        .btn-back {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .btn-back:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .container {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+        }
+        
+        .search-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+        
+        .search-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+        
+        .btn-search {
+            background: #0066cc;
+            color: white;
+            padding: 12px 24px;
+        }
+        
+        .btn-search:hover {
+            background: #0052a3;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            background: #e9ecef;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover {
+            background: #dee2e6;
+        }
+        
+        .filter-btn.active {
+            background: #0066cc;
+            color: white;
+            border-color: #0066cc;
+        }
+        
+        .results-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .report-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .report-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        
+        .report-id {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+        
+        .report-status {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-complete {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-incomplete {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-pending {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .report-details {
+            margin-bottom: 15px;
+        }
+        
+        .report-details p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .report-details strong {
+            color: #333;
+        }
+        
+        .report-stats {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            padding: 10px 0;
+            border-top: 1px solid #e9ecef;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .stat-item {
+            font-size: 12px;
+            color: #666;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .report-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-action {
+            flex: 1;
+            padding: 8px;
+            font-size: 14px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .btn-action:hover {
+            background: #f8f9fa;
+        }
+        
+        .btn-edit {
+            color: #0066cc;
+            border-color: #0066cc;
+        }
+        
+        .btn-edit:hover {
+            background: #e6f2ff;
+        }
+        
+        .btn-duplicate {
+            color: #28a745;
+            border-color: #28a745;
+        }
+        
+        .btn-duplicate:hover {
+            background: #e6f4ea;
+        }
+        
+        .btn-delete {
+            color: #dc3545;
+            border-color: #dc3545;
+        }
+        
+        .btn-delete:hover {
+            background: #f8d7da;
+        }
+        
+        .btn-view {
+            color: #6c757d;
+            border-color: #6c757d;
+        }
+        
+        .btn-view:hover {
+            background: #e9ecef;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .no-results h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0066cc;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .reports-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .report-actions {
+                flex-wrap: wrap;
+            }
+            
+            .btn-action {
+                min-width: calc(50% - 5px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>Búsqueda de Reportes</h1>
+            <a href="index.html" class="btn btn-back">← Volver al Menú</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="search-section">
+            <div class="search-input-group">
+                <input type="text" 
+                       class="search-input" 
+                       id="searchInput" 
+                       placeholder="Buscar por Site ID, Site Name, Customer Site, Team Leader o Report ID...">
+                <button class="btn btn-search" onclick="searchReports()">🔍 Buscar</button>
+            </div>
+            
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="setFilter('all')" data-filter="all">
+                    Todos
+                </button>
+                <button class="filter-btn" onclick="setFilter('complete')" data-filter="complete">
+                    Completos
+                </button>
+                <button class="filter-btn" onclick="setFilter('incomplete')" data-filter="incomplete">
+                    Incompletos
+                </button>
+                <button class="filter-btn" onclick="setFilter('pending')" data-filter="pending">
+                    Pendientes SharePoint
+                </button>
+                <button class="filter-btn" onclick="setFilter('today')" data-filter="today">
+                    Hoy
+                </button>
+                <button class="filter-btn" onclick="setFilter('week')" data-filter="week">
+                    Esta Semana
+                </button>
+            </div>
+        </div>
+        
+        <div class="results-info" id="resultsInfo">
+            <span>Mostrando <strong id="resultCount">0</strong> reportes</span>
+            <button class="btn btn-search" onclick="exportReports()">📥 Exportar</button>
+        </div>
+        
+        <div id="reportsContainer">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Cargando reportes...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para vista previa -->
+    <div class="modal" id="previewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Vista Previa del Reporte</h2>
+                <button class="btn-close" onclick="closeModal()">×</button>
+            </div>
+            <div id="previewContent"></div>
+        </div>
+    </div>
+    
+    <script>
+        let allReports = [];
+        let currentFilter = 'all';
+        let searchTerm = '';
+        
+        // Cargar reportes al iniciar
+        window.onload = function() {
+            // Verificar si hay un filtro en la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const filter = urlParams.get('filter');
+            if (filter) {
+                setFilter(filter);
+            } else {
+                loadReports();
+            }
+        };
+        
+        // Función para cargar todos los reportes
+        function loadReports() {
+            allReports = [];
+            
+            // Buscar todos los reportes en localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('RPT-')) {
+                    try {
+                        const reportData = JSON.parse(localStorage.getItem(key));
+                        allReports.push({
+                            key: key,
+                            data: reportData
+                        });
+                    } catch (e) {
+                        console.error('Error loading report:', key, e);
+                    }
+                }
+            }
+            
+            // Ordenar por fecha (más reciente primero)
+            allReports.sort((a, b) => {
+                const dateA = new Date(a.data.metadata?.createdAt || a.data.basic?.submissionTimestamp || 0);
+                const dateB = new Date(b.data.metadata?.createdAt || b.data.basic?.submissionTimestamp || 0);
+                return dateB - dateA;
+            });
+            
+            applyFilters();
+        }
+        
+        // Función para aplicar filtros y búsqueda
+        function applyFilters() {
+            let filteredReports = [...allReports];
+            
+            // Aplicar filtro de estado
+            if (currentFilter !== 'all') {
+                filteredReports = filteredReports.filter(report => {
+                    const data = report.data;
+                    const hasPhotos = data.photos && Object.keys(data.photos).length > 0;
+                    const hasGPS = data.gps && data.gps.latitude;
+                    const hasEquipment = data.appurtenances && data.appurtenances.length > 0;
+                    const isComplete = hasPhotos && hasGPS && hasEquipment;
+                    
+                    switch (currentFilter) {
+                        case 'complete':
+                            return isComplete;
+                        case 'incomplete':
+                            return !isComplete;
+                        case 'pending':
+                            // Aquí podrías verificar si fue enviado a SharePoint
+                            return !data.sentToSharePoint;
+                        case 'today':
+                            const today = new Date().toDateString();
+                            const reportDate = new Date(data.metadata?.createdAt || data.basic?.submissionTimestamp).toDateString();
+                            return today === reportDate;
+                        case 'week':
+                            const weekAgo = new Date();
+                            weekAgo.setDate(weekAgo.getDate() - 7);
+                            const reportDateWeek = new Date(data.metadata?.createdAt || data.basic?.submissionTimestamp);
+                            return reportDateWeek > weekAgo;
+                        default:
+                            return true;
+                    }
+                });
+            }
+            
+            // Aplicar búsqueda
+            if (searchTerm) {
+                filteredReports = filteredReports.filter(report => {
+                    const data = report.data;
+                    const searchableText = `
+                        ${report.key}
+                        ${data.basic?.siteId || ''}
+                        ${data.basic?.siteName || ''}
+                        ${data.basic?.customerSiteName || ''}
+                        ${data.basic?.teamLeader || ''}
+                    `.toLowerCase();
+                    
+                    return searchableText.includes(searchTerm.toLowerCase());
+                });
+            }
+            
+            displayReports(filteredReports);
+        }
+        
+        // Función para mostrar reportes
+        function displayReports(reports) {
+            const container = document.getElementById('reportsContainer');
+            document.getElementById('resultCount').textContent = reports.length;
+            
+            if (reports.length === 0) {
+                container.innerHTML = `
+                    <div class="no-results">
+                        <h3>No se encontraron reportes</h3>
+                        <p>Intenta con otros criterios de búsqueda o filtros</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<div class="reports-grid">';
+            
+            reports.forEach(report => {
+                const data = report.data;
+                const basic = data.basic || {};
+                const metadata = data.metadata || {};
+                const createdDate = new Date(metadata.createdAt || basic.submissionTimestamp || 0);
+                const completionDate = basic.completionDate || 'N/A';
+                
+                // Determinar estado
+                const hasPhotos = data.photos && Object.keys(data.photos).length > 0;
+                const hasGPS = data.gps && data.gps.latitude;
+                const hasEquipment = data.appurtenances && data.appurtenances.length > 0;
+                const isComplete = hasPhotos && hasGPS && hasEquipment;
+                
+                let statusClass = 'status-incomplete';
+                let statusText = 'Incompleto';
+                
+                if (isComplete) {
+                    statusClass = 'status-complete';
+                    statusText = 'Completo';
+                } else if (!data.sentToSharePoint) {
+                    statusClass = 'status-pending';
+                    statusText = 'Pendiente';
+                }
+                
+                // Contar fotos
+                let photoCount = 0;
+                if (data.photos) {
+                    Object.values(data.photos).forEach(photoArray => {
+                        if (Array.isArray(photoArray)) {
+                            photoCount += photoArray.length;
+                        }
+                    });
+                }
+                
+                html += `
+                    <div class="report-card">
+                        <div class="report-header">
+                            <div class="report-id">${basic.siteId || 'Sin ID'}</div>
+                            <span class="report-status ${statusClass}">${statusText}</span>
+                        </div>
+                        
+                        <div class="report-details">
+                            <p><strong>Site Name:</strong> ${basic.siteName || 'N/A'}</p>
+                            <p><strong>Customer Site:</strong> ${basic.customerSiteName || 'N/A'}</p>
+                            <p><strong>Team Leader:</strong> ${basic.teamLeader || 'N/A'}</p>
+                            <p><strong>Completion Date:</strong> ${completionDate}</p>
+                            <p><strong>Created:</strong> ${createdDate.toLocaleString()}</p>
+                            <p><strong>Report ID:</strong> ${report.key}</p>
+                        </div>
+                        
+                        <div class="report-stats">
+                            <span class="stat-item">${data.appurtenances?.length || 0} equipos</span>
+                            <span class="stat-item">${photoCount} fotos</span>
+                            <span class="stat-item">${hasGPS ? '✓ GPS' : '✗ GPS'}</span>
+                            <span class="stat-item">${basic.sectorsCount || 0} sectores</span>
+                        </div>
+                        
+                        <div class="report-actions">
+                            <button class="btn-action btn-view" onclick="viewReport('${report.key}')">
+                                👁️ Ver
+                            </button>
+                            <button class="btn-action btn-edit" onclick="editReport('${report.key}')">
+                                ✏️ Editar
+                            </button>
+                            <button class="btn-action btn-duplicate" onclick="duplicateReport('${report.key}')">
+                                📋 Duplicar
+                            </button>
+                            <button class="btn-action btn-delete" onclick="deleteReport('${report.key}')">
+                                🗑️ Eliminar
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Función para buscar reportes
+        function searchReports() {
+            searchTerm = document.getElementById('searchInput').value;
+            applyFilters();
+        }
+        
+        // Event listener para buscar al presionar Enter
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchReports();
+            }
+        });
+        
+        // Función para establecer filtro
+        function setFilter(filter) {
+            currentFilter = filter;
+            
+            // Actualizar botones activos
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.filter === filter) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            loadReports();
+        }
+        
+        // Función para ver reporte
+        function viewReport(reportKey) {
+            const report = allReports.find(r => r.key === reportKey);
+            if (!report) return;
+            
+            const data = report.data;
+            const basic = data.basic || {};
+            const metadata = data.metadata || {};
+            
+            let html = `
+                <h3>Información del Sitio</h3>
+                <p><strong>Site ID:</strong> ${basic.siteId || 'N/A'}</p>
+                <p><strong>Site Name:</strong> ${basic.siteName || 'N/A'}</p>
+                <p><strong>Customer Site ID:</strong> ${basic.customerSiteId || 'N/A'}</p>
+                <p><strong>Customer Site Name:</strong> ${basic.customerSiteName || 'N/A'}</p>
+                <p><strong>Team Leader:</strong> ${basic.teamLeader || 'N/A'}</p>
+                <p><strong>Completion Date:</strong> ${basic.completionDate || 'N/A'}</p>
+                <p><strong>Submitted By:</strong> ${metadata.submittedBy || 'N/A'}</p>
+                
+                <h3 style="margin-top: 20px;">GPS Location</h3>
+                ${data.gps && data.gps.latitude ? 
+                    `<p>Latitude: ${data.gps.latitude.toFixed(7)}, Longitude: ${data.gps.longitude.toFixed(7)}</p>
+                     <p><a href="https://www.google.com/maps?q=${data.gps.latitude},${data.gps.longitude}" target="_blank">Ver en Google Maps</a></p>` :
+                    '<p>No GPS data available</p>'
+                }
+                
+                <h3 style="margin-top: 20px;">Equipos Instalados (${data.appurtenances?.length || 0})</h3>
+            `;
+            
+            if (data.appurtenances && data.appurtenances.length > 0) {
+                html += '<ul>';
+                data.appurtenances.forEach(app => {
+                    html += `<li>${app.type} - ${app.manufacturer} ${app.model} (Qty: ${app.quantity})</li>`;
+                });
+                html += '</ul>';
+            } else {
+                html += '<p>No equipment recorded</p>';
+            }
+            
+            document.getElementById('previewContent').innerHTML = html;
+            document.getElementById('previewModal').style.display = 'flex';
+        }
+        
+        // Función para editar reporte
+        function editReport(reportKey) {
+            if (confirm('¿Desea editar este reporte? Será redirigido a la aplicación de reportes.')) {
+                // Guardar el reporte a editar en sessionStorage
+                sessionStorage.setItem('editReportKey', reportKey);
+                window.location.href = 'tower-report-app.html?edit=' + reportKey;
+            }
+        }
+        
+        // Función para duplicar reporte
+        function duplicateReport(reportKey) {
+            if (!confirm('¿Desea crear una copia de este reporte?')) {
+                return;
+            }
+            
+            try {
+                const savedReport = localStorage.getItem(reportKey);
+                if (savedReport) {
+                    const originalData = JSON.parse(savedReport);
+                    
+                    // Crear nuevo ID
+                    const timestamp = Date.now();
+                    const randomNum = Math.floor(Math.random() * 100000);
+                    const newReportId = `RPT-${timestamp}-${randomNum}`;
+                    
+                    // Actualizar metadata
+                    originalData.metadata = {
+                        ...originalData.metadata,
+                        createdAt: new Date().toISOString(),
+                        duplicatedFrom: reportKey
+                    };
+                    
+                    if (originalData.basic) {
+                        originalData.basic.uniqueReportId = newReportId;
+                        originalData.basic.submissionTimestamp = new Date().toISOString();
+                    }
+                    
+                    // Guardar duplicado
+                    localStorage.setItem(newReportId, JSON.stringify(originalData));
+                    
+                    alert(`Reporte duplicado exitosamente con ID: ${newReportId}`);
+                    loadReports();
+                }
+            } catch (error) {
+                console.error('Error duplicating report:', error);
+                alert('Error al duplicar el reporte');
+            }
+        }
+        
+        // Función para eliminar reporte
+        function deleteReport(reportKey) {
+            if (!confirm(`¿Está seguro de eliminar el reporte ${reportKey}?`)) {
+                return;
+            }
+            
+            if (confirm('Esta acción no se puede deshacer. ¿Confirmar eliminación?')) {
+                try {
+                    localStorage.removeItem(reportKey);
+                    alert('Reporte eliminado exitosamente');
+                    loadReports();
+                } catch (error) {
+                    console.error('Error deleting report:', error);
+                    alert('Error al eliminar el reporte');
+                }
+            }
+        }
+        
+        // Función para exportar reportes
+        function exportReports() {
+            const dataStr = JSON.stringify(allReports, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `tower-reports-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Función para cerrar modal
+        function closeModal() {
+            document.getElementById('previewModal').style.display = 'none';
+        }
+        
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('previewModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
