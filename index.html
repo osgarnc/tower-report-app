@@ -7,7 +7,7 @@
 <meta name="author" content="Newcomm Management Services Corp.">
 <meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
 <meta name="description" content="Tower Provider Report - Professional Mobile Application">
-<title>Tower Report Mobile v9.10 - SharePoint Auth</title>
+<title>Tower Report Mobile v9.20 - SharePoint Auth</title>
 
 <!-- MSAL.js desde CDN -->
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
@@ -447,18 +447,71 @@ cursor: pointer;
 display: inline-flex;
 align-items: center;
 gap: 8px;
+margin-right: 10px;
+margin-bottom: 10px;
 }
 
 .camera-btn:hover {
 background-color: #0052a3;
 }
 
-.photo-preview {
+.gallery-btn {
+background-color: #4caf50;
+color: white;
+padding: 10px 20px;
+border-radius: 6px;
+cursor: pointer;
+display: inline-flex;
+align-items: center;
+gap: 8px;
+margin-bottom: 10px;
+}
+
+.gallery-btn:hover {
+background-color: #388e3c;
+}
+
+.photo-preview-container {
+display: flex;
+flex-wrap: wrap;
+gap: 10px;
 margin-top: 10px;
-max-width: 100%;
-max-height: 200px;
+justify-content: center;
+}
+
+.photo-preview-item {
+position: relative;
+display: inline-block;
+}
+
+.photo-preview {
+width: 80px;
+height: 80px;
+object-fit: cover;
 border-radius: 6px;
 box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.photo-delete-btn {
+position: absolute;
+top: -8px;
+right: -8px;
+background-color: #f44336;
+color: white;
+border: none;
+border-radius: 50%;
+width: 24px;
+height: 24px;
+font-size: 12px;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.photo-delete-btn:hover {
+background-color: #d32f2f;
 }
 
 .photo-count {
@@ -625,6 +678,11 @@ font-size: 18px;
 font-size: 14px;
 padding: 10px 20px;
 }
+
+.photo-preview {
+width: 60px;
+height: 60px;
+}
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -649,7 +707,7 @@ Iniciar sesión con Microsoft
 <div id="loginError" style="display: none;" class="login-error"></div>
 
 <div style="margin-top: 20px; font-size: 12px; color: #666;">
-<p>Versión 8.0 - Mapeo Dinámico de Fotos</p>
+<p>Versión 9.20 - Fotos Mejoradas</p>
 </div>
 </div>
 </div>
@@ -663,7 +721,7 @@ Iniciar sesión con Microsoft
 
 <header class="header">
 <h1>Tower Provider Report</h1>
-<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 8.0 - Mapeo Dinámico de Fotos</div>
+<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 9.20 - Fotos Mejoradas</div>
 </header>
 
 <div class="step-indicator">
@@ -686,7 +744,7 @@ Iniciar sesión con Microsoft
 Limpiar datos
 </button>
 </div>
-<div style="font-size: 11px; color: #666; margin-top: 5px;">App v8.0 - Mapeo Dinámico</div>
+<div style="font-size: 11px; color: #666; margin-top: 5px;">App v9.20 - Fotos Mejoradas</div>
 </div>
 
 <div class="form-group">
@@ -888,15 +946,10 @@ Siguiente →
 <ul>
 <li>Las fotos se organizan por categorías y sectores</li>
 <li>Cada sector tiene su propia sección de fotos</li>
-<li>Puede tomar múltiples fotos por categoría si es necesario</li>
+<li>Puede tomar fotos con la cámara o seleccionar desde la galería</li>
+<li>Puede eliminar fotos individuales si se equivoca</li>
 <li>Las fotos se guardan automáticamente</li>
 </ul>
-<div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px;">
-<strong>Modo Demo:</strong>
-<button class="btn btn-secondary" onclick="skipPhotoValidation()" style="margin-left: 10px;">
-Saltar validación de fotos
-</button>
-</div>
 </div>
 
 <div class="photo-grid" id="photoGrid">
@@ -958,7 +1011,7 @@ Al enviar, se generará un reporte y se enviará automáticamente a accounting@n
 </p>
 
 <button class="btn btn-primary btn-block" onclick="showReportSummary()" style="margin-bottom: 10px; font-size: 16px;">
-📄 Ver Resumen del Reporte
+📋 Ver Resumen del Reporte
 </button>
 
 <button class="btn btn-success btn-block" onclick="submitReport()" style="font-size: 18px; padding: 15px;">
@@ -977,7 +1030,7 @@ Al enviar, se generará un reporte y se enviará automáticamente a accounting@n
 
 <!-- Copyright Footer -->
 <div class="copyright-footer">
-© 2025 Newcomm Management Services Corp. • All rights reserved • v8.0
+© 2025 Newcomm Management Services Corp. • All rights reserved • v9.20
 </div>
 </div>
 
@@ -1024,7 +1077,7 @@ appurtenances: [],
 photos: {},
 measurements: {},
 metadata: {
-appVersion: '8.0',
+appVersion: '9.20',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -1752,7 +1805,6 @@ photoTypes.forEach(type => {
 const photos = reportData.photos[type.id] || [];
 totalPhotos += photos.length;
 
-
 if (photos.length < type.required) {
 missingCategories.push(`${type.name}: ${photos.length}/${type.required}`);
 }
@@ -1792,121 +1844,121 @@ teamLeader: document.getElementById('teamLeader').value,
 towerTop: document.getElementById('towerTop').value,
 completionDate: document.getElementById('completionDate').value,
 submittedBy: reportData.metadata.submittedBy || 'Unknown User',
-                submittedByEmail: reportData.metadata.submittedByEmail || 'unknown@email.com',
-                submissionTimestamp: new Date().toISOString(),
-                uniqueReportId: `RPT-${timestamp}-${randomNum}`
-            };
+submittedByEmail: reportData.metadata.submittedByEmail || 'unknown@email.com',
+submissionTimestamp: new Date().toISOString(),
+uniqueReportId: `RPT-${timestamp}-${randomNum}`
+};
 
-            // Guardar mediciones dinámicas según sectores
-            reportData.measurements = {
-                towerHeight: document.getElementById('towerHeight').value || '',
-                tallestPoint: document.getElementById('tallestPoint').value || ''
-            };
+// Guardar mediciones dinámicas según sectores
+reportData.measurements = {
+towerHeight: document.getElementById('towerHeight').value || '',
+tallestPoint: document.getElementById('tallestPoint').value || ''
+};
 
-            // Guardar tape drops dinámicos
-            for (let i = 1; i <= sectorsCount; i++) {
-                const tapeDrop = document.getElementById(`sector${i}TapeDrop`);
-                if (tapeDrop) {
-                    reportData.measurements[`sector${i}TapeDrop`] = tapeDrop.value || '';
-                }
-            }
-            break;
-    }
+// Guardar tape drops dinámicos
+for (let i = 1; i <= sectorsCount; i++) {
+const tapeDrop = document.getElementById(`sector${i}TapeDrop`);
+if (tapeDrop) {
+reportData.measurements[`sector${i}TapeDrop`] = tapeDrop.value || '';
+}
+}
+break;
+}
 
-    try {
-        localStorage.setItem('towerReport', JSON.stringify(reportData));
-    } catch (e) {
-        if (e.name === 'QuotaExceededError') {
-            clearOldReports();
-            try {
-                localStorage.setItem('towerReport', JSON.stringify(reportData));
-            } catch (e2) {
-                showNotification('Almacenamiento lleno. Algunas fotos no se guardaron.', 'error');
-                const minimalData = {
-                    basic: reportData.basic,
-                    gps: reportData.gps,
-                    appurtenances: reportData.appurtenances,
-                    photos: {}
-                };
-                localStorage.setItem('towerReport', JSON.stringify(minimalData));
-            }
-        }
-    }
+try {
+localStorage.setItem('towerReport', JSON.stringify(reportData));
+} catch (e) {
+if (e.name === 'QuotaExceededError') {
+clearOldReports();
+try {
+localStorage.setItem('towerReport', JSON.stringify(reportData));
+} catch (e2) {
+showNotification('Almacenamiento lleno. Algunas fotos no se guardaron.', 'error');
+const minimalData = {
+basic: reportData.basic,
+gps: reportData.gps,
+appurtenances: reportData.appurtenances,
+photos: {}
+};
+localStorage.setItem('towerReport', JSON.stringify(minimalData));
+}
+}
+}
 } catch (error) {
-    console.error('Error saving data:', error);
-    showNotification('Error al guardar. Continuando sin guardar.', 'error');
+console.error('Error saving data:', error);
+showNotification('Error al guardar. Continuando sin guardar.', 'error');
 }
 }
 
 function loadSavedData() {
 const saved = localStorage.getItem('towerReport');
 if (saved) {
-    reportData = JSON.parse(saved);
-    if (reportData.basic) {
-        Object.keys(reportData.basic).forEach(key => {
-            const element = document.getElementById(key);
-            if (element && key !== 'submittedBy' && key !== 'submittedByEmail') {
-                element.value = reportData.basic[key];
-            }
-        });
-        // Actualizar requisitos de medición si hay un valor de towerTop guardado
-        if (reportData.basic.towerTop) {
-            updateMeasurementRequirements();
-        }
-        // Actualizar sectores si hay un valor guardado
-        if (reportData.basic.sectorsCount) {
-            updateSectorRequirements();
-        }
-    }
-    if (reportData.measurements) {
-        Object.keys(reportData.measurements).forEach(key => {
-            const element = document.getElementById(key);
-            if (element) {
-                element.value = reportData.measurements[key];
-            }
-        });
-    }
-    if (reportData.gps.latitude) {
-        showGPSStatus(true);
-    }
-    updateAppurtenanceList();
-    updatePhotoCounts();
-    updateEquipmentRequirements();
+reportData = JSON.parse(saved);
+if (reportData.basic) {
+Object.keys(reportData.basic).forEach(key => {
+const element = document.getElementById(key);
+if (element && key !== 'submittedBy' && key !== 'submittedByEmail') {
+element.value = reportData.basic[key];
+}
+});
+// Actualizar requisitos de medición si hay un valor de towerTop guardado
+if (reportData.basic.towerTop) {
+updateMeasurementRequirements();
+}
+// Actualizar sectores si hay un valor guardado
+if (reportData.basic.sectorsCount) {
+updateSectorRequirements();
+}
+}
+if (reportData.measurements) {
+Object.keys(reportData.measurements).forEach(key => {
+const element = document.getElementById(key);
+if (element) {
+element.value = reportData.measurements[key];
+}
+});
+}
+if (reportData.gps.latitude) {
+showGPSStatus(true);
+}
+updateAppurtenanceList();
+updatePhotoCounts();
+updateEquipmentRequirements();
 }
 }
 
 // Storage management functions
 function checkStorageSpace() {
 try {
-    let totalSize = 0;
-    for (let key in localStorage) {
-        if (localStorage.hasOwnProperty(key)) {
-            totalSize += localStorage[key].length;
-        }
-    }
-    return (totalSize / 1024 / 1024).toFixed(2);
+let totalSize = 0;
+for (let key in localStorage) {
+if (localStorage.hasOwnProperty(key)) {
+totalSize += localStorage[key].length;
+}
+}
+return (totalSize / 1024 / 1024).toFixed(2);
 } catch (e) {
-    return 'Unknown';
+return 'Unknown';
 }
 }
 
 function updateStorageIndicator() {
 const indicator = document.getElementById('storageIndicator');
 if (indicator) {
-    const usedMB = checkStorageSpace();
-    const usedNum = parseFloat(usedMB);
+const usedMB = checkStorageSpace();
+const usedNum = parseFloat(usedMB);
 
-    indicator.textContent = `${usedMB} MB`;
+indicator.textContent = `${usedMB} MB`;
 
-    if (usedNum > 4.5) {
-        indicator.style.color = 'red';
-        indicator.textContent += ' (CRÍTICO)';
-    } else if (usedNum > 3) {
-        indicator.style.color = 'orange';
-        indicator.textContent += ' (alto)';
-    } else {
-        indicator.style.color = 'green';
-    }
+if (usedNum > 4.5) {
+indicator.style.color = 'red';
+indicator.textContent += ' (CRÍTICO)';
+} else if (usedNum > 3) {
+indicator.style.color = 'orange';
+indicator.textContent += ' (alto)';
+} else {
+indicator.style.color = 'green';
+}
 }
 }
 
@@ -1914,62 +1966,62 @@ function optimizeStorage() {
 const currentSize = parseFloat(checkStorageSpace());
 
 if (currentSize > 4) {
-    showNotification('Optimizando almacenamiento...', 'info');
-    clearOldReports();
+showNotification('Optimizando almacenamiento...', 'info');
+clearOldReports();
 
-    if (parseFloat(checkStorageSpace()) > 3) {
-        Object.keys(reportData.photos).forEach(photoType => {
-            const photos = reportData.photos[photoType];
-            if (photos && photos.length > 2) {
-                reportData.photos[photoType] = photos.slice(-2);
-            }
-        });
-        updatePhotoCounts();
-    }
+if (parseFloat(checkStorageSpace()) > 3) {
+Object.keys(reportData.photos).forEach(photoType => {
+const photos = reportData.photos[photoType];
+if (photos && photos.length > 2) {
+reportData.photos[photoType] = photos.slice(-2);
+}
+});
+updatePhotoCounts();
+}
 
-    updateStorageIndicator();
-    showNotification('Almacenamiento optimizado', 'success');
+updateStorageIndicator();
+showNotification('Almacenamiento optimizado', 'success');
 }
 }
 
 function clearOldReports() {
 const keysToRemove = [];
 for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key && key.startsWith('RPT-') && key !== 'towerReportSession') {
-        keysToRemove.push(key);
-    }
+const key = localStorage.key(i);
+if (key && key.startsWith('RPT-') && key !== 'towerReportSession') {
+keysToRemove.push(key);
+}
 }
 keysToRemove.forEach(key => localStorage.removeItem(key));
 }
 
 function clearAllData() {
 if (confirm('¿Eliminar todos los datos guardados? Esto borrará reportes anteriores pero mantendrá su sesión activa.')) {
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key !== 'isAuthenticated' && key !== 'userAccount' && key !== 'userName' && key !== 'userEmail') {
-            keysToRemove.push(key);
-        }
-    }
-    keysToRemove.forEach(key => localStorage.removeItem(key));
+const keysToRemove = [];
+for (let i = 0; i < localStorage.length; i++) {
+const key = localStorage.key(i);
+if (key && key !== 'isAuthenticated' && key !== 'userAccount' && key !== 'userName' && key !== 'userEmail') {
+keysToRemove.push(key);
+}
+}
+keysToRemove.forEach(key => localStorage.removeItem(key));
 
-    reportData = {
-        basic: {},
-        gps: {},
-        appurtenances: [],
-        photos: {},
-        metadata: {
-            submittedBy: reportData.metadata.submittedBy,
-            submittedByEmail: reportData.metadata.submittedByEmail,
-            appVersion: '8.0',
-            deviceInfo: navigator.userAgent,
-            createdAt: new Date().toISOString()
-        }
-    };
-    showNotification('Datos eliminados correctamente', 'success');
-    updateStorageIndicator();
-    location.reload();
+reportData = {
+basic: {},
+gps: {},
+appurtenances: [],
+photos: {},
+metadata: {
+submittedBy: reportData.metadata.submittedBy,
+submittedByEmail: reportData.metadata.submittedByEmail,
+appVersion: '9.20',
+deviceInfo: navigator.userAgent,
+createdAt: new Date().toISOString()
+}
+};
+showNotification('Datos eliminados correctamente', 'success');
+updateStorageIndicator();
+location.reload();
 }
 }
 
@@ -1982,8 +2034,8 @@ const viewUrl = `https://www.google.com/maps?q=${lat},${lng}&z=18&t=k`;
 // const staticUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=18&size=600x400&maptype=satellite&markers=color:red%7C${lat},${lng}&key=YOUR_API_KEY`;
 
 return {
-    view: viewUrl,
-    // static: staticUrl // Descomentar cuando tengas API key
+view: viewUrl,
+// static: staticUrl // Descomentar cuando tengas API key
 };
 }
 
@@ -1993,52 +2045,52 @@ const statusDiv = document.getElementById('gpsStatus');
 statusDiv.innerHTML = '<div class="spinner"></div><p>Obteniendo ubicación GPS...</p>';
 
 if (!navigator.geolocation) {
-    showGPSStatus(false, 'Geolocalización no soportada. Use la opción manual.');
-    showManualGPS();
-    return;
+showGPSStatus(false, 'Geolocalización no soportada. Use la opción manual.');
+showManualGPS();
+return;
 }
 
 const options = {
-    enableHighAccuracy: true, // Cambiado a true para mayor precisión
-    timeout: 15000, // Aumentado a 15 segundos
-    maximumAge: 0 // Sin caché para obtener ubicación actual
+enableHighAccuracy: true, // Cambiado a true para mayor precisión
+timeout: 15000, // Aumentado a 15 segundos
+maximumAge: 0 // Sin caché para obtener ubicación actual
 };
 
 navigator.geolocation.getCurrentPosition(
-    (position) => {
-        reportData.gps = {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            altitude: position.coords.altitude || 0,
-            accuracy: position.coords.accuracy
-        };
-        showGPSStatus(true);
-        saveCurrentStep();
-        showNotification('✓ GPS capturado exitosamente', 'success');
-    },
-    (error) => {
-        console.error('GPS Error:', error);
-        let errorMessage = 'Error desconocido';
+(position) => {
+reportData.gps = {
+latitude: position.coords.latitude,
+longitude: position.coords.longitude,
+altitude: position.coords.altitude || 0,
+accuracy: position.coords.accuracy
+};
+showGPSStatus(true);
+saveCurrentStep();
+showNotification('✓ GPS capturado exitosamente', 'success');
+},
+(error) => {
+console.error('GPS Error:', error);
+let errorMessage = 'Error desconocido';
 
-        switch(error.code) {
-            case 1:
-                errorMessage = 'Permisos de ubicación denegados. Active la ubicación en su dispositivo o use la opción manual.';
-                break;
-            case 2:
-                errorMessage = 'Ubicación no disponible. Intente en un área con mejor señal o use la opción manual.';
-                break;
-            case 3:
-                errorMessage = 'Tiempo agotado obteniendo ubicación. Use la opción manual para continuar.';
-                break;
-            default:
-                errorMessage = `Error de ubicación: ${error.message || 'Desconocido'}. Use la opción manual.`;
-        }
+switch(error.code) {
+case 1:
+errorMessage = 'Permisos de ubicación denegados. Active la ubicación en su dispositivo o use la opción manual.';
+break;
+case 2:
+errorMessage = 'Ubicación no disponible. Intente en un área con mejor señal o use la opción manual.';
+break;
+case 3:
+errorMessage = 'Tiempo agotado obteniendo ubicación. Use la opción manual para continuar.';
+break;
+default:
+errorMessage = `Error de ubicación: ${error.message || 'Desconocido'}. Use la opción manual.`;
+}
 
-        showGPSStatus(false, errorMessage);
-        // Mostrar automáticamente la opción manual cuando falla
-        showManualGPS();
-    },
-    options
+showGPSStatus(false, errorMessage);
+// Mostrar automáticamente la opción manual cuando falla
+showManualGPS();
+},
+options
 );
 }
 
@@ -2079,8 +2131,8 @@ luego toque las coordenadas que aparecen arriba para copiarlas.
 
 // Focus en el primer campo
 setTimeout(() => {
-    const latInput = document.getElementById('manualLat');
-    if (latInput) latInput.focus();
+const latInput = document.getElementById('manualLat');
+if (latInput) latInput.focus();
 }, 100);
 }
 
@@ -2089,8 +2141,8 @@ const lat = document.getElementById('manualLat').value;
 const lng = document.getElementById('manualLng').value;
 
 if (!lat || !lng) {
-    showNotification('⚠️ Debe ingresar tanto latitud como longitud', 'error');
-    return;
+showNotification('⚠️ Debe ingresar tanto latitud como longitud', 'error');
+return;
 }
 
 const latNum = parseFloat(lat);
@@ -2098,32 +2150,32 @@ const lngNum = parseFloat(lng);
 
 // Validación de rangos
 if (Math.abs(latNum) > 90) {
-    showNotification('Latitud inválida. Debe estar entre -90 y 90', 'error');
-    document.getElementById('manualLat').focus();
-    return;
+showNotification('Latitud inválida. Debe estar entre -90 y 90', 'error');
+document.getElementById('manualLat').focus();
+return;
 }
 
 if (Math.abs(lngNum) > 180) {
-    showNotification('Longitud inválida. Debe estar entre -180 y 180', 'error');
-    document.getElementById('manualLng').focus();
-    return;
+showNotification('Longitud inválida. Debe estar entre -180 y 180', 'error');
+document.getElementById('manualLng').focus();
+return;
 }
 
 // Validación específica para Puerto Rico (aproximada)
 if (latNum < 17.5 || latNum > 19 || lngNum < -68 || lngNum > -65) {
-    const confirmOutside = confirm('Las coordenadas parecen estar fuera de Puerto Rico. ¿Desea continuar?');
-    if (!confirmOutside) {
-        return;
-    }
+const confirmOutside = confirm('Las coordenadas parecen estar fuera de Puerto Rico. ¿Desea continuar?');
+if (!confirmOutside) {
+return;
+}
 }
 
 reportData.gps = {
-    latitude: latNum,
-    longitude: lngNum,
-    altitude: 0,
-    accuracy: 0,
-    manual: true,
-    mapUrl: generateGoogleMapsUrl(latNum, lngNum)
+latitude: latNum,
+longitude: lngNum,
+altitude: 0,
+accuracy: 0,
+manual: true,
+mapUrl: generateGoogleMapsUrl(latNum, lngNum)
 };
 
 showGPSStatus(true);
@@ -2134,23 +2186,23 @@ showNotification('✓ Coordenadas GPS guardadas correctamente', 'success');
 function showGPSStatus(success, message = '') {
 const statusDiv = document.getElementById('gpsStatus');
 if (success) {
-    const isManual = reportData.gps.manual ? ' (Manual)' : '';
-    statusDiv.innerHTML = `
-    <div class="gps-status success">
-    ✓ GPS Capturado${isManual}: ${reportData.gps.latitude.toFixed(7)}, ${reportData.gps.longitude.toFixed(7)}
-    ${!reportData.gps.manual ? `<br>Precisión: ±${reportData.gps.accuracy.toFixed(1)}m` : ''}
-    <br>
-    <button class="btn btn-secondary" onclick="showManualGPS()" style="margin-top: 10px; font-size: 12px;">
-    ✏️ Editar Coordenadas
-    </button>
-    </div>
-    `;
+const isManual = reportData.gps.manual ? ' (Manual)' : '';
+statusDiv.innerHTML = `
+<div class="gps-status success">
+✓ GPS Capturado${isManual}: ${reportData.gps.latitude.toFixed(7)}, ${reportData.gps.longitude.toFixed(7)}
+${!reportData.gps.manual ? `<br>Precisión: ±${reportData.gps.accuracy.toFixed(1)}m` : ''}
+<br>
+<button class="btn btn-secondary" onclick="showManualGPS()" style="margin-top: 10px; font-size: 12px;">
+✏️ Editar Coordenadas
+</button>
+</div>
+`;
 } else {
-    statusDiv.innerHTML = `
-    <div class="gps-status error">
-    ✗ ${message}
-    </div>
-    `;
+statusDiv.innerHTML = `
+<div class="gps-status error">
+✗ ${message}
+</div>
+`;
 }
 }
 
@@ -2162,25 +2214,25 @@ document.getElementById('appurtenanceForm').style.display = 'block';
 function cancelAppurtenance() {
 document.getElementById('appurtenanceForm').style.display = 'none';
 ['appType', 'appRadCenter', 'appManufacturer', 'appModel', 'appQuantity', 'appCoaxSize'].forEach(id => {
-    const element = document.getElementById(id);
-    if (id === 'appQuantity') {
-        element.value = '1';
-    } else if (id === 'appCoaxSize') {
-        element.value = 'N/A';
-    } else {
-        element.value = '';
-    }
+const element = document.getElementById(id);
+if (id === 'appQuantity') {
+element.value = '1';
+} else if (id === 'appCoaxSize') {
+element.value = 'N/A';
+} else {
+element.value = '';
+}
 });
 }
 
 function addAppurtenance() {
 const appurtenance = {
-    type: document.getElementById('appType').value,
-    radCenter: document.getElementById('appRadCenter').value,
-    manufacturer: document.getElementById('appManufacturer').value,
-    model: document.getElementById('appModel').value,
-    quantity: document.getElementById('appQuantity').value,
-    coaxSize: document.getElementById('appCoaxSize').value
+type: document.getElementById('appType').value,
+radCenter: document.getElementById('appRadCenter').value,
+manufacturer: document.getElementById('appManufacturer').value,
+model: document.getElementById('appModel').value,
+quantity: document.getElementById('appQuantity').value,
+coaxSize: document.getElementById('appCoaxSize').value
 };
 
 reportData.appurtenances.push(appurtenance);
@@ -2195,16 +2247,16 @@ const listDiv = document.getElementById('appurtenanceList');
 listDiv.innerHTML = '';
 
 reportData.appurtenances.forEach((app, index) => {
-    const item = document.createElement('div');
-    item.className = 'appurtenance-item';
-    item.innerHTML = `
-    <div class="appurtenance-info">
-    <h4>${app.type} - ${app.manufacturer}</h4>
-    <p>Model: ${app.model} | Qty: ${app.quantity} | Rad: ${app.radCenter} | Coax: ${app.coaxSize}</p>
-    </div>
-    <button class="btn btn-danger" onclick="removeAppurtenance(${index})">×</button>
-    `;
-    listDiv.appendChild(item);
+const item = document.createElement('div');
+item.className = 'appurtenance-item';
+item.innerHTML = `
+<div class="appurtenance-info">
+<h4>${app.type} - ${app.manufacturer}</h4>
+<p>Model: ${app.model} | Qty: ${app.quantity} | Rad: ${app.radCenter} | Coax: ${app.coaxSize}</p>
+</div>
+<button class="btn btn-danger" onclick="removeAppurtenance(${index})">×</button>
+`;
+listDiv.appendChild(item);
 });
 }
 
@@ -2215,14 +2267,14 @@ updateEquipmentCounter();
 saveCurrentStep();
 }
 
-// Photo Functions
+// Photo Functions - MEJORADAS PARA v9.20
 function generatePhotoGrid() {
 const grid = document.getElementById('photoGrid');
 grid.innerHTML = '';
 
 // Make sure we have photo types defined
 if (photoTypes.length === 0) {
-    updatePhotoTypes();
+updatePhotoTypes();
 }
 
 // Organizar fotos por grupos
@@ -2231,16 +2283,16 @@ const sectorPhotos = {};
 const tapeDropPhotos = {};
 
 photoTypes.forEach(type => {
-    if (type.sectorGroup) {
-        if (!sectorPhotos[type.sectorNumber]) {
-            sectorPhotos[type.sectorNumber] = [];
-        }
-        sectorPhotos[type.sectorNumber].push(type);
-    } else if (type.tapeDropGroup) {
-        tapeDropPhotos[type.sectorNumber] = type;
-    } else {
-        generalPhotos.push(type);
-    }
+if (type.sectorGroup) {
+if (!sectorPhotos[type.sectorNumber]) {
+sectorPhotos[type.sectorNumber] = [];
+}
+sectorPhotos[type.sectorNumber].push(type);
+} else if (type.tapeDropGroup) {
+tapeDropPhotos[type.sectorNumber] = type;
+} else {
+generalPhotos.push(type);
+}
 });
 
 // Crear sección de fotos generales
@@ -2249,43 +2301,43 @@ generalSection.innerHTML = '<h3 style="color: #0066cc; margin: 20px 0 10px 0;">F
 grid.appendChild(generalSection);
 
 generalPhotos.forEach(type => {
-    const photoItem = createPhotoItem(type);
-    grid.appendChild(photoItem);
+const photoItem = createPhotoItem(type);
+grid.appendChild(photoItem);
 });
 
 // Crear sección de fotos por sector
 if (Object.keys(sectorPhotos).length > 0) {
-    const sectorSection = document.createElement('div');
-    sectorSection.innerHTML = '<h3 style="color: #0066cc; margin: 30px 0 10px 0;">Fotos de Sectores - Post Pictures</h3>';
-    grid.appendChild(sectorSection);
+const sectorSection = document.createElement('div');
+sectorSection.innerHTML = '<h3 style="color: #0066cc; margin: 30px 0 10px 0;">Fotos de Sectores - Post Pictures</h3>';
+grid.appendChild(sectorSection);
 
-    // Para cada sector
-    Object.keys(sectorPhotos).sort((a, b) => parseInt(a) - parseInt(b)).forEach(sectorNum => {
-        // Crear título del sector
-        const sectorTitle = document.createElement('div');
-        sectorTitle.innerHTML = `<h4 style="background: #e3f2fd; color: #1565c0; padding: 10px; margin: 20px 0 10px 0; border-radius: 6px;">Sector ${sectorNum}</h4>`;
-        grid.appendChild(sectorTitle);
+// Para cada sector
+Object.keys(sectorPhotos).sort((a, b) => parseInt(a) - parseInt(b)).forEach(sectorNum => {
+// Crear título del sector
+const sectorTitle = document.createElement('div');
+sectorTitle.innerHTML = `<h4 style="background: #e3f2fd; color: #1565c0; padding: 10px; margin: 20px 0 10px 0; border-radius: 6px;">Sector ${sectorNum}</h4>`;
+grid.appendChild(sectorTitle);
 
-        // Agregar cada tipo de foto para este sector
-        sectorPhotos[sectorNum].forEach(type => {
-            const photoItem = createPhotoItem(type);
-            grid.appendChild(photoItem);
-        });
-    });
+// Agregar cada tipo de foto para este sector
+sectorPhotos[sectorNum].forEach(type => {
+const photoItem = createPhotoItem(type);
+grid.appendChild(photoItem);
+});
+});
 }
 
 // Crear sección de tape drop
 if (Object.keys(tapeDropPhotos).length > 0) {
-    const tapeDropSection = document.createElement('div');
-    tapeDropSection.innerHTML = '<h3 style="color: #0066cc; margin: 30px 0 10px 0;">Tape Drop Measurements</h3>';
-    grid.appendChild(tapeDropSection);
+const tapeDropSection = document.createElement('div');
+tapeDropSection.innerHTML = '<h3 style="color: #0066cc; margin: 30px 0 10px 0;">Tape Drop Measurements</h3>';
+grid.appendChild(tapeDropSection);
 
-    // Para cada sector
-    Object.keys(tapeDropPhotos).sort((a, b) => parseInt(a) - parseInt(b)).forEach(sectorNum => {
-        const type = tapeDropPhotos[sectorNum];
-        const photoItem = createPhotoItem(type);
-        grid.appendChild(photoItem);
-    });
+// Para cada sector
+Object.keys(tapeDropPhotos).sort((a, b) => parseInt(a) - parseInt(b)).forEach(sectorNum => {
+const type = tapeDropPhotos[sectorNum];
+const photoItem = createPhotoItem(type);
+grid.appendChild(photoItem);
+});
 }
 
 updatePhotoCounts();
@@ -2303,16 +2355,25 @@ accept="image/*"
 capture="environment"
 multiple
 class="camera-input"
-id="photo_${type.id}"
+id="photo_camera_${type.id}"
 onchange="handlePhotoCapture('${type.id}', this)">
-<label for="photo_${type.id}" class="camera-btn">
-📸 Tomar Foto (${type.required} ${type.required === 1 ? 'requerida' : 'requeridas'})
+<label for="photo_camera_${type.id}" class="camera-btn">
+📷 Tomar Foto
+</label>
+<input type="file"
+accept="image/*"
+multiple
+class="camera-input"
+id="photo_gallery_${type.id}"
+onchange="handlePhotoCapture('${type.id}', this)">
+<label for="photo_gallery_${type.id}" class="gallery-btn">
+🖼️ Galería
 </label>
 </div>
-<div id="preview_${type.id}"></div>
 <div class="photo-count">
-<span id="count_${type.id}">0</span> de ${type.required} fotos
+<span id="count_${type.id}">0</span> de ${type.required} fotos requeridas
 </div>
+<div class="photo-preview-container" id="preview_${type.id}"></div>
 <div class="photo-status ${(reportData.photos[type.id] || []).length >= type.required ? 'complete' : 'pending'}" id="status_${type.id}">
 ${(reportData.photos[type.id] || []).length >= type.required ? '✓ Completo' : '⏱ Pendiente'}
 </div>
@@ -2323,67 +2384,71 @@ return photoItem;
 function handlePhotoCapture(typeId, input) {
 const files = Array.from(input.files);
 if (!reportData.photos[typeId]) {
-    reportData.photos[typeId] = [];
+reportData.photos[typeId] = [];
 }
 
 files.forEach(file => {
-    const currentSize = checkStorageSpace();
-    if (parseFloat(currentSize) > 4.5) {
-        showNotification('Almacenamiento casi lleno. Limpiando fotos antiguas...', 'info');
-        clearOldReports();
-    }
+const currentSize = checkStorageSpace();
+if (parseFloat(currentSize) > 4.5) {
+showNotification('Almacenamiento casi lleno. Limpiando fotos antiguas...', 'info');
+clearOldReports();
+}
 
-    compressImage(file, 400, 0.5, (compressedDataUrl) => {
-        try {
-            reportData.photos[typeId].push({
-                data: compressedDataUrl,
-                timestamp: new Date().toISOString(),
-                name: file.name
-            });
-            updatePhotoPreview(typeId);
-            updatePhotoCounts();
-            saveCurrentStep();
-        } catch (error) {
-            if (error.name === 'QuotaExceededError') {
-                showNotification('Almacenamiento lleno. Use "Limpiar datos" primero.', 'error');
-            }
-        }
-    });
+compressImage(file, 400, 0.5, (compressedDataUrl) => {
+try {
+reportData.photos[typeId].push({
+data: compressedDataUrl,
+timestamp: new Date().toISOString(),
+name: file.name,
+id: Date.now() + Math.random() // ID único para cada foto
 });
+updatePhotoPreview(typeId);
+updatePhotoCounts();
+saveCurrentStep();
+} catch (error) {
+if (error.name === 'QuotaExceededError') {
+showNotification('Almacenamiento lleno. Use "Limpiar datos" primero.', 'error');
+}
+}
+});
+});
+
+// Clear the input to allow selecting the same file again
+input.value = '';
 }
 
 function compressImage(file, maxWidth, quality, callback) {
 const reader = new FileReader();
 reader.onload = function(e) {
-    const img = new Image();
-    img.onload = function() {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
+const img = new Image();
+img.onload = function() {
+const canvas = document.createElement('canvas');
+let width = img.width;
+let height = img.height;
 
-        const maxSize = 400;
-        if (width > height) {
-            if (width > maxSize) {
-                height = (maxSize / width) * height;
-                width = maxSize;
-            }
-        } else {
-            if (height > maxSize) {
-                width = (maxSize / height) * width;
-                height = maxSize;
-            }
-        }
+const maxSize = 400;
+if (width > height) {
+if (width > maxSize) {
+height = (maxSize / width) * height;
+width = maxSize;
+}
+} else {
+if (height > maxSize) {
+width = (maxSize / height) * width;
+height = maxSize;
+}
+}
 
-        canvas.width = width;
-        canvas.height = height;
+canvas.width = width;
+canvas.height = height;
 
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
+const ctx = canvas.getContext('2d');
+ctx.drawImage(img, 0, 0, width, height);
 
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
-        callback(compressedDataUrl);
-    };
-    img.src = e.target.result;
+const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+callback(compressedDataUrl);
+};
+img.src = e.target.result;
 };
 reader.readAsDataURL(file);
 }
@@ -2393,53 +2458,47 @@ const previewDiv = document.getElementById(`preview_${typeId}`);
 const photos = reportData.photos[typeId] || [];
 
 previewDiv.innerHTML = photos.map((photo, index) => `
-<img src="${photo.data}" class="photo-preview" alt="Photo ${index + 1}" style="width: 100px; height: 100px; object-fit: cover; margin: 5px;">
+<div class="photo-preview-item">
+<img src="${photo.data}" class="photo-preview" alt="Photo ${index + 1}">
+<button class="photo-delete-btn" onclick="deletePhoto('${typeId}', ${index})" title="Eliminar foto">
+×
+</button>
+</div>
 `).join('');
+}
+
+function deletePhoto(typeId, photoIndex) {
+if (confirm('¿Está seguro de que desea eliminar esta foto?')) {
+if (reportData.photos[typeId] && reportData.photos[typeId][photoIndex]) {
+reportData.photos[typeId].splice(photoIndex, 1);
+updatePhotoPreview(typeId);
+updatePhotoCounts();
+saveCurrentStep();
+showNotification('Foto eliminada correctamente', 'success');
+}
+}
 }
 
 function updatePhotoCounts() {
 photoTypes.forEach(type => {
-    const photos = reportData.photos[type.id] || [];
-    const countSpan = document.getElementById(`count_${type.id}`);
-    const statusDiv = document.getElementById(`status_${type.id}`);
+const photos = reportData.photos[type.id] || [];
+const countSpan = document.getElementById(`count_${type.id}`);
+const statusDiv = document.getElementById(`status_${type.id}`);
 
-    if (countSpan) {
-        countSpan.textContent = photos.length;
-    }
-
-    if (statusDiv) {
-        if (photos.length >= type.required) {
-            statusDiv.className = 'photo-status complete';
-            statusDiv.textContent = '✓ Completo';
-        } else {
-            statusDiv.className = 'photo-status pending';
-            statusDiv.textContent = '⏱ Pendiente';
-        }
-    }
-});
+if (countSpan) {
+countSpan.textContent = photos.length;
 }
 
-function skipPhotoValidation() {
-photoTypes.forEach(type => {
-    if (!reportData.photos[type.id]) {
-        reportData.photos[type.id] = [];
-    }
-    // Agregar fotos dummy hasta cumplir con el requisito
-    const currentCount = reportData.photos[type.id].length;
-    const needed = type.required - currentCount;
-
-    for (let i = 0; i < needed; i++) {
-        reportData.photos[type.id].push({
-            data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-            timestamp: new Date().toISOString(),
-            name: `demo_photo_${i + 1}.png`
-        });
-    }
+if (statusDiv) {
+if (photos.length >= type.required) {
+statusDiv.className = 'photo-status complete';
+statusDiv.textContent = '✓ Completo';
+} else {
+statusDiv.className = 'photo-status pending';
+statusDiv.textContent = '⏱ Pendiente';
+}
+}
 });
-
-updatePhotoCounts();
-saveCurrentStep();
-showNotification('Fotos de demostración agregadas. Ahora puede continuar.', 'success');
 }
 
 // Review Functions
@@ -2467,8 +2526,8 @@ siteReview.innerHTML = `
 <div class="review-item">
 <span class="review-label">Tower Top Installation:</span>
 <span class="review-value">${reportData.basic.towerTop === 'yes' ? 'Yes - At Tower Top' :
-    reportData.basic.towerTop === 'near-top' ? 'Near Top (Within 10\' of top)' :
-    'No - Below 10\' from top'}</span>
+reportData.basic.towerTop === 'near-top' ? 'Near Top (Within 10\' of top)' :
+'No - Below 10\' from top'}</span>
 </div>
 <div class="review-item">
 <span class="review-label">Submitted By:</span>
@@ -2506,37 +2565,37 @@ let measurementsHTML = '';
 
 // Tape drops dinámicos
 for (let i = 1; i <= sectorsCount; i++) {
-    measurementsHTML += `
-    <div class="review-item">
-    <span class="review-label">Sector ${i} Tape Drop:</span>
-    <span class="review-value">${reportData.measurements[`sector${i}TapeDrop`] || 'N/A'} (OBLIGATORIO)</span>
-    </div>
-    `;
+measurementsHTML += `
+<div class="review-item">
+<span class="review-label">Sector ${i} Tape Drop:</span>
+<span class="review-value">${reportData.measurements[`sector${i}TapeDrop`] || 'N/A'} (OBLIGATORIO)</span>
+</div>
+`;
 }
 
 // Tower height y tallest point
 if (reportData.basic.towerTop === 'yes' || reportData.basic.towerTop === 'near-top') {
-    measurementsHTML += `
-    <div class="review-item">
-    <span class="review-label">Tower Height:</span>
-    <span class="review-value">${reportData.measurements.towerHeight || 'N/A'} (OBLIGATORIO)</span>
-    </div>
-    <div class="review-item">
-    <span class="review-label">Tallest Point:</span>
-    <span class="review-value">${reportData.measurements.tallestPoint || 'N/A'} (OBLIGATORIO)</span>
-    </div>
-    `;
+measurementsHTML += `
+<div class="review-item">
+<span class="review-label">Tower Height:</span>
+<span class="review-value">${reportData.measurements.towerHeight || 'N/A'} (OBLIGATORIO)</span>
+</div>
+<div class="review-item">
+<span class="review-label">Tallest Point:</span>
+<span class="review-value">${reportData.measurements.tallestPoint || 'N/A'} (OBLIGATORIO)</span>
+</div>
+`;
 } else {
-    measurementsHTML += `
-    <div class="review-item">
-    <span class="review-label">Tower Height:</span>
-    <span class="review-value">${reportData.measurements.towerHeight || 'No requerido'}</span>
-    </div>
-    <div class="review-item">
-    <span class="review-label">Tallest Point:</span>
-    <span class="review-value">${reportData.measurements.tallestPoint || 'No requerido'}</span>
-    </div>
-    `;
+measurementsHTML += `
+<div class="review-item">
+<span class="review-label">Tower Height:</span>
+<span class="review-value">${reportData.measurements.towerHeight || 'No requerido'}</span>
+</div>
+<div class="review-item">
+<span class="review-label">Tallest Point:</span>
+<span class="review-value">${reportData.measurements.tallestPoint || 'No requerido'}</span>
+</div>
+`;
 }
 
 measurementsReview.innerHTML = measurementsHTML;
@@ -2546,11 +2605,11 @@ let totalPhotos = 0;
 let completedTypes = 0;
 
 photoTypes.forEach(type => {
-    const photos = reportData.photos[type.id] || [];
-    totalPhotos += photos.length;
-    if (photos.length >= type.required) {
-        completedTypes++;
-    }
+const photos = reportData.photos[type.id] || [];
+totalPhotos += photos.length;
+if (photos.length >= type.required) {
+completedTypes++;
+}
 });
 
 photoReview.innerHTML = `
@@ -2565,7 +2624,7 @@ photoReview.innerHTML = `
 `;
 }
 
-// Submit and SharePoint Functions - ACTUALIZADO PARA v8.0 CON MAPEO DINÁMICO
+// Submit and SharePoint Functions - ACTUALIZADO PARA v9.20 CON MAPEO DINÁMICO
 async function sendToSharePoint(reportData) {
 const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
 
@@ -2577,95 +2636,95 @@ const uniqueReportID = `RPT-${timestamp}-${randomNum}`;
 const photoMapping = mapPhotosForSharePoint(reportData);
 
 const appurtenanceDataJSON = {
-    appurtenances: reportData.appurtenances || [],
-    measurements: reportData.measurements || {},
-    gpsDetails: {
-        latitude: reportData.gps.latitude || 0,
-        longitude: reportData.gps.longitude || 0,
-        altitude: reportData.gps.altitude || 0,
-        accuracy: reportData.gps.accuracy || 0,
-        method: reportData.gps.manual ? 'manual' : 'auto',
-        mapUrl: reportData.gps.mapUrl || null
-    },
-    metadata: reportData.metadata || {}
+appurtenances: reportData.appurtenances || [],
+measurements: reportData.measurements || {},
+gpsDetails: {
+latitude: reportData.gps.latitude || 0,
+longitude: reportData.gps.longitude || 0,
+altitude: reportData.gps.altitude || 0,
+accuracy: reportData.gps.accuracy || 0,
+method: reportData.gps.manual ? 'manual' : 'auto',
+mapUrl: reportData.gps.mapUrl || null
+},
+metadata: reportData.metadata || {}
 };
 
 const photoLinksJSON = {
-    totalPhotos: 0,
-    categories: {},
-    photoMetadata: {},
-    // Agregar las fotos mapeadas también para debug
-    photoData: reportData.photos
+totalPhotos: 0,
+categories: {},
+photoMetadata: {},
+// Agregar las fotos mapeadas también para debug
+photoData: reportData.photos
 };
 
 Object.keys(reportData.photos).forEach(category => {
-    const photos = reportData.photos[category] || [];
-    photoLinksJSON.totalPhotos += photos.length;
-    photoLinksJSON.categories[category] = photos.length;
+const photos = reportData.photos[category] || [];
+photoLinksJSON.totalPhotos += photos.length;
+photoLinksJSON.categories[category] = photos.length;
 
-    photos.forEach((photo, index) => {
-        const photoKey = `${category}_${index + 1}`;
-        photoLinksJSON.photoMetadata[photoKey] = {
-            timestamp: photo.timestamp,
-            name: photo.name || photoKey,
-            category: photoTypes.find(t => t.id === category)?.name || category
-        };
-    });
+photos.forEach((photo, index) => {
+const photoKey = `${category}_${index + 1}`;
+photoLinksJSON.photoMetadata[photoKey] = {
+timestamp: photo.timestamp,
+name: photo.name || photoKey,
+category: photoTypes.find(t => t.id === category)?.name || category
+};
+});
 });
 
 // Interpretar el valor de towerTop para SharePoint
 let towerTopBoolean = false;
 if (reportData.basic.towerTop === 'yes' || reportData.basic.towerTop === 'near-top') {
-    towerTopBoolean = true;
+towerTopBoolean = true;
 }
 
 const dataToSend = {
-    Title: reportData.basic.teamLeader || 'Field Technician',
-    SubmittedBy: reportData.basic.submittedBy || 'Field Technician',
-    SubmittedByEmail: reportData.basic.submittedByEmail || 'unknown@email.com',
-    SubmissionTimestamp: new Date().toISOString(),
-    ReportID: uniqueReportID,
-    TowerProviderSiteID: reportData.basic.siteId || '',
-    TowerProviderSiteName: reportData.basic.siteName || '',
-    CustomerSiteID: reportData.basic.customerSiteId || '',
-    CustomerSiteName: reportData.basic.customerSiteName || '',
-    SectorsCount: parseInt(reportData.basic.sectorsCount) || 0,
-    RadiosInstalled: parseInt(reportData.basic.radiosInstalled) || 0,
-    AntennasInstalled: parseInt(reportData.basic.antennasInstalled) || 0,
-    CablesInstalled: parseInt(reportData.basic.cablesInstalled) || 0,
-    TeamLeader: reportData.basic.teamLeader || '',
-    TowerTopInstallation: towerTopBoolean,
-    TowerTopInstallationDetails: reportData.basic.towerTop || 'no',
-    CompletionDate: reportData.basic.completionDate || new Date().toISOString().split('T')[0],
-    Latitude: reportData.gps.latitude || 0,
-    Longitude: reportData.gps.longitude || 0,
-    AppurtenanceData: JSON.stringify(appurtenanceDataJSON),
-    PhotoLinks: JSON.stringify(photoLinksJSON),
-    ReportStatus: 'DraftSubmittedPDF',
+Title: reportData.basic.teamLeader || 'Field Technician',
+SubmittedBy: reportData.basic.submittedBy || 'Field Technician',
+SubmittedByEmail: reportData.basic.submittedByEmail || 'unknown@email.com',
+SubmissionTimestamp: new Date().toISOString(),
+ReportID: uniqueReportID,
+TowerProviderSiteID: reportData.basic.siteId || '',
+TowerProviderSiteName: reportData.basic.siteName || '',
+CustomerSiteID: reportData.basic.customerSiteId || '',
+CustomerSiteName: reportData.basic.customerSiteName || '',
+SectorsCount: parseInt(reportData.basic.sectorsCount) || 0,
+RadiosInstalled: parseInt(reportData.basic.radiosInstalled) || 0,
+AntennasInstalled: parseInt(reportData.basic.antennasInstalled) || 0,
+CablesInstalled: parseInt(reportData.basic.cablesInstalled) || 0,
+TeamLeader: reportData.basic.teamLeader || '',
+TowerTopInstallation: towerTopBoolean,
+TowerTopInstallationDetails: reportData.basic.towerTop || 'no',
+CompletionDate: reportData.basic.completionDate || new Date().toISOString().split('T')[0],
+Latitude: reportData.gps.latitude || 0,
+Longitude: reportData.gps.longitude || 0,
+AppurtenanceData: JSON.stringify(appurtenanceDataJSON),
+PhotoLinks: JSON.stringify(photoLinksJSON),
+ReportStatus: 'DraftSubmittedPDF',
 
-    // Incluir todas las fotos mapeadas dinámicamente - NUEVA FUNCIONALIDAD v8.0
-    ...photoMapping
+// Incluir todas las fotos mapeadas dinámicamente - NUEVA FUNCIONALIDAD v8.0
+...photoMapping
 };
 
 try {
-    const response = await fetch(POWER_AUTOMATE_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify(dataToSend)
-    });
+const response = await fetch(POWER_AUTOMATE_URL, {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'Accept': 'application/json'
+},
+body: JSON.stringify(dataToSend)
+});
 
-    if (response.ok) {
-        return true;
-    } else {
-        console.error('Error response:', response.status, response.statusText);
-        return false;
-    }
+if (response.ok) {
+return true;
+} else {
+console.error('Error response:', response.status, response.statusText);
+return false;
+}
 } catch (error) {
-    console.error('Network/Connection error:', error);
-    return false;
+console.error('Network/Connection error:', error);
+return false;
 }
 }
 
@@ -2681,143 +2740,143 @@ submitBtn.disabled = true;
 statusDiv.innerHTML = '<div class="spinner"></div><p>Enviando reporte a SharePoint...</p>';
 
 try {
-    const reportId = `RPT-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
-    localStorage.setItem(reportId, JSON.stringify(reportData));
+const reportId = `RPT-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+localStorage.setItem(reportId, JSON.stringify(reportData));
 
-    const sentToSharePoint = await sendToSharePoint(reportData);
+const sentToSharePoint = await sendToSharePoint(reportData);
 
-    if (sentToSharePoint) {
-        statusDiv.innerHTML = `
-        <div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: left;">
-        <h3 style="color: #2e7d32;">✓ Reporte Enviado a SharePoint</h3>
-        <p>ID: ${reportId}</p>
-        <p>Enviado por: <strong>${reportData.basic.submittedBy}</strong></p>
-        <p style="margin-top: 15px;">
-        <strong>✓ Guardado localmente</strong><br>
-        <strong>✓ Enviado a SharePoint</strong><br>
-        <strong>✓ Fotos mapeadas dinámicamente (v8.0)</strong>
-        </p>
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
-        ➕ Crear Nuevo Reporte
-        </button>
-        <button class="btn btn-primary" onclick="sendDetailedEmail('${reportId}')" style="flex: 1;">
-        📧 Enviar Email Detallado
-        </button>
-        </div>
-        </div>
-        `;
-    } else {
-        statusDiv.innerHTML = `
-        <div style="background: #fff3cd; padding: 20px; border-radius: 6px; text-align: left;">
-        <h3 style="color: #856404;">⚠️ Guardado Solo Localmente</h3>
-        <p>ID: ${reportId}</p>
-        <p style="margin-top: 15px;">
-        El reporte se guardó en el dispositivo pero no se pudo enviar a SharePoint.
-        </p>
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button class="btn btn-primary" onclick="retrySharePoint('${reportId}')" style="flex: 1;">
-        🔄 Reintentar Envío
-        </button>
-        <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
-        ➕ Nuevo Reporte
-        </button>
-        </div>
-        </div>
-        `;
-    }
+if (sentToSharePoint) {
+statusDiv.innerHTML = `
+<div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: left;">
+<h3 style="color: #2e7d32;">✓ Reporte Enviado a SharePoint</h3>
+<p>ID: ${reportId}</p>
+<p>Enviado por: <strong>${reportData.basic.submittedBy}</strong></p>
+<p style="margin-top: 15px;">
+<strong>✓ Guardado localmente</strong><br>
+<strong>✓ Enviado a SharePoint</strong><br>
+<strong>✓ Fotos con funcionalidad mejorada (v9.20)</strong>
+</p>
+<div style="display: flex; gap: 10px; margin-top: 20px;">
+<button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
+➕ Crear Nuevo Reporte
+</button>
+<button class="btn btn-primary" onclick="sendDetailedEmail('${reportId}')" style="flex: 1;">
+📧 Enviar Email Detallado
+</button>
+</div>
+</div>
+`;
+} else {
+statusDiv.innerHTML = `
+<div style="background: #fff3cd; padding: 20px; border-radius: 6px; text-align: left;">
+<h3 style="color: #856404;">⚠️ Guardado Solo Localmente</h3>
+<p>ID: ${reportId}</p>
+<p style="margin-top: 15px;">
+El reporte se guardó en el dispositivo pero no se pudo enviar a SharePoint.
+</p>
+<div style="display: flex; gap: 10px; margin-top: 20px;">
+<button class="btn btn-primary" onclick="retrySharePoint('${reportId}')" style="flex: 1;">
+🔄 Reintentar Envío
+</button>
+<button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
+➕ Nuevo Reporte
+</button>
+</div>
+</div>
+`;
+}
 
-    submitBtn.disabled = false;
+submitBtn.disabled = false;
 
 } catch (error) {
-    statusDiv.innerHTML = `
-    <div style="background: #ffebee; padding: 20px; border-radius: 6px;">
-    <h3 style="color: #c62828;">Error al guardar</h3>
-    <p>${error.message}</p>
-    <button class="btn btn-primary" onclick="location.reload()">
-    Recargar Página
-    </button>
-    </div>
-    `;
-    submitBtn.disabled = false;
+statusDiv.innerHTML = `
+<div style="background: #ffebee; padding: 20px; border-radius: 6px;">
+<h3 style="color: #c62828;">Error al guardar</h3>
+<p>${error.message}</p>
+<button class="btn btn-primary" onclick="location.reload()">
+Recargar Página
+</button>
+</div>
+`;
+submitBtn.disabled = false;
 }
 }
 
 async function retrySharePoint(reportId) {
 const savedData = localStorage.getItem(reportId);
 if (savedData) {
-    const data = JSON.parse(savedData);
-    const statusDiv = document.getElementById('submitStatus');
+const data = JSON.parse(savedData);
+const statusDiv = document.getElementById('submitStatus');
 
-    statusDiv.innerHTML = '<div class="spinner"></div><p>Reintentando envío...</p>';
+statusDiv.innerHTML = '<div class="spinner"></div><p>Reintentando envío...</p>';
 
-    const sent = await sendToSharePoint(data);
+const sent = await sendToSharePoint(data);
 
-    if (sent) {
-        statusDiv.innerHTML = `
-        <div style="background: #e8f5e9; padding: 20px; border-radius: 6px;">
-        <h3 style="color: #2e7d32;">✓ Enviado Exitosamente</h3>
-        <p>El reporte se envió a SharePoint con mapeo dinámico de fotos.</p>
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-        <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
-        ➕ Crear Nuevo Reporte
-        </button>
-        <button class="btn btn-primary" onclick="location.href='mailto:accounting@newcomm2000.com?subject=Tower Report ${reportId}'" style="flex: 1;">
-        📧 Enviar por Email
-        </button>
-        </div>
-        </div>
-        `;
-    } else {
-        statusDiv.innerHTML = `
-        <div style="background: #ffebee; padding: 20px; border-radius: 6px;">
-        <h3 style="color: #c62828;">Error al enviar</h3>
-        <p>No se pudo conectar con SharePoint. Verifique su conexión.</p>
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-        <button class="btn btn-primary" onclick="retrySharePoint('${reportId}')" style="flex: 1;">
-        🔄 Reintentar
-        </button>
-        <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
-        ➕ Nuevo Reporte
-        </button>
-        </div>
-        </div>
-        `;
-    }
+if (sent) {
+statusDiv.innerHTML = `
+<div style="background: #e8f5e9; padding: 20px; border-radius: 6px;">
+<h3 style="color: #2e7d32;">✓ Enviado Exitosamente</h3>
+<p>El reporte se envió a SharePoint con fotos mejoradas (v9.20).</p>
+<div style="display: flex; gap: 10px; margin-top: 15px;">
+<button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
+➕ Crear Nuevo Reporte
+</button>
+<button class="btn btn-primary" onclick="location.href='mailto:accounting@newcomm2000.com?subject=Tower Report ${reportId}'" style="flex: 1;">
+📧 Enviar por Email
+</button>
+</div>
+</div>
+`;
+} else {
+statusDiv.innerHTML = `
+<div style="background: #ffebee; padding: 20px; border-radius: 6px;">
+<h3 style="color: #c62828;">Error al enviar</h3>
+<p>No se pudo conectar con SharePoint. Verifique su conexión.</p>
+<div style="display: flex; gap: 10px; margin-top: 15px;">
+<button class="btn btn-primary" onclick="retrySharePoint('${reportId}')" style="flex: 1;">
+🔄 Reintentar
+</button>
+<button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
+➕ Nuevo Reporte
+</button>
+</div>
+</div>
+`;
+}
 }
 }
 
 function startNewReport() {
 // Mantener la información del usuario
 const userInfo = {
-    submittedBy: reportData.metadata.submittedBy,
-    submittedByEmail: reportData.metadata.submittedByEmail
+submittedBy: reportData.metadata.submittedBy,
+submittedByEmail: reportData.metadata.submittedByEmail
 };
 
 reportData = {
-    basic: {},
-    gps: {},
-    appurtenances: [],
-    photos: {},
-    measurements: {},
-    metadata: {
-        ...userInfo,
-        appVersion: '8.0',
-        deviceInfo: navigator.userAgent,
-        createdAt: new Date().toISOString()
-    }
+basic: {},
+gps: {},
+appurtenances: [],
+photos: {},
+measurements: {},
+metadata: {
+...userInfo,
+appVersion: '9.20',
+deviceInfo: navigator.userAgent,
+createdAt: new Date().toISOString()
+}
 };
 
 document.querySelectorAll('input, select, textarea').forEach(field => {
-    if (field.type === 'date') {
-        field.value = new Date().toISOString().split('T')[0];
-    } else if (field.id === 'appQuantity') {
-        field.value = '1';
-    } else if (field.id === 'appCoaxSize') {
-        field.value = 'N/A';
-    } else {
-        field.value = '';
-    }
+if (field.type === 'date') {
+field.value = new Date().toISOString().split('T')[0];
+} else if (field.id === 'appQuantity') {
+field.value = '1';
+} else if (field.id === 'appCoaxSize') {
+field.value = 'N/A';
+} else {
+field.value = '';
+}
 });
 
 currentStep = 1;
@@ -2838,20 +2897,20 @@ showNotification('Nuevo reporte iniciado', 'success');
 function showReportSummary() {
 let totalPhotos = 0;
 Object.values(reportData.photos).forEach(photoArray => {
-    if (Array.isArray(photoArray)) {
-        totalPhotos += photoArray.length;
-    }
+if (Array.isArray(photoArray)) {
+totalPhotos += photoArray.length;
+}
 });
 
 const sectorsCount = reportData.basic.sectorsCount || 0;
 let tapeDrpsHTML = '';
 for (let i = 1; i <= sectorsCount; i++) {
-    tapeDrpsHTML += `<p><strong>Sector ${i} Tape Drop:</strong> ${reportData.measurements[`sector${i}TapeDrop`] || 'N/A'}</p>`;
+tapeDrpsHTML += `<p><strong>Sector ${i} Tape Drop:</strong> ${reportData.measurements[`sector${i}TapeDrop`] || 'N/A'}</p>`;
 }
 
 const summaryHTML = `
 <div style="background: #f5f5f5; padding: 20px; border-radius: 6px; margin: 20px 0;">
-<h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte v8.0</h3>
+<h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte v9.20</h3>
 
 <div style="margin-bottom: 15px;">
 <h4 style="color: #333;">Información del Sitio</h4>
@@ -2862,8 +2921,8 @@ const summaryHTML = `
 <p><strong>Enviado por:</strong> ${reportData.metadata.submittedBy || 'N/A'}</p>
 <p><strong>Fecha:</strong> ${reportData.basic.completionDate || 'N/A'}</p>
 <p><strong>Tower Top Installation:</strong> ${reportData.basic.towerTop === 'yes' ? 'Yes - At Tower Top' :
-    reportData.basic.towerTop === 'near-top' ? 'Near Top (Within 10\' of top)' :
-    'No - Below 10\' from top'}</p>
+reportData.basic.towerTop === 'near-top' ? 'Near Top (Within 10\' of top)' :
+'No - Below 10\' from top'}</p>
 </div>
 
 <div style="margin-bottom: 15px;">
@@ -2897,7 +2956,7 @@ ${!reportData.gps.manual && reportData.gps.accuracy ? `<p><strong>Precisión:</s
 <div>
 <h4 style="color: #333;">Documentación</h4>
 <p><strong>Total de fotos:</strong> ${totalPhotos}</p>
-<p><strong>Versión del reporte:</strong> 8.0 - Mapeo Dinámico de Fotos</p>
+<p><strong>Versión del reporte:</strong> 9.20 - Fotos Mejoradas</p>
 </div>
 
 <button class="btn btn-secondary" onclick="closeReportSummary()" style="margin-top: 15px;">
@@ -2919,14 +2978,14 @@ function sendDetailedEmail(reportId) {
 const sectorsCount = reportData.basic.sectorsCount || 0;
 let sectorMeasurements = '';
 for (let i = 1; i <= sectorsCount; i++) {
-    sectorMeasurements += `- Sector ${i} Tape Drop: ${reportData.measurements[`sector${i}TapeDrop`] || 'N/A'} (REQUIRED)\n`;
+sectorMeasurements += `- Sector ${i} Tape Drop: ${reportData.measurements[`sector${i}TapeDrop`] || 'N/A'} (REQUIRED)\n`;
 }
 
-const emailSubject = `Tower Provider Report v8.0 - ${reportData.basic.siteName || reportId}`;
+const emailSubject = `Tower Provider Report v9.20 - ${reportData.basic.siteName || reportId}`;
 
 const emailBody = `
-TOWER PROVIDER REPORT v8.0 - MAPEO DINÁMICO DE FOTOS
-=====================================================
+TOWER PROVIDER REPORT v9.20 - FOTOS MEJORADAS
+=============================================
 
 SITE INFORMATION:
 - Site ID: ${reportData.basic.siteId || 'N/A'}
@@ -2941,8 +3000,8 @@ INSTALLATION DETAILS:
 - Cables Installed: ${reportData.basic.cablesInstalled || '0'}
 - Team Leader: ${reportData.basic.teamLeader || 'N/A'}
 - Tower Top Installation: ${reportData.basic.towerTop === 'yes' ? 'Yes - At Tower Top' :
-    reportData.basic.towerTop === 'near-top' ? 'Near Top (Within 10\' of top)' :
-    'No - Below 10\' from top'}
+reportData.basic.towerTop === 'near-top' ? 'Near Top (Within 10\' of top)' :
+'No - Below 10\' from top'}
 - Completion Date: ${reportData.basic.completionDate || 'N/A'}
 
 GPS LOCATION (REQUIRED):
@@ -2957,14 +3016,14 @@ ${sectorMeasurements}- Tower Height: ${reportData.measurements.towerHeight || 'N
 
 EQUIPMENT INSTALLED (${reportData.appurtenances.length} items):
 ${reportData.appurtenances.map((app, i) =>
-    `${i + 1}. ${app.type} - ${app.manufacturer} ${app.model} (Qty: ${app.quantity}, Coax: ${app.coaxSize})`
+`${i + 1}. ${app.type} - ${app.manufacturer} ${app.model} (Qty: ${app.quantity}, Coax: ${app.coaxSize})`
 ).join('\n')}
 
-PHOTO DOCUMENTATION (v8.0 - Dynamic Mapping):
+PHOTO DOCUMENTATION (v9.20 - Enhanced Photos):
 - Total Photos: ${Object.values(reportData.photos).reduce((sum, arr) => sum + (arr ? arr.length : 0), 0)}
 ${Object.entries(reportData.photos).map(([category, photos]) => {
-    const catName = photoTypes.find(t => t.id === category)?.name || category;
-    return `- ${catName}: ${photos ? photos.length : 0} photos`;
+const catName = photoTypes.find(t => t.id === category)?.name || category;
+return `- ${catName}: ${photos ? photos.length : 0} photos`;
 }).join('\n')}
 
 REPORT DETAILS:
@@ -2972,13 +3031,13 @@ REPORT DETAILS:
 - Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 - Email: ${reportData.basic.submittedByEmail || 'N/A'}
 - Submission Time: ${new Date().toLocaleString()}
-- Report Version: 8.0 - Dynamic Photo Mapping
+- Report Version: 9.20 - Enhanced Photos (Camera + Gallery, Delete Individual Photos)
 
 ---
-This report has been submitted to SharePoint with dynamic photo mapping.
+This report has been submitted to SharePoint with enhanced photo functionality.
 GPS coordinates were ${reportData.gps.manual ? 'manually entered' : 'automatically captured'}.
 All required measurements have been completed.
-Photos are dynamically mapped based on sector count and equipment quantities.
+Photos can now be taken with camera or selected from gallery, and individual photos can be deleted.
 
 Newcomm Management Services Corp.
 PO Box 4116, Vega Baja PR 00694
@@ -2990,8 +3049,8 @@ const encodedBody = encodeURIComponent(emailBody);
 const mailtoLink = `mailto:accounting@newcomm2000.com?subject=${encodeURIComponent(emailSubject)}&body=${encodedBody}`;
 
 if (mailtoLink.length > 2000) {
-    const shortBody = `
-Tower Provider Report v8.0 - ${reportData.basic.siteName || 'N/A'}
+const shortBody = `
+Tower Provider Report v9.20 - ${reportData.basic.siteName || 'N/A'}
 Site ID: ${reportData.basic.siteId || 'N/A'}
 Sectors: ${sectorsCount}
 Report ID: ${reportId}
@@ -2999,17 +3058,17 @@ GPS: ${reportData.gps.latitude || 'N/A'}, ${reportData.gps.longitude || 'N/A'}
 Tower Top: ${reportData.basic.towerTop === 'yes' ? 'Yes' : reportData.basic.towerTop === 'near-top' ? 'Near Top' : 'No'}
 Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 
-Please check SharePoint for the complete report with all details and dynamically mapped photos.
+Please check SharePoint for the complete report with all details and enhanced photo functionality.
 
 Date: ${new Date().toLocaleString()}
-Version: 8.0 - Dynamic Photo Mapping
-    `.trim();
+Version: 9.20 - Enhanced Photos
+`.trim();
 
-    window.location.href = `mailto:accounting@newcomm2000.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(shortBody)}`;
-    showNotification('Email abierto con resumen corto (límite de caracteres)', 'info');
+window.location.href = `mailto:accounting@newcomm2000.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(shortBody)}`;
+showNotification('Email abierto con resumen corto (límite de caracteres)', 'info');
 } else {
-    window.location.href = mailtoLink;
-    showNotification('Email abierto con todos los detalles', 'success');
+window.location.href = mailtoLink;
+showNotification('Email abierto con todos los detalles', 'success');
 }
 }
 
@@ -3017,7 +3076,7 @@ Version: 8.0 - Dynamic Photo Mapping
 function showNotification(message, type = 'info') {
 const existing = document.querySelector('.notification');
 if (existing) {
-    existing.remove();
+existing.remove();
 }
 
 const notification = document.createElement('div');
@@ -3026,7 +3085,7 @@ notification.textContent = message;
 document.body.appendChild(notification);
 
 setTimeout(() => {
-    notification.remove();
+notification.remove();
 }, 3000);
 }
 
@@ -3037,18 +3096,18 @@ console.log('Page loaded, initializing MSAL...');
 // Verificar si ya estábamos en la app principal
 const appState = sessionStorage.getItem('appState');
 if (appState === 'mainApp') {
-    // Intentar restaurar la sesión
-    const savedAccount = localStorage.getItem('userAccount');
-    if (savedAccount) {
-        try {
-            currentAccount = JSON.parse(savedAccount);
-            await getUserDetails();
-            showMainApp();
-            return;
-        } catch (e) {
-            console.error('Error restoring session:', e);
-        }
-    }
+// Intentar restaurar la sesión
+const savedAccount = localStorage.getItem('userAccount');
+if (savedAccount) {
+try {
+currentAccount = JSON.parse(savedAccount);
+await getUserDetails();
+showMainApp();
+return;
+} catch (e) {
+console.error('Error restoring session:', e);
+}
+}
 }
 
 await initializeMsal();
@@ -3057,23 +3116,23 @@ await initializeMsal();
 // Manejar eventos de visibilidad de página (importante para móviles)
 document.addEventListener('visibilitychange', async () => {
 if (!document.hidden && currentAccount) {
-    // La página volvió a ser visible, verificar token
-    try {
-        await msalInstance.acquireTokenSilent({
-            ...loginRequest,
-            account: currentAccount
-        });
-    } catch (error) {
-        console.log('Token refresh needed');
-    }
+// La página volvió a ser visible, verificar token
+try {
+await msalInstance.acquireTokenSilent({
+...loginRequest,
+account: currentAccount
+});
+} catch (error) {
+console.log('Token refresh needed');
+}
 }
 });
 
 // Prevenir que la app se cierre accidentalmente
 window.addEventListener('beforeunload', (e) => {
 if (currentStep > 1 && Object.keys(reportData.basic).length > 0) {
-    e.preventDefault();
-    e.returnValue = '¿Estás seguro de que quieres salir? Los datos no guardados se perderán.';
+e.preventDefault();
+e.returnValue = '¿Estás seguro de que quieres salir? Los datos no guardados se perderán.';
 }
 });
 </script>
