@@ -1277,11 +1277,15 @@ safetySectorTimestamp: getPhotoTimestamp('safety_lines', 1),
 safetyUpTimestamp: getPhotoTimestamp('safety_lines', 2),
 safetyBottomTimestamp: getPhotoTimestamp('safety_lines', 3),
 
-// Compound post pictures (dinámico según sectores)
+// Compound post pictures (4 fotos siempre)
 compoundPhoto1: getPhotoByIndex('compound_post', 0),
 compoundPhoto2: getPhotoByIndex('compound_post', 1),
+compoundPhoto3: getPhotoByIndex('compound_post', 2),  // AGREGAR ESTA
+compoundPhoto4: getPhotoByIndex('compound_post', 3),  // AGREGAR ESTA
 compoundPhoto1Timestamp: getPhotoTimestamp('compound_post', 0),
 compoundPhoto2Timestamp: getPhotoTimestamp('compound_post', 1),
+compoundPhoto3Timestamp: getPhotoTimestamp('compound_post', 2),  // AGREGAR ESTA
+compoundPhoto4Timestamp: getPhotoTimestamp('compound_post', 3),  // AGREGAR ESTA
 
 // Tower measurements (siempre 2)
 towerTapeDropPhoto: getPhotoByIndex('tower_measurements', 0),
