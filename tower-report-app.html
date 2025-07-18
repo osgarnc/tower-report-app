@@ -1493,6 +1493,15 @@ optimizeStorage();
 // Guardar estado de la aplicación
 sessionStorage.setItem('appState', 'mainApp');
 }
+// Verificar si viene de la página de búsqueda para editar
+const urlParams = new URLSearchParams(window.location.search);
+const editReportKey = urlParams.get('edit');
+
+if (editReportKey) {
+    setTimeout(() => {
+        loadReportForEdit(editReportKey);
+    }, 500);
+}
 
 // Update equipment requirements display
 function updateEquipmentRequirements() {
@@ -1863,6 +1872,216 @@ if (saved) {
     updateAppurtenanceList();
     updatePhotoCounts();
     updateEquipmentRequirements();
+}
+  // ============================================
+// CÓDIGO PARA DETECTAR Y CARGAR REPORTE DE EDICIÓN
+// ============================================
+
+// Este código debe ir DENTRO de tu función showMainApp()
+// DESPUÉS de estas líneas:
+/*
+// Initialize app
+document.getElementById('completionDate').value = new Date().toISOString().split('T')[0];
+// No generar photo grid aquí, esperar a que se seleccionen sectores
+loadSavedData();
+updateStorageIndicator();
+updateEquipmentCounter();
+optimizeStorage();
+
+// Guardar estado de la aplicación
+sessionStorage.setItem('appState', 'mainApp');
+*/
+
+// AGREGAR ESTE CÓDIGO AQUÍ:
+// Verificar si viene de la página de búsqueda para editar
+const urlParams = new URLSearchParams(window.location.search);
+const editReportKey = urlParams.get('edit');
+
+if (editReportKey) {
+    // Cargar el reporte específico para editar
+    setTimeout(() => {
+        loadReportForEdit(editReportKey);
+    }, 500); // Pequeño delay para asegurar que todo esté inicializado
+}
+
+// ============================================
+// FUNCIÓN PARA CARGAR REPORTE PARA EDITAR
+// ============================================
+// Esta función debe ir con tus otras funciones, por ejemplo después de loadSavedData()
+
+function loadReportForEdit(reportKey) {
+    try {
+        const savedReport = localStorage.getItem(reportKey);
+        if (savedReport) {
+            reportData = JSON.parse(savedReport);
+            
+            // Asegurar que el metadata existe y está actualizado
+            if (!reportData.metadata) {
+                reportData.metadata = {
+                    submittedBy: reportData.basic?.submittedBy || 'Unknown User',
+                    submittedByEmail: reportData.basic?.submittedByEmail || 'unknown@email.com',
+                    appVersion: '9.20',
+                    deviceInfo: navigator.userAgent,
+                    createdAt: reportData.basic?.submissionTimestamp || new Date().toISOString()
+                };
+            }
+            
+            // Mantener la información del usuario actual
+            const currentUserName = localStorage.getItem('userName');
+            const currentUserEmail = localStorage.getItem('userEmail');
+            if (currentUserName) {
+                reportData.metadata.submittedBy = currentUserName;
+            }
+            if (currentUserEmail) {
+                reportData.metadata.submittedByEmail = currentUserEmail;
+            }
+            
+            // Cargar datos básicos en el formulario
+            if (reportData.basic) {
+                Object.keys(reportData.basic).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element && key !== 'submittedBy' && key !== 'submittedByEmail') {
+                        element.value = reportData.basic[key];
+                    }
+                });
+                
+                // Actualizar requisitos según los valores guardados
+                if (reportData.basic.towerTop) {
+                    updateMeasurementRequirements();
+                }
+                if (reportData.basic.sectorsCount) {
+                    updateSectorRequirements();
+                }
+            }
+            
+            // Cargar mediciones
+            if (reportData.measurements) {
+                Object.keys(reportData.measurements).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        element.value = reportData.measurements[key];
+                    }
+                });
+            }
+            
+            // Actualizar estado de GPS
+            if (reportData.gps && reportData.gps.latitude) {
+                showGPSStatus(true);
+            }
+            
+            // Actualizar todas las listas y contadores
+            updateAppurtenanceList();
+            updatePhotoCounts();
+            updateEquipmentRequirements();
+            updatePhotoTypes();
+            
+            // Actualizar los previews de fotos
+            if (reportData.photos) {
+                Object.keys(reportData.photos).forEach(typeId => {
+                    if (reportData.photos[typeId] && reportData.photos[typeId].length > 0) {
+                        updatePhotoPreview(typeId);
+                    }
+                });
+            }
+            
+            // Limpiar parámetros de la URL
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+            
+            showNotification(`Reporte ${reportKey} cargado para edición`, 'success');
+            
+            // Ir al primer paso
+            currentStep = 1;
+            showStep(1);
+            
+        } else {
+            showNotification('No se encontró el reporte solicitado', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading report for edit:', error);
+        showNotification('Error al cargar el reporte', 'error');
+    }
+}
+
+// ============================================
+// MODIFICACIÓN PARA EL BOTÓN DE BÚSQUEDA
+// ============================================
+// En tu función showMainApp(), donde creas el header HTML,
+// agrega el botón de búsqueda de reportes.
+// Busca donde tienes los botones de "Clear All Data" y "Cerrar Sesión"
+// y agrega este botón:
+
+/*
+<button class="btn btn-primary" onclick="window.location.href='report-search.html'" style="margin-right: 10px;">
+    🔍 Buscar Reportes
+</button>
+*/
+
+// ============================================
+// EJEMPLO DE INTEGRACIÓN COMPLETA
+// ============================================
+// Tu función showMainApp() debería verse así:
+
+function showMainApp() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    
+    // Crear el header con el botón de búsqueda
+    const headerHTML = `
+        <div class="header" style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+            <h1 style="margin: 0 0 10px 0; color: #0066cc;">Tower Report App v9.20</h1>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <span style="color: #666;">Usuario: </span>
+                    <strong>${reportData.metadata.submittedBy || 'Usuario'}</strong>
+                    <span style="color: #666; margin-left: 20px;">Storage: </span>
+                    <strong id="storageIndicator" style="color: green;">0 MB</strong>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="window.location.href='report-search.html'">
+                        🔍 Buscar Reportes
+                    </button>
+                    <button class="btn btn-danger" onclick="clearAllData()" style="font-size: 14px;">
+                        Clear All Data
+                    </button>
+                    <button class="btn btn-secondary" onclick="signOut()" style="font-size: 14px;">
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Insertar el header al inicio del mainApp
+    // (Tu código existente para el resto de la app)
+    
+    // Prevenir el botón de retroceso en móviles
+    if (window.history && window.history.pushState) {
+        window.history.pushState(null, null, window.location.href);
+        window.onpopstate = function () {
+            window.history.pushState(null, null, window.location.href);
+        };
+    }
+    
+    // Initialize app
+    document.getElementById('completionDate').value = new Date().toISOString().split('T')[0];
+    loadSavedData();
+    updateStorageIndicator();
+    updateEquipmentCounter();
+    optimizeStorage();
+    
+    // Guardar estado de la aplicación
+    sessionStorage.setItem('appState', 'mainApp');
+    
+    // AQUÍ VA EL CÓDIGO NUEVO PARA DETECTAR EDICIÓN
+    const urlParams = new URLSearchParams(window.location.search);
+    const editReportKey = urlParams.get('edit');
+    
+    if (editReportKey) {
+        setTimeout(() => {
+            loadReportForEdit(editReportKey);
+        }, 500);
+    }
 }
 }
 
