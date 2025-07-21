@@ -2954,9 +2954,18 @@ return false;
 }
 
 async function submitReport() {
-const submitBtn = event.target;
-const statusDiv = document.getElementById('submitStatus');
-
+ const editSource = sessionStorage.getItem('editReportSource');
+    const sharePointId = sessionStorage.getItem('sharePointReportId');
+    
+    if (editSource === 'sharepoint' && sharePointId) {
+        // Actualizar en SharePoint
+        const updated = await updateSharePointReport(reportId, reportData);
+        if (updated) {
+            // Limpiar sessionStorage
+            sessionStorage.removeItem('editReportSource');
+            sessionStorage.removeItem('sharePointReportId');
+        }
+    }
 // Update submittedBy with current authenticated user
 reportData.basic.submittedBy = reportData.metadata.submittedBy || 'Unknown User';
 reportData.basic.submittedByEmail = reportData.metadata.submittedByEmail || 'unknown@email.com';
