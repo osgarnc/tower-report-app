@@ -7,7 +7,7 @@
 <meta name="author" content="Newcomm Management Services Corp.">
 <meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
 <meta name="description" content="Tower Provider Report - Professional Mobile Application">
-<title>Tower Report Mobile v9.20 - SharePoint Auth</title>
+<title>Tower Report Mobile v9.30 - SharePoint Auth</title>
 
 <!-- MSAL.js desde CDN -->
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
@@ -707,7 +707,7 @@ Iniciar sesión con Microsoft
 <div id="loginError" style="display: none;" class="login-error"></div>
 
 <div style="margin-top: 20px; font-size: 12px; color: #666;">
-<p>Versión 9.20 - Fotos Mejoradas</p>
+<p>Versión 9.30 - Fotos Mejoradas</p>
 </div>
 </div>
 </div>
@@ -721,7 +721,7 @@ Iniciar sesión con Microsoft
 
 <header class="header">
 <h1>Tower Provider Report</h1>
-<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 9.20 - Fotos Mejoradas</div>
+<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 9.30 - Fotos Mejoradas</div>
 </header>
 
 <div class="step-indicator">
@@ -744,7 +744,7 @@ Iniciar sesión con Microsoft
 Limpiar datos
 </button>
 </div>
-<div style="font-size: 11px; color: #666; margin-top: 5px;">App v9.20 - Fotos Mejoradas</div>
+<div style="font-size: 11px; color: #666; margin-top: 5px;">App v9.30 - Fotos Mejoradas</div>
 </div>
 
 <div class="form-group">
@@ -1030,7 +1030,7 @@ Al enviar, se generará un reporte y se enviará automáticamente a accounting@n
 
 <!-- Copyright Footer -->
 <div class="copyright-footer">
-© 2025 Newcomm Management Services Corp. • All rights reserved • v9.20
+© 2025 Newcomm Management Services Corp. • All rights reserved • v9.30
 </div>
 </div>
 
@@ -1077,7 +1077,7 @@ appurtenances: [],
 photos: {},
 measurements: {},
 metadata: {
-appVersion: '9.20',
+appVersion: '9.30',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -1359,6 +1359,9 @@ try {
 // Esperar a que MSAL esté completamente inicializado
 await msalInstance.initialize();
 
+<!-- Agregar este código JavaScript al final del script en Tower Report App.rtf, 
+     justo después de la función initializeMsal() -->
+
 // Función para cargar un reporte existente para edición
 function loadReportForEdit(reportKey) {
     try {
@@ -1423,6 +1426,27 @@ function loadReportForEdit(reportKey) {
 
         // Actualizar contadores de fotos
         updatePhotoCounts();
+        
+        // Cargar y mostrar las fotos existentes
+        if (reportData.photos && Object.keys(reportData.photos).length > 0) {
+            // Asegurarse de que photoTypes esté actualizado
+            updatePhotoTypes();
+            
+            // Si estamos en el paso 3, actualizar la vista de fotos
+            if (currentStep === 3) {
+                generatePhotoGrid();
+            }
+            
+            // Actualizar las previsualizaciones de fotos para cada categoría
+            setTimeout(() => {
+                Object.keys(reportData.photos).forEach(typeId => {
+                    if (reportData.photos[typeId] && reportData.photos[typeId].length > 0) {
+                        updatePhotoPreview(typeId);
+                    }
+                });
+                updatePhotoCounts();
+            }, 1000);
+        }
 
         showNotification(`Reporte ${reportKey} cargado para edición`, 'success');
 
@@ -1491,6 +1515,25 @@ function showMainApp() {
     // Guardar estado de la aplicación
     sessionStorage.setItem('appState', 'mainApp');
 }
+
+// Función adicional para regenerar la vista de fotos cuando se navega al paso 3
+const originalShowStep = showStep;
+showStep = function(step) {
+    // Llamar a la función original
+    originalShowStep.apply(this, arguments);
+    
+    // Si estamos en el paso 3 y tenemos fotos cargadas, actualizar las previsualizaciones
+    if (step === 3 && reportData.photos && Object.keys(reportData.photos).length > 0) {
+        setTimeout(() => {
+            Object.keys(reportData.photos).forEach(typeId => {
+                if (reportData.photos[typeId] && reportData.photos[typeId].length > 0) {
+                    updatePhotoPreview(typeId);
+                }
+            });
+            updatePhotoCounts();
+        }, 100);
+    }
+};
 
 // Agregar función para detectar si estamos en modo edición al cargar la página
 window.addEventListener('DOMContentLoaded', function() {
@@ -2199,7 +2242,7 @@ photos: {},
 metadata: {
 submittedBy: reportData.metadata.submittedBy,
 submittedByEmail: reportData.metadata.submittedByEmail,
-appVersion: '9.20',
+appVersion: '9.3',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -2452,7 +2495,7 @@ updateEquipmentCounter();
 saveCurrentStep();
 }
 
-// Photo Functions - MEJORADAS PARA v9.20
+// Photo Functions - MEJORADAS PARA v9.30
 function generatePhotoGrid() {
 const grid = document.getElementById('photoGrid');
 grid.innerHTML = '';
@@ -2809,7 +2852,7 @@ photoReview.innerHTML = `
 `;
 }
 
-// Submit and SharePoint Functions - ACTUALIZADO PARA v9.20 CON MAPEO DINÁMICO
+// Submit and SharePoint Functions - ACTUALIZADO PARA v9.30 CON MAPEO DINÁMICO
 async function sendToSharePoint(reportData) {
 const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
 
@@ -2939,7 +2982,7 @@ statusDiv.innerHTML = `
 <p style="margin-top: 15px;">
 <strong>✓ Guardado localmente</strong><br>
 <strong>✓ Enviado a SharePoint</strong><br>
-<strong>✓ Fotos con funcionalidad mejorada (v9.20)</strong>
+<strong>✓ Fotos con funcionalidad mejorada (v9.30)</strong>
 </p>
 <div style="display: flex; gap: 10px; margin-top: 20px;">
 <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
@@ -3001,7 +3044,7 @@ if (sent) {
 statusDiv.innerHTML = `
 <div style="background: #e8f5e9; padding: 20px; border-radius: 6px;">
 <h3 style="color: #2e7d32;">✓ Enviado Exitosamente</h3>
-<p>El reporte se envió a SharePoint con fotos mejoradas (v9.20).</p>
+<p>El reporte se envió a SharePoint con fotos mejoradas (v9.30).</p>
 <div style="display: flex; gap: 10px; margin-top: 15px;">
 <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
 ➕ Crear Nuevo Reporte
@@ -3046,7 +3089,7 @@ photos: {},
 measurements: {},
 metadata: {
 ...userInfo,
-appVersion: '9.20',
+appVersion: '9.30',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -3095,7 +3138,7 @@ tapeDrpsHTML += `<p><strong>Sector ${i} Tape Drop:</strong> ${reportData.measure
 
 const summaryHTML = `
 <div style="background: #f5f5f5; padding: 20px; border-radius: 6px; margin: 20px 0;">
-<h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte v9.20</h3>
+<h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte v9.30</h3>
 
 <div style="margin-bottom: 15px;">
 <h4 style="color: #333;">Información del Sitio</h4>
@@ -3141,7 +3184,7 @@ ${!reportData.gps.manual && reportData.gps.accuracy ? `<p><strong>Precisión:</s
 <div>
 <h4 style="color: #333;">Documentación</h4>
 <p><strong>Total de fotos:</strong> ${totalPhotos}</p>
-<p><strong>Versión del reporte:</strong> 9.20 - Fotos Mejoradas</p>
+<p><strong>Versión del reporte:</strong> 9.30 - Fotos Mejoradas</p>
 </div>
 
 <button class="btn btn-secondary" onclick="closeReportSummary()" style="margin-top: 15px;">
@@ -3166,10 +3209,10 @@ for (let i = 1; i <= sectorsCount; i++) {
 sectorMeasurements += `- Sector ${i} Tape Drop: ${reportData.measurements[`sector${i}TapeDrop`] || 'N/A'} (REQUIRED)\n`;
 }
 
-const emailSubject = `Tower Provider Report v9.20 - ${reportData.basic.siteName || reportId}`;
+const emailSubject = `Tower Provider Report v9.30 - ${reportData.basic.siteName || reportId}`;
 
 const emailBody = `
-TOWER PROVIDER REPORT v9.20 - FOTOS MEJORADAS
+TOWER PROVIDER REPORT v9.30 - FOTOS MEJORADAS
 =============================================
 
 SITE INFORMATION:
@@ -3204,7 +3247,7 @@ ${reportData.appurtenances.map((app, i) =>
 `${i + 1}. ${app.type} - ${app.manufacturer} ${app.model} (Qty: ${app.quantity}, Coax: ${app.coaxSize})`
 ).join('\n')}
 
-PHOTO DOCUMENTATION (v9.20 - Enhanced Photos):
+PHOTO DOCUMENTATION (v9.30 - Enhanced Photos):
 - Total Photos: ${Object.values(reportData.photos).reduce((sum, arr) => sum + (arr ? arr.length : 0), 0)}
 ${Object.entries(reportData.photos).map(([category, photos]) => {
 const catName = photoTypes.find(t => t.id === category)?.name || category;
@@ -3216,7 +3259,7 @@ REPORT DETAILS:
 - Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 - Email: ${reportData.basic.submittedByEmail || 'N/A'}
 - Submission Time: ${new Date().toLocaleString()}
-- Report Version: 9.20 - Enhanced Photos (Camera + Gallery, Delete Individual Photos)
+- Report Version: 9.30 - Enhanced Photos (Camera + Gallery, Delete Individual Photos)
 
 ---
 This report has been submitted to SharePoint with enhanced photo functionality.
@@ -3235,7 +3278,7 @@ const mailtoLink = `mailto:accounting@newcomm2000.com?subject=${encodeURICompone
 
 if (mailtoLink.length > 2000) {
 const shortBody = `
-Tower Provider Report v9.20 - ${reportData.basic.siteName || 'N/A'}
+Tower Provider Report v9.30 - ${reportData.basic.siteName || 'N/A'}
 Site ID: ${reportData.basic.siteId || 'N/A'}
 Sectors: ${sectorsCount}
 Report ID: ${reportId}
@@ -3246,7 +3289,7 @@ Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 Please check SharePoint for the complete report with all details and enhanced photo functionality.
 
 Date: ${new Date().toLocaleString()}
-Version: 9.20 - Enhanced Photos
+Version: 9.30 - Enhanced Photos
 `.trim();
 
 window.location.href = `mailto:accounting@newcomm2000.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(shortBody)}`;
