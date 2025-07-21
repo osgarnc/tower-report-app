@@ -1359,6 +1359,191 @@ try {
 // Esperar a que MSAL esté completamente inicializado
 await msalInstance.initialize();
 
+// Función para cargar un reporte existente para edición
+function loadReportForEdit(reportKey) {
+    try {
+        const savedReport = localStorage.getItem(reportKey);
+        if (!savedReport) {
+            showNotification('No se encontró el reporte para editar', 'error');
+            return;
+        }
+
+        // Cargar el reporte en la variable global
+        const loadedData = JSON.parse(savedReport);
+        reportData = loadedData;
+
+        // Rellenar todos los campos del formulario con los datos guardados
+        if (reportData.basic) {
+            // Campos básicos
+            document.getElementById('siteId').value = reportData.basic.siteId || '';
+            document.getElementById('siteName').value = reportData.basic.siteName || '';
+            document.getElementById('customerSiteId').value = reportData.basic.customerSiteId || '';
+            document.getElementById('customerSiteName').value = reportData.basic.customerSiteName || '';
+            document.getElementById('sectorsCount').value = reportData.basic.sectorsCount || '';
+            document.getElementById('radiosInstalled').value = reportData.basic.radiosInstalled || '';
+            document.getElementById('antennasInstalled').value = reportData.basic.antennasInstalled || '';
+            document.getElementById('cablesInstalled').value = reportData.basic.cablesInstalled || '';
+            document.getElementById('teamLeader').value = reportData.basic.teamLeader || '';
+            document.getElementById('towerTop').value = reportData.basic.towerTop || '';
+            document.getElementById('completionDate').value = reportData.basic.completionDate || '';
+
+            // Actualizar requisitos según los valores cargados
+            if (reportData.basic.sectorsCount) {
+                updateSectorRequirements();
+            }
+            if (reportData.basic.towerTop) {
+                updateMeasurementRequirements();
+            }
+            updateEquipmentRequirements();
+        }
+
+        // Cargar mediciones
+        if (reportData.measurements) {
+            document.getElementById('towerHeight').value = reportData.measurements.towerHeight || '';
+            document.getElementById('tallestPoint').value = reportData.measurements.tallestPoint || '';
+            
+            // Cargar tape drops dinámicos
+            const sectorsCount = parseInt(reportData.basic.sectorsCount) || 0;
+            for (let i = 1; i <= sectorsCount; i++) {
+                const tapeDrop = document.getElementById(`sector${i}TapeDrop`);
+                if (tapeDrop && reportData.measurements[`sector${i}TapeDrop`]) {
+                    tapeDrop.value = reportData.measurements[`sector${i}TapeDrop`];
+                }
+            }
+        }
+
+        // Cargar GPS
+        if (reportData.gps && reportData.gps.latitude) {
+            showGPSStatus(true);
+        }
+
+        // Actualizar listas de equipos
+        updateAppurtenanceList();
+        updateEquipmentCounter();
+
+        // Actualizar contadores de fotos
+        updatePhotoCounts();
+
+        showNotification(`Reporte ${reportKey} cargado para edición`, 'success');
+
+        // Mostrar en el título que estamos editando
+        const headerTitle = document.querySelector('.header h1');
+        if (headerTitle) {
+            headerTitle.textContent = 'Tower Provider Report - EDITANDO';
+        }
+
+    } catch (error) {
+        console.error('Error loading report for edit:', error);
+        showNotification('Error al cargar el reporte para edición', 'error');
+    }
+}
+
+// Modificar la función showMainApp para detectar modo edición
+function showMainApp() {
+    console.log('Showing main app for user:', currentAccount?.name);
+    
+    // Asegurar que tenemos una cuenta válida
+    if (!currentAccount) {
+        console.error('No current account found');
+        location.reload();
+        return;
+    }
+    
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    
+    // Prevenir el botón de retroceso en móviles
+    if (window.history && window.history.pushState) {
+        window.history.pushState(null, null, window.location.href);
+        window.onpopstate = function () {
+            window.history.pushState(null, null, window.location.href);
+        };
+    }
+    
+    // Initialize app
+    document.getElementById('completionDate').value = new Date().toISOString().split('T')[0];
+    
+    // Verificar si venimos del modo edición
+    const urlParams = new URLSearchParams(window.location.search);
+    const editReportKey = urlParams.get('edit');
+    const sessionEditKey = sessionStorage.getItem('editReportKey');
+    
+    if (editReportKey || sessionEditKey) {
+        // Modo edición
+        const reportKeyToEdit = editReportKey || sessionEditKey;
+        
+        // Limpiar sessionStorage
+        sessionStorage.removeItem('editReportKey');
+        
+        // Cargar el reporte para edición
+        setTimeout(() => {
+            loadReportForEdit(reportKeyToEdit);
+        }, 500);
+    } else {
+        // Modo nuevo reporte - cargar datos guardados si existen
+        loadSavedData();
+    }
+    
+    updateStorageIndicator();
+    updateEquipmentCounter();
+    optimizeStorage();
+    
+    // Guardar estado de la aplicación
+    sessionStorage.setItem('appState', 'mainApp');
+}
+
+// Agregar función para detectar si estamos en modo edición al cargar la página
+window.addEventListener('DOMContentLoaded', function() {
+    // Si hay parámetros de edición en la URL, guardarlos para después del login
+    const urlParams = new URLSearchParams(window.location.search);
+    const editReportKey = urlParams.get('edit');
+    
+    if (editReportKey) {
+        sessionStorage.setItem('editReportKey', editReportKey);
+    }
+});
+
+// Modificar la función submitReport para limpiar el modo edición después de enviar
+const originalSubmitReport = submitReport;
+submitReport = async function() {
+    // Llamar a la función original
+    await originalSubmitReport.apply(this, arguments);
+    
+    // Limpiar el título de edición si estaba presente
+    const headerTitle = document.querySelector('.header h1');
+    if (headerTitle && headerTitle.textContent.includes('EDITANDO')) {
+        headerTitle.textContent = 'Tower Provider Report';
+    }
+    
+    // Limpiar parámetros de URL
+    if (window.history.replaceState) {
+        const url = new URL(window.location);
+        url.searchParams.delete('edit');
+        window.history.replaceState({}, document.title, url.pathname);
+    }
+};
+
+// Modificar la función startNewReport para limpiar el modo edición
+const originalStartNewReport = startNewReport;
+startNewReport = function() {
+    // Llamar a la función original
+    originalStartNewReport.apply(this, arguments);
+    
+    // Limpiar el título de edición si estaba presente
+    const headerTitle = document.querySelector('.header h1');
+    if (headerTitle) {
+        headerTitle.textContent = 'Tower Provider Report';
+    }
+    
+    // Limpiar parámetros de URL y sessionStorage
+    sessionStorage.removeItem('editReportKey');
+    if (window.history.replaceState) {
+        const url = new URL(window.location);
+        url.searchParams.delete('edit');
+        window.history.replaceState({}, document.title, url.pathname);
+    }
+};
+
 // Manejar el redirect promise
 const response = await msalInstance.handleRedirectPromise();
 
