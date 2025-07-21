@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- MSAL.js desde CDN -->
+<script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Búsqueda de Reportes - Tower Report System</title>
@@ -440,21 +442,96 @@
     </div>
     
     <script>
+        // Agregar ANTES de las funciones de SharePoint en report-search.html
+
+// MSAL Configuration
+const msalConfig = {
+    auth: {
+        clientId: '928a4b98-5894-4a97-b8b1-d8c489c22216',
+        authority: 'https://login.microsoftonline.com/93a307af-2b18-419b-82a4-da0d26ae31d0',
+        redirectUri: window.location.origin + window.location.pathname,
+        navigateToLoginRequestUrl: false
+    },
+    cache: {
+        cacheLocation: 'localStorage',
+        storeAuthStateInCookie: true
+    },
+    system: {
+        loggerOptions: {
+            loggerCallback: (level, message, containsPii) => {
+                if (containsPii) return;
+                console.log(message);
+            },
+            logLevel: msal.LogLevel.Warning
+        }
+    }
+};
+
+// Create MSAL instance
+const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+// Login request configuration con los scopes necesarios para SharePoint
+const loginRequest = {
+    scopes: ['User.Read', 'Sites.Read.All', 'Sites.ReadWrite.All']
+};
+
+// Variable global para el usuario actual
+let currentAccount = null;
+
+// Initialize MSAL
+async function initializeMsal() {
+    try {
+        await msalInstance.initialize();
+        
+        // Verificar si hay una cuenta activa
+        const accounts = msalInstance.getAllAccounts();
+        if (accounts.length > 0) {
+            currentAccount = accounts[0];
+            msalInstance.setActiveAccount(currentAccount);
+            
+            // Verificar que tenemos un token válido
+            try {
+                await msalInstance.acquireTokenSilent({
+                    ...loginRequest,
+                    account: currentAccount
+                });
+                console.log('Usuario autenticado:', currentAccount.name);
+            } catch (error) {
+                console.log('Token expirado, necesita re-autenticación');
+                // Redirigir al index para login
+                window.location.href = 'index.html';
+            }
+        } else {
+            // No hay usuario autenticado, redirigir al index
+            console.log('No hay usuario autenticado');
+            window.location.href = 'index.html';
+        }
+    } catch (error) {
+        console.error('Error durante inicialización MSAL:', error);
+    }
+}
+
+// Llamar a initializeMsal cuando la página cargue
+window.addEventListener('load', async () => {
+    await initializeMsal();
+    // Cargar reportes después de autenticar
+    loadReports();
+});
         let allReports = [];
         let currentFilter = 'all';
         let searchTerm = '';
         
         // Cargar reportes al iniciar
-        window.onload = function() {
+        //window.onload = function() {
             // Verificar si hay un filtro en la URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const filter = urlParams.get('filter');
-            if (filter) {
-                setFilter(filter);
-            } else {
-                loadReports();
-            }
-        };
+           // const urlParams = new URLSearchParams(window.location.search);
+            //const filter = urlParams.get('filter');
+            //if (filter) {
+            //    setFilter(filter);
+            //} else {
+             //   loadReports();
+           // }
+       // };
         
         // Función para cargar todos los reportes
         function loadReports() {
