@@ -1414,105 +1414,85 @@ function loadReportForEdit(reportKey) {
 
         console.log('Raw report data:', reportToLoad);
 
-        // Normalizar la estructura de datos para manejar tanto formato local como SharePoint
-        reportData = {
-            basic: {},
-            gps: {},
-            appurtenances: [],
-            photos: {},
-            measurements: {},
-            metadata: {
-                appVersion: '9.20',
-                deviceInfo: navigator.userAgent,
-                createdAt: new Date().toISOString()
-            }
-        };
-
-        // Mapear datos básicos - manejar ambos formatos
+        // Si los datos ya vienen en el formato correcto (con basic, gps, etc.)
         if (reportToLoad.basic) {
-            // Formato local
-            reportData.basic = reportToLoad.basic;
-        } else {
-            // Formato SharePoint - mapear campos individuales
-            reportData.basic = {
-                siteId: String(reportToLoad.TowerProviderSiteID || reportToLoad.siteId || ''),
-                siteName: String(reportToLoad.TowerProviderSiteName || reportToLoad.siteName || ''),
-                customerSiteId: String(reportToLoad.CustomerSiteID || reportToLoad.customerSiteId || ''),
-                customerSiteName: String(reportToLoad.CustomerSiteName || reportToLoad.customerSiteName || ''),
-                sectorsCount: String(reportToLoad.SectorsCount || reportToLoad.sectorsCount || '0'),
-                radiosInstalled: String(reportToLoad.RadiosInstalled || reportToLoad.radiosInstalled || '0'),
-                antennasInstalled: String(reportToLoad.AntennasInstalled || reportToLoad.antennasInstalled || '0'),
-                cablesInstalled: String(reportToLoad.CablesInstalled || reportToLoad.cablesInstalled || '0'),
-                teamLeader: String(reportToLoad.TeamLeader || reportToLoad.teamLeader || ''),
-                towerTop: reportToLoad.towerTop || (reportToLoad.TowerTopInstallation === true || reportToLoad.TowerTopInstallation === 'true' ? 'yes' : 'no') || 'no',
-                completionDate: formatDateForInput(reportToLoad.CompletionDate || reportToLoad.completionDate) || '',
-                submittedBy: String(reportToLoad.SubmittedBy || reportToLoad.submittedBy || currentAccount?.name || ''),
-                submittedByEmail: String(reportToLoad.SubmittedByEmail || reportToLoad.submittedByEmail || currentAccount?.username || '')
-            };
-        }
-
-        // Mapear GPS
-        if (reportToLoad.gps) {
-            reportData.gps = reportToLoad.gps;
-        } else {
-            reportData.gps = {
-                latitude: parseFloat(reportToLoad.Latitude || reportToLoad.latitude || reportToLoad.gps?.latitude) || 0,
-                longitude: parseFloat(reportToLoad.Longitude || reportToLoad.longitude || reportToLoad.gps?.longitude) || 0,
-                altitude: parseFloat(reportToLoad.gps?.altitude) || 0,
-                accuracy: parseFloat(reportToLoad.gps?.accuracy) || 0,
-                manual: reportToLoad.gps?.manual || false
-            };
-        }
-
-        // Mapear appurtenances y measurements
-        if (reportToLoad.appurtenances) {
-            reportData.appurtenances = reportToLoad.appurtenances;
-        }
-        
-        if (reportToLoad.AppurtenanceData) {
-            try {
-                const appData = typeof reportToLoad.AppurtenanceData === 'string' 
-                    ? JSON.parse(reportToLoad.AppurtenanceData) 
-                    : reportToLoad.AppurtenanceData;
-                
-                reportData.appurtenances = appData.appurtenances || [];
-                
-                // Extraer measurements de AppurtenanceData
-                if (appData.measurements) {
-                    reportData.measurements = appData.measurements;
-                    console.log('Measurements from AppurtenanceData:', reportData.measurements);
+            // Los datos ya están formateados correctamente
+            reportData = {
+                basic: reportToLoad.basic,
+                gps: reportToLoad.gps || {},
+                appurtenances: reportToLoad.appurtenances || [],
+                photos: reportToLoad.photos || {},
+                measurements: reportToLoad.measurements || {},
+                metadata: reportToLoad.metadata || {
+                    appVersion: '9.20',
+                    deviceInfo: navigator.userAgent,
+                    createdAt: new Date().toISOString()
                 }
-            } catch (e) {
-                console.error('Error parsing AppurtenanceData:', e);
+            };
+            
+            // Corregir el formato de fecha si es necesario
+            if (reportData.basic.completionDate) {
+                reportData.basic.completionDate = formatDateForInput(reportData.basic.completionDate);
             }
-        }
-        
-        // Si no hay measurements en AppurtenanceData, buscar en el nivel superior
-        if (!reportData.measurements || Object.keys(reportData.measurements).length === 0) {
-            if (reportToLoad.measurements) {
-                reportData.measurements = reportToLoad.measurements;
+            
+        } else {
+            // Formato SharePoint directo (sin basic)
+            reportData = {
+                basic: {
+                    siteId: String(reportToLoad.TowerProviderSiteID || ''),
+                    siteName: String(reportToLoad.TowerProviderSiteName || ''),
+                    customerSiteId: String(reportToLoad.CustomerSiteID || ''),
+                    customerSiteName: String(reportToLoad.CustomerSiteName || ''),
+                    sectorsCount: String(reportToLoad.SectorsCount || '0'),
+                    radiosInstalled: String(reportToLoad.RadiosInstalled || '0'),
+                    antennasInstalled: String(reportToLoad.AntennasInstalled || '0'),
+                    cablesInstalled: String(reportToLoad.CablesInstalled || '0'),
+                    teamLeader: String(reportToLoad.TeamLeader || ''),
+                    towerTop: reportToLoad.TowerTopInstallation ? 'yes' : 'no',
+                    completionDate: formatDateForInput(reportToLoad.CompletionDate || ''),
+                    submittedBy: String(reportToLoad.SubmittedBy || ''),
+                    submittedByEmail: String(reportToLoad.SubmittedByEmail || '')
+                },
+                gps: {
+                    latitude: parseFloat(reportToLoad.Latitude) || 0,
+                    longitude: parseFloat(reportToLoad.Longitude) || 0,
+                    altitude: 0,
+                    accuracy: 0,
+                    manual: false
+                },
+                appurtenances: [],
+                photos: {},
+                measurements: {},
+                metadata: {
+                    appVersion: '9.20',
+                    deviceInfo: navigator.userAgent,
+                    createdAt: reportToLoad.SubmissionTimestamp || new Date().toISOString()
+                }
+            };
+            
+            // Intentar parsear AppurtenanceData si existe
+            if (reportToLoad.AppurtenanceData) {
+                try {
+                    const appData = typeof reportToLoad.AppurtenanceData === 'string' 
+                        ? JSON.parse(reportToLoad.AppurtenanceData) 
+                        : reportToLoad.AppurtenanceData;
+                    
+                    if (appData.appurtenances) reportData.appurtenances = appData.appurtenances;
+                    if (appData.measurements) reportData.measurements = appData.measurements;
+                } catch (e) {
+                    console.error('Error parsing AppurtenanceData:', e);
+                }
             }
-        }
-
-        // Mapear photos
-        if (reportToLoad.photos) {
-            reportData.photos = reportToLoad.photos;
-        } else if (reportToLoad.PhotoLinks) {
-            try {
-                reportData.photos = typeof reportToLoad.PhotoLinks === 'string' 
-                    ? JSON.parse(reportToLoad.PhotoLinks) 
-                    : reportToLoad.PhotoLinks;
-            } catch (e) {
-                console.error('Error parsing PhotoLinks:', e);
-            }
-        }
-
-        // Mapear metadata
-        if (reportToLoad.metadata) {
-            reportData.metadata = { ...reportData.metadata, ...reportToLoad.metadata };
         }
 
         console.log('Normalized report data:', reportData);
+
+        // PROBLEMA: Si sectorsCount es 0, necesitamos obtenerlo de otra fuente
+        // Verificar si hay datos en sharePointData o en otro lugar
+        if (reportData.basic.sectorsCount === '0' || reportData.basic.sectorsCount === 0) {
+            console.warn('sectorsCount es 0, verificando otras fuentes...');
+            // Aquí podrías buscar en otros campos o usar un valor predeterminado
+        }
 
         // Ahora rellenar los campos del formulario
         if (reportData.basic) {
@@ -1544,43 +1524,22 @@ function loadReportForEdit(reportKey) {
 
             // Esperar un momento y luego actualizar los elementos dinámicos
             setTimeout(() => {
-                // Forzar la actualización de sectores
-                const sectorsValue = reportData.basic.sectorsCount;
-                console.log('Setting sectors count to:', sectorsValue);
-                
-                const sectorsElement = document.getElementById('sectorsCount');
-                if (sectorsElement) {
-                    sectorsElement.value = sectorsValue;
-                    
-                    // Disparar el evento change manualmente
-                    const event = new Event('change', { bubbles: true });
-                    sectorsElement.dispatchEvent(event);
-                    
-                    // Llamar directamente a updateSectorRequirements
+                // Actualizar requisitos basados en los valores cargados
+                if (reportData.basic.sectorsCount && reportData.basic.sectorsCount !== '0') {
                     updateSectorRequirements();
                 }
                 
-                // Para tower top
-                const towerTopElement = document.getElementById('towerTop');
-                if (towerTopElement && reportData.basic.towerTop) {
-                    towerTopElement.value = reportData.basic.towerTop;
-                    
-                    // Disparar el evento change
-                    const event = new Event('change', { bubbles: true });
-                    towerTopElement.dispatchEvent(event);
-                    
-                    // Llamar directamente
+                if (reportData.basic.towerTop) {
                     updateMeasurementRequirements();
                 }
                 
-                // Actualizar otros requisitos
                 updateEquipmentRequirements();
                 updateEquipmentCounter();
                 
                 // Cargar mediciones después de otro delay
                 setTimeout(() => {
                     // Tower Height
-                    if (reportData.measurements.towerHeight) {
+                    if (reportData.measurements && reportData.measurements.towerHeight) {
                         const towerHeightEl = document.getElementById('towerHeight');
                         if (towerHeightEl) {
                             towerHeightEl.value = reportData.measurements.towerHeight;
@@ -1589,7 +1548,7 @@ function loadReportForEdit(reportKey) {
                     }
                     
                     // Tallest Point
-                    if (reportData.measurements.tallestPoint) {
+                    if (reportData.measurements && reportData.measurements.tallestPoint) {
                         const tallestPointEl = document.getElementById('tallestPoint');
                         if (tallestPointEl) {
                             tallestPointEl.value = reportData.measurements.tallestPoint;
@@ -1599,17 +1558,17 @@ function loadReportForEdit(reportKey) {
                     
                     // Tape drops de sectores
                     const sectorsCount = parseInt(reportData.basic.sectorsCount) || 0;
-                    console.log('Loading tape drops for', sectorsCount, 'sectors');
-                    
-                    for (let i = 1; i <= sectorsCount; i++) {
-                        const tapeDrop = document.getElementById(`sector${i}TapeDrop`);
-                        const value = reportData.measurements[`sector${i}TapeDrop`];
+                    if (sectorsCount > 0) {
+                        console.log('Loading tape drops for', sectorsCount, 'sectors');
                         
-                        if (tapeDrop && value) {
-                            tapeDrop.value = value;
-                            console.log(`Set sector${i}TapeDrop to:`, value);
-                        } else if (!tapeDrop) {
-                            console.warn(`Element sector${i}TapeDrop not found`);
+                        for (let i = 1; i <= sectorsCount; i++) {
+                            const tapeDrop = document.getElementById(`sector${i}TapeDrop`);
+                            const value = reportData.measurements[`sector${i}TapeDrop`];
+                            
+                            if (tapeDrop && value) {
+                                tapeDrop.value = value;
+                                console.log(`Set sector${i}TapeDrop to:`, value);
+                            }
                         }
                     }
                 }, 500);
@@ -1631,18 +1590,6 @@ function loadReportForEdit(reportKey) {
             console.log('Loading photos:', Object.keys(reportData.photos));
             updatePhotoTypes();
             updatePhotoCounts();
-            
-            // Si estamos en el paso 3, regenerar la grilla
-            if (currentStep === 3) {
-                generatePhotoGrid();
-                setTimeout(() => {
-                    Object.keys(reportData.photos).forEach(typeId => {
-                        if (reportData.photos[typeId] && reportData.photos[typeId].length > 0) {
-                            updatePhotoPreview(typeId);
-                        }
-                    });
-                }, 500);
-            }
         }
 
         // Marcar si es un reporte de SharePoint
@@ -1672,7 +1619,6 @@ function loadReportForEdit(reportKey) {
         showNotification('Error al cargar el reporte: ' + error.message, 'error');
     }
 }
-
 // También agregar esta función para debug
 function debugReportData() {
     console.log('Current reportData:', reportData);
