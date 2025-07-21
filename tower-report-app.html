@@ -1435,19 +1435,19 @@ function loadReportForEdit(reportKey) {
         } else {
             // Formato SharePoint - mapear campos individuales
             reportData.basic = {
-                siteId: reportToLoad.TowerProviderSiteID || reportToLoad.siteId || '',
-                siteName: reportToLoad.TowerProviderSiteName || reportToLoad.siteName || '',
-                customerSiteId: reportToLoad.CustomerSiteID || reportToLoad.customerSiteId || '',
-                customerSiteName: reportToLoad.CustomerSiteName || reportToLoad.customerSiteName || '',
-                sectorsCount: reportToLoad.SectorsCount || reportToLoad.sectorsCount || '',
-                radiosInstalled: reportToLoad.RadiosInstalled || reportToLoad.radiosInstalled || '',
-                antennasInstalled: reportToLoad.AntennasInstalled || reportToLoad.antennasInstalled || '',
-                cablesInstalled: reportToLoad.CablesInstalled || reportToLoad.cablesInstalled || '',
-                teamLeader: reportToLoad.TeamLeader || reportToLoad.teamLeader || '',
-                towerTop: reportToLoad.towerTop || (reportToLoad.TowerTopInstallation ? 'yes' : 'no') || 'no',
-                completionDate: reportToLoad.CompletionDate || reportToLoad.completionDate || '',
-                submittedBy: reportToLoad.SubmittedBy || reportToLoad.submittedBy || currentAccount?.name || '',
-                submittedByEmail: reportToLoad.SubmittedByEmail || reportToLoad.submittedByEmail || currentAccount?.username || ''
+                siteId: String(reportToLoad.TowerProviderSiteID || reportToLoad.siteId || ''),
+                siteName: String(reportToLoad.TowerProviderSiteName || reportToLoad.siteName || ''),
+                customerSiteId: String(reportToLoad.CustomerSiteID || reportToLoad.customerSiteId || ''),
+                customerSiteName: String(reportToLoad.CustomerSiteName || reportToLoad.customerSiteName || ''),
+                sectorsCount: String(reportToLoad.SectorsCount || reportToLoad.sectorsCount || '0'),
+                radiosInstalled: String(reportToLoad.RadiosInstalled || reportToLoad.radiosInstalled || '0'),
+                antennasInstalled: String(reportToLoad.AntennasInstalled || reportToLoad.antennasInstalled || '0'),
+                cablesInstalled: String(reportToLoad.CablesInstalled || reportToLoad.cablesInstalled || '0'),
+                teamLeader: String(reportToLoad.TeamLeader || reportToLoad.teamLeader || ''),
+                towerTop: reportToLoad.towerTop || (reportToLoad.TowerTopInstallation === true || reportToLoad.TowerTopInstallation === 'true' ? 'yes' : 'no') || 'no',
+                completionDate: formatDateForInput(reportToLoad.CompletionDate || reportToLoad.completionDate) || '',
+                submittedBy: String(reportToLoad.SubmittedBy || reportToLoad.submittedBy || currentAccount?.name || ''),
+                submittedByEmail: String(reportToLoad.SubmittedByEmail || reportToLoad.submittedByEmail || currentAccount?.username || '')
             };
         }
 
@@ -1456,33 +1456,42 @@ function loadReportForEdit(reportKey) {
             reportData.gps = reportToLoad.gps;
         } else {
             reportData.gps = {
-                latitude: parseFloat(reportToLoad.Latitude || reportToLoad.latitude) || 0,
-                longitude: parseFloat(reportToLoad.Longitude || reportToLoad.longitude) || 0,
-                altitude: 0,
-                accuracy: 0,
-                manual: false
+                latitude: parseFloat(reportToLoad.Latitude || reportToLoad.latitude || reportToLoad.gps?.latitude) || 0,
+                longitude: parseFloat(reportToLoad.Longitude || reportToLoad.longitude || reportToLoad.gps?.longitude) || 0,
+                altitude: parseFloat(reportToLoad.gps?.altitude) || 0,
+                accuracy: parseFloat(reportToLoad.gps?.accuracy) || 0,
+                manual: reportToLoad.gps?.manual || false
             };
         }
 
-        // Mapear appurtenances
+        // Mapear appurtenances y measurements
         if (reportToLoad.appurtenances) {
             reportData.appurtenances = reportToLoad.appurtenances;
-        } else if (reportToLoad.AppurtenanceData) {
-            // Si viene de SharePoint, puede estar en formato JSON string
+        }
+        
+        if (reportToLoad.AppurtenanceData) {
             try {
                 const appData = typeof reportToLoad.AppurtenanceData === 'string' 
                     ? JSON.parse(reportToLoad.AppurtenanceData) 
                     : reportToLoad.AppurtenanceData;
+                
                 reportData.appurtenances = appData.appurtenances || [];
-                reportData.measurements = appData.measurements || {};
+                
+                // Extraer measurements de AppurtenanceData
+                if (appData.measurements) {
+                    reportData.measurements = appData.measurements;
+                    console.log('Measurements from AppurtenanceData:', reportData.measurements);
+                }
             } catch (e) {
                 console.error('Error parsing AppurtenanceData:', e);
             }
         }
-
-        // Mapear measurements
-        if (reportToLoad.measurements) {
-            reportData.measurements = reportToLoad.measurements;
+        
+        // Si no hay measurements en AppurtenanceData, buscar en el nivel superior
+        if (!reportData.measurements || Object.keys(reportData.measurements).length === 0) {
+            if (reportToLoad.measurements) {
+                reportData.measurements = reportToLoad.measurements;
+            }
         }
 
         // Mapear photos
@@ -1509,18 +1518,18 @@ function loadReportForEdit(reportKey) {
         if (reportData.basic) {
             // Lista de campos y sus IDs
             const fieldMappings = [
-    { id: 'siteId', value: reportData.basic.siteId },
-    { id: 'siteName', value: reportData.basic.siteName },
-    { id: 'customerSiteId', value: reportData.basic.customerSiteId },
-    { id: 'customerSiteName', value: reportData.basic.customerSiteName },
-    { id: 'sectorsCount', value: reportData.basic.sectorsCount },
-    { id: 'radiosInstalled', value: reportData.basic.radiosInstalled },
-    { id: 'antennasInstalled', value: reportData.basic.antennasInstalled },
-    { id: 'cablesInstalled', value: reportData.basic.cablesInstalled },
-    { id: 'teamLeader', value: reportData.basic.teamLeader },
-    { id: 'towerTop', value: reportData.basic.towerTop },
-    { id: 'completionDate', value: formatDateForInput(reportData.basic.completionDate) }
-];
+                { id: 'siteId', value: reportData.basic.siteId },
+                { id: 'siteName', value: reportData.basic.siteName },
+                { id: 'customerSiteId', value: reportData.basic.customerSiteId },
+                { id: 'customerSiteName', value: reportData.basic.customerSiteName },
+                { id: 'sectorsCount', value: reportData.basic.sectorsCount },
+                { id: 'radiosInstalled', value: reportData.basic.radiosInstalled },
+                { id: 'antennasInstalled', value: reportData.basic.antennasInstalled },
+                { id: 'cablesInstalled', value: reportData.basic.cablesInstalled },
+                { id: 'teamLeader', value: reportData.basic.teamLeader },
+                { id: 'towerTop', value: reportData.basic.towerTop },
+                { id: 'completionDate', value: reportData.basic.completionDate }
+            ];
 
             // Asignar valores a cada campo
             fieldMappings.forEach(({ id, value }) => {
@@ -1535,49 +1544,76 @@ function loadReportForEdit(reportKey) {
 
             // Esperar un momento y luego actualizar los elementos dinámicos
             setTimeout(() => {
-                // Actualizar requisitos basados en los valores cargados
-                if (reportData.basic.sectorsCount) {
+                // Forzar la actualización de sectores
+                const sectorsValue = reportData.basic.sectorsCount;
+                console.log('Setting sectors count to:', sectorsValue);
+                
+                const sectorsElement = document.getElementById('sectorsCount');
+                if (sectorsElement) {
+                    sectorsElement.value = sectorsValue;
+                    
+                    // Disparar el evento change manualmente
+                    const event = new Event('change', { bubbles: true });
+                    sectorsElement.dispatchEvent(event);
+                    
+                    // Llamar directamente a updateSectorRequirements
                     updateSectorRequirements();
-                    
-                    // Después de crear los campos dinámicos, cargar los tape drops
-                    setTimeout(() => {
-                        const sectorsCount = parseInt(reportData.basic.sectorsCount) || 0;
-                        for (let i = 1; i <= sectorsCount; i++) {
-                            const tapeDrop = document.getElementById(`sector${i}TapeDrop`);
-                            if (tapeDrop && reportData.measurements[`sector${i}TapeDrop`]) {
-                                tapeDrop.value = reportData.measurements[`sector${i}TapeDrop`];
-                                console.log(`Set sector${i}TapeDrop to:`, reportData.measurements[`sector${i}TapeDrop`]);
-                            }
-                        }
-                    }, 300);
                 }
                 
-                if (reportData.basic.towerTop) {
+                // Para tower top
+                const towerTopElement = document.getElementById('towerTop');
+                if (towerTopElement && reportData.basic.towerTop) {
+                    towerTopElement.value = reportData.basic.towerTop;
+                    
+                    // Disparar el evento change
+                    const event = new Event('change', { bubbles: true });
+                    towerTopElement.dispatchEvent(event);
+                    
+                    // Llamar directamente
                     updateMeasurementRequirements();
-                    
-                    // Cargar mediciones de torre
-                    setTimeout(() => {
-                        if (reportData.measurements.towerHeight) {
-                            const towerHeight = document.getElementById('towerHeight');
-                            if (towerHeight) {
-                                towerHeight.value = reportData.measurements.towerHeight;
-                                console.log('Set towerHeight to:', reportData.measurements.towerHeight);
-                            }
-                        }
-                        
-                        if (reportData.measurements.tallestPoint) {
-                            const tallestPoint = document.getElementById('tallestPoint');
-                            if (tallestPoint) {
-                                tallestPoint.value = reportData.measurements.tallestPoint;
-                                console.log('Set tallestPoint to:', reportData.measurements.tallestPoint);
-                            }
-                        }
-                    }, 300);
                 }
                 
+                // Actualizar otros requisitos
                 updateEquipmentRequirements();
                 updateEquipmentCounter();
-            }, 200);
+                
+                // Cargar mediciones después de otro delay
+                setTimeout(() => {
+                    // Tower Height
+                    if (reportData.measurements.towerHeight) {
+                        const towerHeightEl = document.getElementById('towerHeight');
+                        if (towerHeightEl) {
+                            towerHeightEl.value = reportData.measurements.towerHeight;
+                            console.log('Set towerHeight to:', reportData.measurements.towerHeight);
+                        }
+                    }
+                    
+                    // Tallest Point
+                    if (reportData.measurements.tallestPoint) {
+                        const tallestPointEl = document.getElementById('tallestPoint');
+                        if (tallestPointEl) {
+                            tallestPointEl.value = reportData.measurements.tallestPoint;
+                            console.log('Set tallestPoint to:', reportData.measurements.tallestPoint);
+                        }
+                    }
+                    
+                    // Tape drops de sectores
+                    const sectorsCount = parseInt(reportData.basic.sectorsCount) || 0;
+                    console.log('Loading tape drops for', sectorsCount, 'sectors');
+                    
+                    for (let i = 1; i <= sectorsCount; i++) {
+                        const tapeDrop = document.getElementById(`sector${i}TapeDrop`);
+                        const value = reportData.measurements[`sector${i}TapeDrop`];
+                        
+                        if (tapeDrop && value) {
+                            tapeDrop.value = value;
+                            console.log(`Set sector${i}TapeDrop to:`, value);
+                        } else if (!tapeDrop) {
+                            console.warn(`Element sector${i}TapeDrop not found`);
+                        }
+                    }
+                }, 500);
+            }, 300);
         }
 
         // Cargar GPS
