@@ -1083,6 +1083,32 @@ createdAt: new Date().toISOString()
 }
 };
 
+// Agregar esta función helper para formatear fechas
+function formatDateForInput(dateString) {
+    if (!dateString) return '';
+    
+    try {
+        // Si ya está en formato yyyy-MM-dd, devolverlo tal cual
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+            return dateString;
+        }
+        
+        // Si es una fecha ISO (2025-07-18T07:00:00Z), convertir
+        const date = new Date(dateString);
+        if (!isNaN(date.getTime())) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        return '';
+    } catch (e) {
+        console.error('Error formatting date:', e);
+        return '';
+    }
+}
+
 // Base photo types configuration (será modificado dinámicamente)
 let photoTypes = [];
 
@@ -1361,8 +1387,6 @@ await msalInstance.initialize();
 
 // Reemplazar la función loadReportForEdit en tower-report-app.html con esta versión actualizada
 
-// Reemplazar la función loadReportForEdit con esta versión mejorada
-
 function loadReportForEdit(reportKey) {
     try {
         console.log('Loading report for edit:', reportKey);
@@ -1485,18 +1509,18 @@ function loadReportForEdit(reportKey) {
         if (reportData.basic) {
             // Lista de campos y sus IDs
             const fieldMappings = [
-                { id: 'siteId', value: reportData.basic.siteId },
-                { id: 'siteName', value: reportData.basic.siteName },
-                { id: 'customerSiteId', value: reportData.basic.customerSiteId },
-                { id: 'customerSiteName', value: reportData.basic.customerSiteName },
-                { id: 'sectorsCount', value: reportData.basic.sectorsCount },
-                { id: 'radiosInstalled', value: reportData.basic.radiosInstalled },
-                { id: 'antennasInstalled', value: reportData.basic.antennasInstalled },
-                { id: 'cablesInstalled', value: reportData.basic.cablesInstalled },
-                { id: 'teamLeader', value: reportData.basic.teamLeader },
-                { id: 'towerTop', value: reportData.basic.towerTop },
-                { id: 'completionDate', value: reportData.basic.completionDate }
-            ];
+    { id: 'siteId', value: reportData.basic.siteId },
+    { id: 'siteName', value: reportData.basic.siteName },
+    { id: 'customerSiteId', value: reportData.basic.customerSiteId },
+    { id: 'customerSiteName', value: reportData.basic.customerSiteName },
+    { id: 'sectorsCount', value: reportData.basic.sectorsCount },
+    { id: 'radiosInstalled', value: reportData.basic.radiosInstalled },
+    { id: 'antennasInstalled', value: reportData.basic.antennasInstalled },
+    { id: 'cablesInstalled', value: reportData.basic.cablesInstalled },
+    { id: 'teamLeader', value: reportData.basic.teamLeader },
+    { id: 'towerTop', value: reportData.basic.towerTop },
+    { id: 'completionDate', value: formatDateForInput(reportData.basic.completionDate) }
+];
 
             // Asignar valores a cada campo
             fieldMappings.forEach(({ id, value }) => {
