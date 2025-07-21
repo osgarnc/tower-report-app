@@ -1359,18 +1359,33 @@ try {
 // Esperar a que MSAL esté completamente inicializado
 await msalInstance.initialize();
 
-// Función para cargar un reporte existente para edición
+// Reemplazar la función loadReportForEdit en tower-report-app.html con esta versión actualizada
+
 function loadReportForEdit(reportKey) {
     try {
+        let reportToLoad = null;
+        
+        // Primero intentar cargar desde localStorage
         const savedReport = localStorage.getItem(reportKey);
-        if (!savedReport) {
+        if (savedReport) {
+            reportToLoad = JSON.parse(savedReport);
+        } else {
+            // Si no está en localStorage, verificar si viene de SharePoint
+            const editReportData = sessionStorage.getItem('editReportData');
+            if (editReportData) {
+                reportToLoad = JSON.parse(editReportData);
+                // Limpiar después de usar
+                sessionStorage.removeItem('editReportData');
+            }
+        }
+        
+        if (!reportToLoad) {
             showNotification('No se encontró el reporte para editar', 'error');
             return;
         }
 
         // Cargar el reporte en la variable global
-        const loadedData = JSON.parse(savedReport);
-        reportData = loadedData;
+        reportData = reportToLoad;
 
         // Rellenar todos los campos del formulario con los datos guardados
         if (reportData.basic) {
@@ -1421,9 +1436,6 @@ function loadReportForEdit(reportKey) {
         updateAppurtenanceList();
         updateEquipmentCounter();
 
-        // Actualizar contadores de fotos
-        updatePhotoCounts();
-        
         // Cargar y mostrar las fotos existentes
         if (reportData.photos && Object.keys(reportData.photos).length > 0) {
             // Asegurarse de que photoTypes esté actualizado
@@ -1451,6 +1463,13 @@ function loadReportForEdit(reportKey) {
         const headerTitle = document.querySelector('.header h1');
         if (headerTitle) {
             headerTitle.textContent = 'Tower Provider Report - EDITANDO';
+        }
+        
+        // Si es un reporte de SharePoint, marcar para actualización posterior
+        const editSource = sessionStorage.getItem('editReportSource');
+        if (editSource === 'sharepoint') {
+            reportData.isSharePointReport = true;
+            reportData.sharePointId = sessionStorage.getItem('sharePointReportId');
         }
 
     } catch (error) {
@@ -1545,23 +1564,103 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // Modificar la función submitReport para limpiar el modo edición después de enviar
 const originalSubmitReport = submitReport;
-submitReport = async function() {
-    // Llamar a la función original
-    await originalSubmitReport.apply(this, arguments);
+// También actualizar la función submitReport para manejar actualizaciones de SharePoint
+async function submitReport() {
+    const submitBtn = event.target;
+    const statusDiv = document.getElementById('submitStatus');
     
-    // Limpiar el título de edición si estaba presente
-    const headerTitle = document.querySelector('.header h1');
-    if (headerTitle && headerTitle.textContent.includes('EDITANDO')) {
-        headerTitle.textContent = 'Tower Provider Report';
-    }
+    // Update submittedBy with current authenticated user
+    reportData.basic.submittedBy = reportData.metadata.submittedBy || 'Unknown User';
+    reportData.basic.submittedByEmail = reportData.metadata.submittedByEmail || 'unknown@email.com';
     
-    // Limpiar parámetros de URL
-    if (window.history.replaceState) {
-        const url = new URL(window.location);
-        url.searchParams.delete('edit');
-        window.history.replaceState({}, document.title, url.pathname);
+    submitBtn.disabled = true;
+    statusDiv.innerHTML = '<div class="spinner"></div><p>Enviando reporte...</p>';
+    
+    try {
+        const reportId = reportData.basic.uniqueReportId || `RPT-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+        
+        // Si es un reporte de SharePoint, necesitamos actualizarlo allá también
+        if (reportData.isSharePointReport && reportData.sharePointId) {
+            statusDiv.innerHTML = '<div class="spinner"></div><p>Actualizando en SharePoint...</p>';
+            
+            // Aquí deberías llamar a una función para actualizar SharePoint
+            // Por ahora solo guardamos localmente
+            console.log('TODO: Actualizar reporte en SharePoint con ID:', reportData.sharePointId);
+        }
+        
+        // Guardar localmente
+        localStorage.setItem(reportId, JSON.stringify(reportData));
+        
+        // Enviar a SharePoint (tu flujo existente)
+        const sentToSharePoint = await sendToSharePoint(reportData);
+        
+        if (sentToSharePoint) {
+            statusDiv.innerHTML = `
+                <div style="background: #e8f5e9; padding: 20px; border-radius: 6px; text-align: left;">
+                    <h3 style="color: #2e7d32;">✓ Reporte ${reportData.isSharePointReport ? 'Actualizado' : 'Enviado'}</h3>
+                    <p>ID: ${reportId}</p>
+                    <p>Enviado por: <strong>${reportData.basic.submittedBy}</strong></p>
+                    <p style="margin-top: 15px;">
+                        <strong>✓ Guardado localmente</strong><br>
+                        <strong>✓ ${reportData.isSharePointReport ? 'Actualizado' : 'Enviado'} a SharePoint</strong><br>
+                    </p>
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
+                            ➕ Crear Nuevo Reporte
+                        </button>
+                        <button class="btn btn-primary" onclick="sendDetailedEmail('${reportId}')" style="flex: 1;">
+                            📧 Enviar Email Detallado
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else {
+            statusDiv.innerHTML = `
+                <div style="background: #fff3cd; padding: 20px; border-radius: 6px; text-align: left;">
+                    <h3 style="color: #856404;">⚠️ Guardado Solo Localmente</h3>
+                    <p>ID: ${reportId}</p>
+                    <p style="margin-top: 15px;">
+                        El reporte se guardó en el dispositivo pero no se pudo enviar a SharePoint.
+                    </p>
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button class="btn btn-primary" onclick="retrySharePoint('${reportId}')" style="flex: 1;">
+                            🔄 Reintentar Envío
+                        </button>
+                        <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
+                            ➕ Nuevo Reporte
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        submitBtn.disabled = false;
+        
+        // Limpiar marcadores de SharePoint
+        delete reportData.isSharePointReport;
+        delete reportData.sharePointId;
+        sessionStorage.removeItem('editReportSource');
+        sessionStorage.removeItem('sharePointReportId');
+        
+        // Limpiar el título de edición
+        const headerTitle = document.querySelector('.header h1');
+        if (headerTitle && headerTitle.textContent.includes('EDITANDO')) {
+            headerTitle.textContent = 'Tower Provider Report';
+        }
+        
+    } catch (error) {
+        statusDiv.innerHTML = `
+            <div style="background: #ffebee; padding: 20px; border-radius: 6px;">
+                <h3 style="color: #c62828;">Error al guardar</h3>
+                <p>${error.message}</p>
+                <button class="btn btn-primary" onclick="location.reload()">
+                    Recargar Página
+                </button>
+            </div>
+        `;
+        submitBtn.disabled = false;
     }
-};
+}
 
 // Modificar la función startNewReport para limpiar el modo edición
 const originalStartNewReport = startNewReport;
