@@ -376,7 +376,13 @@
             <a href="index.html" class="btn btn-back">← Volver al Menú</a>
         </div>
     </div>
-    
+    <div class="search-section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2>Búsqueda de Reportes</h2>
+        <button id="searchModeBtn" class="btn btn-primary" onclick="toggleSearchMode()" title="Cambiar origen de búsqueda">
+            💾 Local
+        </button>
+    </div>
     <div class="container">
         <div class="search-section">
             <div class="search-input-group">
@@ -704,12 +710,23 @@
         
         // Función para editar reporte
         function editReport(reportKey) {
-            if (confirm('¿Desea editar este reporte? Será redirigido a la aplicación de reportes.')) {
-                // Guardar el reporte a editar en sessionStorage
-                sessionStorage.setItem('editReportKey', reportKey);
-                window.location.href = 'tower-report-app.html?edit=' + reportKey;
-            }
+    const report = allReports.find(r => r.key === reportKey);
+    if (!report) return;
+    
+    if (confirm('¿Desea editar este reporte? Será redirigido a la aplicación de reportes.')) {
+        // Si es un reporte de SharePoint, guardar información adicional
+        if (report.sharePointId) {
+            sessionStorage.setItem('editReportSource', 'sharepoint');
+            sessionStorage.setItem('sharePointReportId', report.sharePointId);
         }
+        
+        // Guardar el reporte completo en sessionStorage para editarlo
+        sessionStorage.setItem('editReportData', JSON.stringify(report.data));
+        sessionStorage.setItem('editReportKey', reportKey);
+        
+        window.location.href = 'tower-report-app.html?edit=' + reportKey;
+    }
+}
         
         // Función para duplicar reporte
         function duplicateReport(reportKey) {
