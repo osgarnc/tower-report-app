@@ -1363,126 +1363,177 @@ await msalInstance.initialize();
 
 function loadReportForEdit(reportKey) {
     try {
+        console.log('Loading report for edit:', reportKey);
         let reportToLoad = null;
         
-        // Primero intentar cargar desde localStorage
-        const savedReport = localStorage.getItem(reportKey);
-        if (savedReport) {
-            reportToLoad = JSON.parse(savedReport);
+        // Primero intentar cargar desde sessionStorage (SharePoint)
+        const editReportData = sessionStorage.getItem('editReportData');
+        if (editReportData) {
+            console.log('Loading from sessionStorage (SharePoint)');
+            reportToLoad = JSON.parse(editReportData);
         } else {
-            // Si no está en localStorage, verificar si viene de SharePoint
-            const editReportData = sessionStorage.getItem('editReportData');
-            if (editReportData) {
-                reportToLoad = JSON.parse(editReportData);
-                // Limpiar después de usar
-                sessionStorage.removeItem('editReportData');
+            // Si no está en sessionStorage, buscar en localStorage
+            console.log('Loading from localStorage');
+            const savedReport = localStorage.getItem(reportKey);
+            if (savedReport) {
+                reportToLoad = JSON.parse(savedReport);
             }
         }
         
         if (!reportToLoad) {
             showNotification('No se encontró el reporte para editar', 'error');
+            console.error('Report not found:', reportKey);
             return;
         }
 
-        // Cargar el reporte en la variable global
-        reportData = reportToLoad;
+        // Asegurarse de que reportData tenga la estructura correcta
+        reportData = {
+            basic: reportToLoad.basic || {},
+            gps: reportToLoad.gps || {},
+            appurtenances: reportToLoad.appurtenances || [],
+            photos: reportToLoad.photos || {},
+            measurements: reportToLoad.measurements || {},
+            metadata: reportToLoad.metadata || {
+                appVersion: '9.20',
+                deviceInfo: navigator.userAgent,
+                createdAt: new Date().toISOString(),
+                submittedBy: currentAccount?.name || 'Unknown User',
+                submittedByEmail: currentAccount?.username || 'unknown@email.com'
+            }
+        };
 
-        // Rellenar todos los campos del formulario con los datos guardados
+        console.log('Report data loaded:', reportData);
+
+        // Rellenar todos los campos del formulario
         if (reportData.basic) {
-            // Campos básicos
-            document.getElementById('siteId').value = reportData.basic.siteId || '';
-            document.getElementById('siteName').value = reportData.basic.siteName || '';
-            document.getElementById('customerSiteId').value = reportData.basic.customerSiteId || '';
-            document.getElementById('customerSiteName').value = reportData.basic.customerSiteName || '';
-            document.getElementById('sectorsCount').value = reportData.basic.sectorsCount || '';
-            document.getElementById('radiosInstalled').value = reportData.basic.radiosInstalled || '';
-            document.getElementById('antennasInstalled').value = reportData.basic.antennasInstalled || '';
-            document.getElementById('cablesInstalled').value = reportData.basic.cablesInstalled || '';
-            document.getElementById('teamLeader').value = reportData.basic.teamLeader || '';
-            document.getElementById('towerTop').value = reportData.basic.towerTop || '';
-            document.getElementById('completionDate').value = reportData.basic.completionDate || '';
+            // Campos básicos - verificar que existan antes de asignar
+            const fields = {
+                'siteId': reportData.basic.siteId || reportData.basic.TowerProviderSiteID || '',
+                'siteName': reportData.basic.siteName || reportData.basic.TowerProviderSiteName || '',
+                'customerSiteId': reportData.basic.customerSiteId || reportData.basic.CustomerSiteID || '',
+                'customerSiteName': reportData.basic.customerSiteName || reportData.basic.CustomerSiteName || '',
+                'sectorsCount': reportData.basic.sectorsCount || reportData.basic.SectorsCount || '',
+                'radiosInstalled': reportData.basic.radiosInstalled || reportData.basic.RadiosInstalled || '',
+                'antennasInstalled': reportData.basic.antennasInstalled || reportData.basic.AntennasInstalled || '',
+                'cablesInstalled': reportData.basic.cablesInstalled || reportData.basic.CablesInstalled || '',
+                'teamLeader': reportData.basic.teamLeader || reportData.basic.TeamLeader || '',
+                'towerTop': reportData.basic.towerTop || (reportData.basic.TowerTopInstallation ? 'yes' : 'no') || '',
+                'completionDate': reportData.basic.completionDate || reportData.basic.CompletionDate || ''
+            };
 
-            // Actualizar requisitos según los valores cargados
-            if (reportData.basic.sectorsCount) {
-                updateSectorRequirements();
-            }
-            if (reportData.basic.towerTop) {
-                updateMeasurementRequirements();
-            }
-            updateEquipmentRequirements();
-        }
-
-        // Cargar mediciones
-        if (reportData.measurements) {
-            document.getElementById('towerHeight').value = reportData.measurements.towerHeight || '';
-            document.getElementById('tallestPoint').value = reportData.measurements.tallestPoint || '';
-            
-            // Cargar tape drops dinámicos
-            const sectorsCount = parseInt(reportData.basic.sectorsCount) || 0;
-            for (let i = 1; i <= sectorsCount; i++) {
-                const tapeDrop = document.getElementById(`sector${i}TapeDrop`);
-                if (tapeDrop && reportData.measurements[`sector${i}TapeDrop`]) {
-                    tapeDrop.value = reportData.measurements[`sector${i}TapeDrop`];
+            // Asignar valores a los campos
+            Object.keys(fields).forEach(fieldId => {
+                const element = document.getElementById(fieldId);
+                if (element) {
+                    element.value = fields[fieldId];
+                    console.log(`Setting ${fieldId}:`, fields[fieldId]);
+                } else {
+                    console.warn(`Element not found: ${fieldId}`);
                 }
-            }
+            });
+
+            // Actualizar requisitos después de establecer los valores
+            setTimeout(() => {
+                if (fields.sectorsCount) {
+                    updateSectorRequirements();
+                }
+                if (fields.towerTop) {
+                    updateMeasurementRequirements();
+                }
+                updateEquipmentRequirements();
+                updateEquipmentCounter();
+            }, 100);
         }
 
         // Cargar GPS
         if (reportData.gps && reportData.gps.latitude) {
+            reportData.gps = {
+                latitude: parseFloat(reportData.gps.latitude) || 0,
+                longitude: parseFloat(reportData.gps.longitude) || 0,
+                altitude: reportData.gps.altitude || 0,
+                accuracy: reportData.gps.accuracy || 0,
+                manual: reportData.gps.manual || false
+            };
             showGPSStatus(true);
         }
 
-        // Actualizar listas de equipos
-        updateAppurtenanceList();
-        updateEquipmentCounter();
-
-        // Cargar y mostrar las fotos existentes
-        if (reportData.photos && Object.keys(reportData.photos).length > 0) {
-            // Asegurarse de que photoTypes esté actualizado
-            updatePhotoTypes();
-            
-            // Si estamos en el paso 3, actualizar la vista de fotos
-            if (currentStep === 3) {
-                generatePhotoGrid();
-            }
-            
-            // Actualizar las previsualizaciones de fotos para cada categoría
-            setTimeout(() => {
-                Object.keys(reportData.photos).forEach(typeId => {
-                    if (reportData.photos[typeId] && reportData.photos[typeId].length > 0) {
-                        updatePhotoPreview(typeId);
+        // Cargar mediciones después de que se generen los campos dinámicos
+        setTimeout(() => {
+            if (reportData.measurements) {
+                const towerHeight = document.getElementById('towerHeight');
+                if (towerHeight) {
+                    towerHeight.value = reportData.measurements.towerHeight || '';
+                }
+                
+                const tallestPoint = document.getElementById('tallestPoint');
+                if (tallestPoint) {
+                    tallestPoint.value = reportData.measurements.tallestPoint || '';
+                }
+                
+                // Cargar tape drops dinámicos
+                const sectorsCount = parseInt(reportData.basic.sectorsCount || reportData.basic.SectorsCount) || 0;
+                for (let i = 1; i <= sectorsCount; i++) {
+                    const tapeDrop = document.getElementById(`sector${i}TapeDrop`);
+                    if (tapeDrop) {
+                        tapeDrop.value = reportData.measurements[`sector${i}TapeDrop`] || '';
                     }
-                });
-                updatePhotoCounts();
-            }, 1000);
+                }
+            }
+        }, 500);
+
+        // Actualizar lista de equipos
+        if (reportData.appurtenances && reportData.appurtenances.length > 0) {
+            updateAppurtenanceList();
         }
 
-        showNotification(`Reporte ${reportKey} cargado para edición`, 'success');
-
-        // Mostrar en el título que estamos editando
-        const headerTitle = document.querySelector('.header h1');
-        if (headerTitle) {
-            headerTitle.textContent = 'Tower Provider Report - EDITANDO';
+        // Cargar fotos si existen
+        if (reportData.photos && Object.keys(reportData.photos).length > 0) {
+            console.log('Loading photos:', Object.keys(reportData.photos).length);
+            
+            // Convertir fotos si vienen en formato diferente
+            Object.keys(reportData.photos).forEach(key => {
+                if (typeof reportData.photos[key] === 'string') {
+                    // Si es string, intentar parsearlo
+                    try {
+                        reportData.photos[key] = JSON.parse(reportData.photos[key]);
+                    } catch (e) {
+                        console.warn('Could not parse photo data for key:', key);
+                    }
+                }
+            });
+            
+            updatePhotoTypes();
+            updatePhotoCounts();
         }
-        
-        // Si es un reporte de SharePoint, marcar para actualización posterior
+
+        // Marcar si es un reporte de SharePoint
         const editSource = sessionStorage.getItem('editReportSource');
         if (editSource === 'sharepoint') {
             reportData.isSharePointReport = true;
             reportData.sharePointId = sessionStorage.getItem('sharePointReportId');
+            console.log('SharePoint report marked for update');
         }
+
+        // Actualizar el título
+        const headerTitle = document.querySelector('.header h1');
+        if (headerTitle) {
+            headerTitle.textContent = 'Tower Provider Report - EDITANDO';
+        }
+
+        showNotification(`Reporte ${reportKey} cargado para edición`, 'success');
+
+        // Limpiar sessionStorage después de usar
+        sessionStorage.removeItem('editReportData');
 
     } catch (error) {
         console.error('Error loading report for edit:', error);
-        showNotification('Error al cargar el reporte para edición', 'error');
+        showNotification('Error al cargar el reporte: ' + error.message, 'error');
     }
 }
-
 // Modificar la función showMainApp para detectar modo edición
 function showMainApp() {
     console.log('Showing main app for user:', currentAccount?.name);
     
-    // Asegurar que tenemos una cuenta válida
     if (!currentAccount) {
         console.error('No current account found');
         location.reload();
@@ -1492,7 +1543,6 @@ function showMainApp() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'block';
     
-    // Prevenir el botón de retroceso en móviles
     if (window.history && window.history.pushState) {
         window.history.pushState(null, null, window.location.href);
         window.onpopstate = function () {
@@ -1512,10 +1562,7 @@ function showMainApp() {
         // Modo edición
         const reportKeyToEdit = editReportKey || sessionEditKey;
         
-        // Limpiar sessionStorage
-        sessionStorage.removeItem('editReportKey');
-        
-        // Cargar el reporte para edición
+        // Cargar el reporte para edición después de un pequeño delay
         setTimeout(() => {
             loadReportForEdit(reportKeyToEdit);
         }, 500);
@@ -1525,13 +1572,10 @@ function showMainApp() {
     }
     
     updateStorageIndicator();
-    updateEquipmentCounter();
     optimizeStorage();
     
-    // Guardar estado de la aplicación
     sessionStorage.setItem('appState', 'mainApp');
 }
-
 // Función adicional para regenerar la vista de fotos cuando se navega al paso 3
 const originalShowStep = showStep;
 showStep = function(step) {
@@ -1892,57 +1936,60 @@ updatePhotoTypes(); // Actualizar tipos de fotos cuando cambian los equipos
 
 // Update equipment counter
 function updateEquipmentCounter() {
-const radios = parseInt(document.getElementById('radiosInstalled').value) || 0;
-const antennas = parseInt(document.getElementById('antennasInstalled').value) || 0;
-const cables = parseInt(document.getElementById('cablesInstalled').value) || 0;
-
-const counterDiv = document.getElementById('equipmentCounter');
-
-// Count equipment by type
-const radioCount = reportData.appurtenances.filter(app => app.type === 'Radio').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-const antennaCount = reportData.appurtenances.filter(app => app.type === 'Antenna').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-const cableCount = reportData.appurtenances.filter(app => app.type === 'Cable').reduce((sum, app) => sum + parseInt(app.quantity), 0);
-
-counterDiv.innerHTML = `
-<div class="counter-item ${radioCount >= radios ? 'complete' : 'incomplete'}">
-<span>Radios:</span>
-<span>${radioCount} / ${radios} ${radioCount >= radios ? '✓' : '⚠️'}</span>
-</div>
-<div class="counter-item ${antennaCount >= antennas ? 'complete' : 'incomplete'}">
-<span>Antenas:</span>
-<span>${antennaCount} / ${antennas} ${antennaCount >= antennas ? '✓' : '⚠️'}</span>
-</div>
-<div class="counter-item ${cableCount >= cables ? 'complete' : 'incomplete'}">
-<span>Cables:</span>
-<span>${cableCount} / ${cables} ${cableCount >= cables ? '✓' : '⚠️'}</span>
-</div>
-`;
-
-// Show requirements alert if needed
-const requirementsDiv = document.getElementById('equipmentRequirements');
-const requirementsList = document.getElementById('requirementsList');
-
-if (radios > 0 || antennas > 0 || cables > 0) {
-const requirements = [];
-if (radioCount < radios) {
-requirements.push(`Debe agregar ${radios - radioCount} radio(s) más`);
-}
-if (antennaCount < antennas) {
-requirements.push(`Debe agregar ${antennas - antennaCount} antena(s) más`);
-}
-if (cableCount < cables) {
-requirements.push(`Debe agregar ${cables - cableCount} cable(s) más`);
-}
-
-if (requirements.length > 0) {
-requirementsList.innerHTML = requirements.map(req => `<li>${req}</li>`).join('');
-requirementsDiv.style.display = 'block';
-} else {
-requirementsDiv.style.display = 'none';
-}
-} else {
-requirementsDiv.style.display = 'none';
-}
+    try {
+        const radios = parseInt(document.getElementById('radiosInstalled')?.value) || 0;
+        const antennas = parseInt(document.getElementById('antennasInstalled')?.value) || 0;
+        const cables = parseInt(document.getElementById('cablesInstalled')?.value) || 0;
+        
+        const counterDiv = document.getElementById('equipmentCounter');
+        if (!counterDiv) return;
+        
+        // Count equipment by type
+        const radioCount = reportData.appurtenances.filter(app => app.type === 'Radio').reduce((sum, app) => sum + parseInt(app.quantity || 0), 0);
+        const antennaCount = reportData.appurtenances.filter(app => app.type === 'Antenna').reduce((sum, app) => sum + parseInt(app.quantity || 0), 0);
+        const cableCount = reportData.appurtenances.filter(app => app.type === 'Cable').reduce((sum, app) => sum + parseInt(app.quantity || 0), 0);
+        
+        counterDiv.innerHTML = `
+            <div class="counter-item ${radioCount >= radios ? 'complete' : 'incomplete'}">
+                <span>Radios:</span>
+                <span>${radioCount} / ${radios} ${radioCount >= radios ? '✓' : '⚠️'}</span>
+            </div>
+            <div class="counter-item ${antennaCount >= antennas ? 'complete' : 'incomplete'}">
+                <span>Antenas:</span>
+                <span>${antennaCount} / ${antennas} ${antennaCount >= antennas ? '✓' : '⚠️'}</span>
+            </div>
+            <div class="counter-item ${cableCount >= cables ? 'complete' : 'incomplete'}">
+                <span>Cables:</span>
+                <span>${cableCount} / ${cables} ${cableCount >= cables ? '✓' : '⚠️'}</span>
+            </div>
+        `;
+        
+        // Update requirements alert
+        const requirementsDiv = document.getElementById('equipmentRequirements');
+        const requirementsList = document.getElementById('requirementsList');
+        
+        if (requirementsDiv && requirementsList) {
+            const requirements = [];
+            if (radioCount < radios) {
+                requirements.push(`Debe agregar ${radios - radioCount} radio(s) más`);
+            }
+            if (antennaCount < antennas) {
+                requirements.push(`Debe agregar ${antennas - antennaCount} antena(s) más`);
+            }
+            if (cableCount < cables) {
+                requirements.push(`Debe agregar ${cables - cableCount} cable(s) más`);
+            }
+            
+            if (requirements.length > 0) {
+                requirementsList.innerHTML = requirements.map(req => `<li>${req}</li>`).join('');
+                requirementsDiv.style.display = 'block';
+            } else {
+                requirementsDiv.style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Error updating equipment counter:', error);
+    }
 }
 
 // Función para actualizar los requisitos de medición según Tower Top Installation
