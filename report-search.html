@@ -672,6 +672,30 @@
                 const items = await itemsResponse.json();
 
                 sharePointReports = items.value.map(item => ({
+                     console.log('=== ITEM CRUDO DE SHAREPOINT ===');
+    console.log('ID:', item.id);
+    console.log('Fields completos:', item.fields);
+    console.log('SectorsCount:', item.fields.SectorsCount);
+    console.log('CablesInstalled:', item.fields.CablesInstalled);
+    console.log('AppurtenanceData:', item.fields.AppurtenanceData);
+    
+    // Si AppurtenanceData es string, intentar parsearlo
+    if (item.fields.AppurtenanceData) {
+        try {
+            const appData = JSON.parse(item.fields.AppurtenanceData);
+            console.log('AppurtenanceData parseado:', appData);
+        } catch (e) {
+            console.log('Error parseando AppurtenanceData');
+        }
+    }
+    console.log('=== FIN ITEM ===');
+    
+    // El resto del código de mapeo continúa aquí...
+    return {
+        key: item.fields.ReportID || `SP-${item.id}`,
+        // etc...
+    };
+});
                     key: item.fields.ReportID || `SP-${item.id}`,
                     sharePointId: item.id,
                     sharePointETag: item.eTag,
