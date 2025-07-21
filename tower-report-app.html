@@ -1361,6 +1361,8 @@ await msalInstance.initialize();
 
 // Reemplazar la función loadReportForEdit en tower-report-app.html con esta versión actualizada
 
+// Reemplazar la función loadReportForEdit con esta versión mejorada
+
 function loadReportForEdit(reportKey) {
     try {
         console.log('Loading report for edit:', reportKey);
@@ -1386,100 +1388,178 @@ function loadReportForEdit(reportKey) {
             return;
         }
 
-        // Asegurarse de que reportData tenga la estructura correcta
+        console.log('Raw report data:', reportToLoad);
+
+        // Normalizar la estructura de datos para manejar tanto formato local como SharePoint
         reportData = {
-            basic: reportToLoad.basic || {},
-            gps: reportToLoad.gps || {},
-            appurtenances: reportToLoad.appurtenances || [],
-            photos: reportToLoad.photos || {},
-            measurements: reportToLoad.measurements || {},
-            metadata: reportToLoad.metadata || {
+            basic: {},
+            gps: {},
+            appurtenances: [],
+            photos: {},
+            measurements: {},
+            metadata: {
                 appVersion: '9.20',
                 deviceInfo: navigator.userAgent,
-                createdAt: new Date().toISOString(),
-                submittedBy: currentAccount?.name || 'Unknown User',
-                submittedByEmail: currentAccount?.username || 'unknown@email.com'
+                createdAt: new Date().toISOString()
             }
         };
 
-        console.log('Report data loaded:', reportData);
-
-        // Rellenar todos los campos del formulario
-        if (reportData.basic) {
-            // Campos básicos - verificar que existan antes de asignar
-            const fields = {
-                'siteId': reportData.basic.siteId || reportData.basic.TowerProviderSiteID || '',
-                'siteName': reportData.basic.siteName || reportData.basic.TowerProviderSiteName || '',
-                'customerSiteId': reportData.basic.customerSiteId || reportData.basic.CustomerSiteID || '',
-                'customerSiteName': reportData.basic.customerSiteName || reportData.basic.CustomerSiteName || '',
-                'sectorsCount': reportData.basic.sectorsCount || reportData.basic.SectorsCount || '',
-                'radiosInstalled': reportData.basic.radiosInstalled || reportData.basic.RadiosInstalled || '',
-                'antennasInstalled': reportData.basic.antennasInstalled || reportData.basic.AntennasInstalled || '',
-                'cablesInstalled': reportData.basic.cablesInstalled || reportData.basic.CablesInstalled || '',
-                'teamLeader': reportData.basic.teamLeader || reportData.basic.TeamLeader || '',
-                'towerTop': reportData.basic.towerTop || (reportData.basic.TowerTopInstallation ? 'yes' : 'no') || '',
-                'completionDate': reportData.basic.completionDate || reportData.basic.CompletionDate || ''
+        // Mapear datos básicos - manejar ambos formatos
+        if (reportToLoad.basic) {
+            // Formato local
+            reportData.basic = reportToLoad.basic;
+        } else {
+            // Formato SharePoint - mapear campos individuales
+            reportData.basic = {
+                siteId: reportToLoad.TowerProviderSiteID || reportToLoad.siteId || '',
+                siteName: reportToLoad.TowerProviderSiteName || reportToLoad.siteName || '',
+                customerSiteId: reportToLoad.CustomerSiteID || reportToLoad.customerSiteId || '',
+                customerSiteName: reportToLoad.CustomerSiteName || reportToLoad.customerSiteName || '',
+                sectorsCount: reportToLoad.SectorsCount || reportToLoad.sectorsCount || '',
+                radiosInstalled: reportToLoad.RadiosInstalled || reportToLoad.radiosInstalled || '',
+                antennasInstalled: reportToLoad.AntennasInstalled || reportToLoad.antennasInstalled || '',
+                cablesInstalled: reportToLoad.CablesInstalled || reportToLoad.cablesInstalled || '',
+                teamLeader: reportToLoad.TeamLeader || reportToLoad.teamLeader || '',
+                towerTop: reportToLoad.towerTop || (reportToLoad.TowerTopInstallation ? 'yes' : 'no') || 'no',
+                completionDate: reportToLoad.CompletionDate || reportToLoad.completionDate || '',
+                submittedBy: reportToLoad.SubmittedBy || reportToLoad.submittedBy || currentAccount?.name || '',
+                submittedByEmail: reportToLoad.SubmittedByEmail || reportToLoad.submittedByEmail || currentAccount?.username || ''
             };
+        }
 
-            // Asignar valores a los campos
-            Object.keys(fields).forEach(fieldId => {
-                const element = document.getElementById(fieldId);
+        // Mapear GPS
+        if (reportToLoad.gps) {
+            reportData.gps = reportToLoad.gps;
+        } else {
+            reportData.gps = {
+                latitude: parseFloat(reportToLoad.Latitude || reportToLoad.latitude) || 0,
+                longitude: parseFloat(reportToLoad.Longitude || reportToLoad.longitude) || 0,
+                altitude: 0,
+                accuracy: 0,
+                manual: false
+            };
+        }
+
+        // Mapear appurtenances
+        if (reportToLoad.appurtenances) {
+            reportData.appurtenances = reportToLoad.appurtenances;
+        } else if (reportToLoad.AppurtenanceData) {
+            // Si viene de SharePoint, puede estar en formato JSON string
+            try {
+                const appData = typeof reportToLoad.AppurtenanceData === 'string' 
+                    ? JSON.parse(reportToLoad.AppurtenanceData) 
+                    : reportToLoad.AppurtenanceData;
+                reportData.appurtenances = appData.appurtenances || [];
+                reportData.measurements = appData.measurements || {};
+            } catch (e) {
+                console.error('Error parsing AppurtenanceData:', e);
+            }
+        }
+
+        // Mapear measurements
+        if (reportToLoad.measurements) {
+            reportData.measurements = reportToLoad.measurements;
+        }
+
+        // Mapear photos
+        if (reportToLoad.photos) {
+            reportData.photos = reportToLoad.photos;
+        } else if (reportToLoad.PhotoLinks) {
+            try {
+                reportData.photos = typeof reportToLoad.PhotoLinks === 'string' 
+                    ? JSON.parse(reportToLoad.PhotoLinks) 
+                    : reportToLoad.PhotoLinks;
+            } catch (e) {
+                console.error('Error parsing PhotoLinks:', e);
+            }
+        }
+
+        // Mapear metadata
+        if (reportToLoad.metadata) {
+            reportData.metadata = { ...reportData.metadata, ...reportToLoad.metadata };
+        }
+
+        console.log('Normalized report data:', reportData);
+
+        // Ahora rellenar los campos del formulario
+        if (reportData.basic) {
+            // Lista de campos y sus IDs
+            const fieldMappings = [
+                { id: 'siteId', value: reportData.basic.siteId },
+                { id: 'siteName', value: reportData.basic.siteName },
+                { id: 'customerSiteId', value: reportData.basic.customerSiteId },
+                { id: 'customerSiteName', value: reportData.basic.customerSiteName },
+                { id: 'sectorsCount', value: reportData.basic.sectorsCount },
+                { id: 'radiosInstalled', value: reportData.basic.radiosInstalled },
+                { id: 'antennasInstalled', value: reportData.basic.antennasInstalled },
+                { id: 'cablesInstalled', value: reportData.basic.cablesInstalled },
+                { id: 'teamLeader', value: reportData.basic.teamLeader },
+                { id: 'towerTop', value: reportData.basic.towerTop },
+                { id: 'completionDate', value: reportData.basic.completionDate }
+            ];
+
+            // Asignar valores a cada campo
+            fieldMappings.forEach(({ id, value }) => {
+                const element = document.getElementById(id);
                 if (element) {
-                    element.value = fields[fieldId];
-                    console.log(`Setting ${fieldId}:`, fields[fieldId]);
+                    element.value = value || '';
+                    console.log(`Set ${id} to:`, value);
                 } else {
-                    console.warn(`Element not found: ${fieldId}`);
+                    console.warn(`Element not found: ${id}`);
                 }
             });
 
-            // Actualizar requisitos después de establecer los valores
+            // Esperar un momento y luego actualizar los elementos dinámicos
             setTimeout(() => {
-                if (fields.sectorsCount) {
+                // Actualizar requisitos basados en los valores cargados
+                if (reportData.basic.sectorsCount) {
                     updateSectorRequirements();
+                    
+                    // Después de crear los campos dinámicos, cargar los tape drops
+                    setTimeout(() => {
+                        const sectorsCount = parseInt(reportData.basic.sectorsCount) || 0;
+                        for (let i = 1; i <= sectorsCount; i++) {
+                            const tapeDrop = document.getElementById(`sector${i}TapeDrop`);
+                            if (tapeDrop && reportData.measurements[`sector${i}TapeDrop`]) {
+                                tapeDrop.value = reportData.measurements[`sector${i}TapeDrop`];
+                                console.log(`Set sector${i}TapeDrop to:`, reportData.measurements[`sector${i}TapeDrop`]);
+                            }
+                        }
+                    }, 300);
                 }
-                if (fields.towerTop) {
+                
+                if (reportData.basic.towerTop) {
                     updateMeasurementRequirements();
+                    
+                    // Cargar mediciones de torre
+                    setTimeout(() => {
+                        if (reportData.measurements.towerHeight) {
+                            const towerHeight = document.getElementById('towerHeight');
+                            if (towerHeight) {
+                                towerHeight.value = reportData.measurements.towerHeight;
+                                console.log('Set towerHeight to:', reportData.measurements.towerHeight);
+                            }
+                        }
+                        
+                        if (reportData.measurements.tallestPoint) {
+                            const tallestPoint = document.getElementById('tallestPoint');
+                            if (tallestPoint) {
+                                tallestPoint.value = reportData.measurements.tallestPoint;
+                                console.log('Set tallestPoint to:', reportData.measurements.tallestPoint);
+                            }
+                        }
+                    }, 300);
                 }
+                
                 updateEquipmentRequirements();
                 updateEquipmentCounter();
-            }, 100);
+            }, 200);
         }
 
         // Cargar GPS
         if (reportData.gps && reportData.gps.latitude) {
-            reportData.gps = {
-                latitude: parseFloat(reportData.gps.latitude) || 0,
-                longitude: parseFloat(reportData.gps.longitude) || 0,
-                altitude: reportData.gps.altitude || 0,
-                accuracy: reportData.gps.accuracy || 0,
-                manual: reportData.gps.manual || false
-            };
             showGPSStatus(true);
         }
-
-        // Cargar mediciones después de que se generen los campos dinámicos
-        setTimeout(() => {
-            if (reportData.measurements) {
-                const towerHeight = document.getElementById('towerHeight');
-                if (towerHeight) {
-                    towerHeight.value = reportData.measurements.towerHeight || '';
-                }
-                
-                const tallestPoint = document.getElementById('tallestPoint');
-                if (tallestPoint) {
-                    tallestPoint.value = reportData.measurements.tallestPoint || '';
-                }
-                
-                // Cargar tape drops dinámicos
-                const sectorsCount = parseInt(reportData.basic.sectorsCount || reportData.basic.SectorsCount) || 0;
-                for (let i = 1; i <= sectorsCount; i++) {
-                    const tapeDrop = document.getElementById(`sector${i}TapeDrop`);
-                    if (tapeDrop) {
-                        tapeDrop.value = reportData.measurements[`sector${i}TapeDrop`] || '';
-                    }
-                }
-            }
-        }, 500);
 
         // Actualizar lista de equipos
         if (reportData.appurtenances && reportData.appurtenances.length > 0) {
@@ -1488,22 +1568,21 @@ function loadReportForEdit(reportKey) {
 
         // Cargar fotos si existen
         if (reportData.photos && Object.keys(reportData.photos).length > 0) {
-            console.log('Loading photos:', Object.keys(reportData.photos).length);
-            
-            // Convertir fotos si vienen en formato diferente
-            Object.keys(reportData.photos).forEach(key => {
-                if (typeof reportData.photos[key] === 'string') {
-                    // Si es string, intentar parsearlo
-                    try {
-                        reportData.photos[key] = JSON.parse(reportData.photos[key]);
-                    } catch (e) {
-                        console.warn('Could not parse photo data for key:', key);
-                    }
-                }
-            });
-            
+            console.log('Loading photos:', Object.keys(reportData.photos));
             updatePhotoTypes();
             updatePhotoCounts();
+            
+            // Si estamos en el paso 3, regenerar la grilla
+            if (currentStep === 3) {
+                generatePhotoGrid();
+                setTimeout(() => {
+                    Object.keys(reportData.photos).forEach(typeId => {
+                        if (reportData.photos[typeId] && reportData.photos[typeId].length > 0) {
+                            updatePhotoPreview(typeId);
+                        }
+                    });
+                }, 500);
+            }
         }
 
         // Marcar si es un reporte de SharePoint
@@ -1524,11 +1603,24 @@ function loadReportForEdit(reportKey) {
 
         // Limpiar sessionStorage después de usar
         sessionStorage.removeItem('editReportData');
+        
+        // Guardar datos actualizados
+        saveCurrentStep();
 
     } catch (error) {
         console.error('Error loading report for edit:', error);
         showNotification('Error al cargar el reporte: ' + error.message, 'error');
     }
+}
+
+// También agregar esta función para debug
+function debugReportData() {
+    console.log('Current reportData:', reportData);
+    console.log('Basic:', reportData.basic);
+    console.log('Measurements:', reportData.measurements);
+    console.log('GPS:', reportData.gps);
+    console.log('Photos:', reportData.photos);
+    console.log('Appurtenances:', reportData.appurtenances);
 }
 // Modificar la función showMainApp para detectar modo edición
 function showMainApp() {
