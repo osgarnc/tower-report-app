@@ -594,137 +594,134 @@
         }
 
         // Get SharePoint site ID
-async function searchSharePointReports() {
-    const container = document.getElementById('reportsContainer');
-    container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Buscando en SharePoint...</p></div>';
-    
-    try {
-        const tokenResponse = await msalInstance.acquireTokenSilent({
-            scopes: ['Sites.Read.All', 'Sites.ReadWrite.All'],
-            account: currentAccount
-        });
+        async function getSharePointSiteId() {
+            try {
+                const tokenResponse = await msalInstance.acquireTokenSilent({
+                    scopes: ['Sites.Read.All'],
+                    account: currentAccount
+                });
 
-        const siteId = await getSharePointSiteId();
-
-        const listsResponse = await fetch(
-            `https://graph.microsoft.com/v1.0/sites/${siteId}/lists?$filter=displayName eq '${SHAREPOINT_CONFIG.listName}'`,
-            {
-                headers: {
-                    'Authorization': `Bearer ${tokenResponse.accessToken}`
-                }
-            }
-        );
-
-        if (!listsResponse.ok) {
-            throw new Error(`Error getting lists: ${listsResponse.status}`);
-        }
-
-        const lists = await listsResponse.json();
-        
-        if (!lists.value || lists.value.length === 0) {
-            throw new Error('Lista TowerProviderReports no encontrada');
-        }
-
-        const listId = lists.value[0].id;
-
-        const itemsResponse = await fetch(
-            `https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=999`,
-            {
-                headers: {
-                    'Authorization': `Bearer ${tokenResponse.accessToken}`
-                }
-            }
-        );
-
-        if (!itemsResponse.ok) {
-            throw new Error(`Error getting items: ${itemsResponse.status}`);
-        }
-
-        const items = await itemsResponse.json();
-
-        sharePointReports = items.value.map(item => {
-            // LOGGING DE DEBUG
-            console.log('=== ITEM CRUDO DE SHAREPOINT ===');
-            console.log('ID:', item.id);
-            console.log('Fields completos:', item.fields);
-            console.log('SectorsCount:', item.fields.SectorsCount);
-            console.log('CablesInstalled:', item.fields.CablesInstalled);
-            console.log('RadiosInstalled:', item.fields.RadiosInstalled);
-            console.log('AntennasInstalled:', item.fields.AntennasInstalled);
-            console.log('AppurtenanceData:', item.fields.AppurtenanceData);
-            
-            // Si AppurtenanceData es string, intentar parsearlo
-            let parsedAppData = null;
-            if (item.fields.AppurtenanceData) {
-                try {
-                    parsedAppData = typeof item.fields.AppurtenanceData === 'string'
-                        ? JSON.parse(item.fields.AppurtenanceData)
-                        : item.fields.AppurtenanceData;
-                    console.log('AppurtenanceData parseado:', parsedAppData);
-                } catch (e) {
-                    console.error('Error parseando AppurtenanceData:', e);
-                }
-            }
-            console.log('=== FIN ITEM ===');
-            
-            // MAPEO CORREGIDO
-            return {
-                key: item.fields.ReportID || `SP-${item.id}`,
-                sharePointId: item.id,
-                sharePointETag: item.eTag,
-                data: {
-                    basic: {
-                        siteId: item.fields.TowerProviderSiteID || '',
-                        siteName: item.fields.TowerProviderSiteName || '',
-                        customerSiteId: item.fields.CustomerSiteID || '',
-                        customerSiteName: item.fields.CustomerSiteName || '',
-                        teamLeader: item.fields.TeamLeader || '',
-                        completionDate: item.fields.CompletionDate || '',
-                        // IMPORTANTE: Usar los valores correctos de SharePoint
-                        radiosInstalled: item.fields.RadiosInstalled || 0,
-                        antennasInstalled: item.fields.AntennasInstalled || 0,
-                        cablesInstalled: item.fields.CablesInstalled || 0,
-                        sectorsCount: item.fields.SectorsCount || 0,
-                        towerTop: item.fields.TowerTopInstallation ? 'yes' : 'no',
-                        submittedBy: item.fields.SubmittedBy || '',
-                        submittedByEmail: item.fields.SubmittedByEmail || '',
-                        uniqueReportId: item.fields.ReportID || ''
-                    },
-                    metadata: {
-                        createdAt: item.fields.SubmissionTimestamp || item.createdDateTime,
-                        submittedBy: item.fields.SubmittedBy || '',
-                        submittedByEmail: item.fields.SubmittedByEmail || ''
-                    },
-                    gps: {
-                        latitude: parseFloat(item.fields.Latitude) || 0,
-                        longitude: parseFloat(item.fields.Longitude) || 0
-                    },
-                    appurtenances: parsedAppData?.appurtenances || [],
-                    photos: tryParseJSON(item.fields.PhotoLinks) || {},
-                    measurements: parsedAppData?.measurements || {},
-                    sharePointData: {
-                        reportStatus: item.fields.ReportStatus || '',
-                        tenant: item.fields.TPTenant || '',
-                        appurtenanceDataRaw: item.fields.AppurtenanceData || '',
-                        photoLinksRaw: item.fields.PhotoLinks || ''
+                const response = await fetch(
+                    `https://graph.microsoft.com/v1.0/sites/${SHAREPOINT_CONFIG.siteUrl}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${tokenResponse.accessToken}`
+                        }
                     }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`Error getting site: ${response.status}`);
                 }
-            };
-        });
 
-        console.log(`Encontrados ${sharePointReports.length} reportes en SharePoint`);
-        console.log('Primer reporte mapeado:', sharePointReports[0]);
-        
-        showNotification(`${sharePointReports.length} reportes encontrados en SharePoint`, 'success');
-        
-        return sharePointReports;
+                const site = await response.json();
+                return site.id;
+            } catch (error) {
+                console.error('Error getting SharePoint site ID:', error);
+                throw error;
+            }
+        }
 
-    } catch (error) {
-        console.error('Error searching SharePoint:', error);
-        showNotification('Error al buscar en SharePoint: ' + error.message, 'error');
-        return [];
-    }
-}
+        // Search SharePoint reports
+        async function searchSharePointReports() {
+            const container = document.getElementById('reportsContainer');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Buscando en SharePoint...</p></div>';
+            
+            try {
+                const tokenResponse = await msalInstance.acquireTokenSilent({
+                    scopes: ['Sites.Read.All', 'Sites.ReadWrite.All'],
+                    account: currentAccount
+                });
+
+                const siteId = await getSharePointSiteId();
+
+                const listsResponse = await fetch(
+                    `https://graph.microsoft.com/v1.0/sites/${siteId}/lists?$filter=displayName eq '${SHAREPOINT_CONFIG.listName}'`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${tokenResponse.accessToken}`
+                        }
+                    }
+                );
+
+                if (!listsResponse.ok) {
+                    throw new Error(`Error getting lists: ${listsResponse.status}`);
+                }
+
+                const lists = await listsResponse.json();
+                
+                if (!lists.value || lists.value.length === 0) {
+                    throw new Error('Lista TowerProviderReports no encontrada');
+                }
+
+                const listId = lists.value[0].id;
+
+                const itemsResponse = await fetch(
+                    `https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=999`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${tokenResponse.accessToken}`
+                        }
+                    }
+                );
+
+                if (!itemsResponse.ok) {
+                    throw new Error(`Error getting items: ${itemsResponse.status}`);
+                }
+
+                const items = await itemsResponse.json();
+
+                sharePointReports = items.value.map(item => ({
+                    key: item.fields.ReportID || `SP-${item.id}`,
+                    sharePointId: item.id,
+                    sharePointETag: item.eTag,
+                    data: {
+                        basic: {
+                            siteId: item.fields.TowerProviderSiteID || '',
+                            siteName: item.fields.TowerProviderSiteName || '',
+                            customerSiteId: item.fields.CustomerSiteID || '',
+                            customerSiteName: item.fields.CustomerSiteName || '',
+                            teamLeader: item.fields.TeamLeader || '',
+                            completionDate: item.fields.CompletionDate || '',
+                            radiosInstalled: item.fields.RadiosInstalled || 0,
+                            antennasInstalled: item.fields.AntennasInstalled || 0,
+                            cablesInstalled: item.fields.CablesInstalled || 0,
+                            sectorsCount: item.fields.SectorsCount || 0,
+                            towerTop: item.fields.TowerTopInstallation ? 'yes' : 'no',
+                            submittedBy: item.fields.SubmittedBy || '',
+                            submittedByEmail: item.fields.SubmittedByEmail || '',
+                            uniqueReportId: item.fields.ReportID || ''
+                        },
+                        metadata: {
+                            createdAt: item.fields.SubmissionTimestamp || item.createdDateTime,
+                            submittedBy: item.fields.SubmittedBy || '',
+                            submittedByEmail: item.fields.SubmittedByEmail || ''
+                        },
+                        gps: {
+                            latitude: parseFloat(item.fields.Latitude) || 0,
+                            longitude: parseFloat(item.fields.Longitude) || 0
+                        },
+                        appurtenances: tryParseJSON(item.fields.AppurtenanceData)?.appurtenances || [],
+                        photos: tryParseJSON(item.fields.PhotoLinks) || {},
+                        measurements: tryParseJSON(item.fields.AppurtenanceData)?.measurements || {},
+                        sharePointData: {
+                            reportStatus: item.fields.ReportStatus || '',
+                            tenant: item.fields.TPTenant || ''
+                        }
+                    }
+                }));
+
+                console.log(`Encontrados ${sharePointReports.length} reportes en SharePoint`);
+                showNotification(`${sharePointReports.length} reportes encontrados en SharePoint`, 'success');
+                
+                return sharePointReports;
+
+            } catch (error) {
+                console.error('Error searching SharePoint:', error);
+                showNotification('Error al buscar en SharePoint: ' + error.message, 'error');
+                return [];
+            }
+        }
 
         // Parse JSON safely
         function tryParseJSON(jsonString) {
