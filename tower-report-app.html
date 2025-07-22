@@ -1359,7 +1359,7 @@ try {
 // Esperar a que MSAL esté completamente inicializado
 await msalInstance.initialize();
 
-// Reemplazar la función loadReportForEdit con esta versión mejorada
+// Función loadReportForEdit corregida
 function loadReportForEdit(reportKey) {
     try {
         console.log('Loading report for edit:', reportKey);
@@ -1387,7 +1387,7 @@ function loadReportForEdit(reportKey) {
         
         console.log('Raw report data:', reportToLoad);
         
-        // Inicializar reportData con estructura vacía
+        // Inicializar reportData con estructura completa
         reportData = {
             basic: {},
             gps: {},
@@ -1395,18 +1395,19 @@ function loadReportForEdit(reportKey) {
             photos: {},
             measurements: {},
             metadata: {
-                appVersion: '9.31',
+                appVersion: '9.30',
                 deviceInfo: navigator.userAgent,
                 createdAt: new Date().toISOString(),
-                submittedBy: currentAccount?.name || 'Unknown User',
-                submittedByEmail: currentAccount?.username || 'unknown@email.com'
+                submittedBy: currentAccount?.name || reportData.metadata?.submittedBy || 'Unknown User',
+                submittedByEmail: currentAccount?.username || reportData.metadata?.submittedByEmail || 'unknown@email.com'
             }
         };
         
-        // Determinar si es un reporte de SharePoint basado en la estructura
+        // Detectar formato basándose en la estructura del objeto
         const isSharePointFormat = reportToLoad.hasOwnProperty('TowerProviderSiteID') || 
                                   reportToLoad.hasOwnProperty('RadiosInstalled') ||
-                                  reportToLoad.hasOwnProperty('TeamLeader');
+                                  reportToLoad.hasOwnProperty('TeamLeader') ||
+                                  reportToLoad.hasOwnProperty('ReportID');
         
         if (isSharePointFormat) {
             console.log('Processing SharePoint format');
@@ -1417,10 +1418,10 @@ function loadReportForEdit(reportKey) {
                 siteName: reportToLoad.TowerProviderSiteName || '',
                 customerSiteId: reportToLoad.CustomerSiteID || '',
                 customerSiteName: reportToLoad.CustomerSiteName || '',
-                sectorsCount: String(reportToLoad.SectorsCount || ''),
-                radiosInstalled: String(reportToLoad.RadiosInstalled || ''),
-                antennasInstalled: String(reportToLoad.AntennasInstalled || ''),
-                cablesInstalled: String(reportToLoad.CablesInstalled || ''),
+                sectorsCount: String(reportToLoad.SectorsCount || '0'),
+                radiosInstalled: String(reportToLoad.RadiosInstalled || '0'),
+                antennasInstalled: String(reportToLoad.AntennasInstalled || '0'),
+                cablesInstalled: String(reportToLoad.CablesInstalled || '0'),
                 teamLeader: reportToLoad.TeamLeader || '',
                 towerTop: reportToLoad.TowerTopInstallationDetails || (reportToLoad.TowerTopInstallation ? 'yes' : 'no'),
                 completionDate: reportToLoad.CompletionDate || '',
@@ -1439,7 +1440,7 @@ function loadReportForEdit(reportKey) {
                 manual: false
             };
             
-            // Mapear appurtenances y measurements desde AppurtenanceData
+            // Procesar AppurtenanceData
             if (reportToLoad.AppurtenanceData) {
                 try {
                     const appData = typeof reportToLoad.AppurtenanceData === 'string' 
@@ -1449,7 +1450,6 @@ function loadReportForEdit(reportKey) {
                     reportData.appurtenances = appData.appurtenances || [];
                     reportData.measurements = appData.measurements || {};
                     
-                    // Si GPS está en appData, actualizar
                     if (appData.gpsDetails) {
                         reportData.gps = {
                             ...reportData.gps,
@@ -1461,19 +1461,15 @@ function loadReportForEdit(reportKey) {
                 }
             }
             
-            // Mapear photos desde PhotoLinks
+            // Procesar PhotoLinks
             if (reportToLoad.PhotoLinks) {
                 try {
                     const photoData = typeof reportToLoad.PhotoLinks === 'string' 
                         ? JSON.parse(reportToLoad.PhotoLinks) 
                         : reportToLoad.PhotoLinks;
                     
-                    // Si photoData tiene la estructura photoData, usar eso
                     if (photoData.photoData) {
                         reportData.photos = photoData.photoData;
-                    } else {
-                        // Intentar reconstruir desde las fotos individuales
-                        reportData.photos = {};
                     }
                 } catch (e) {
                     console.error('Error parsing PhotoLinks:', e);
@@ -1483,9 +1479,14 @@ function loadReportForEdit(reportKey) {
         } else {
             console.log('Processing local format');
             
-            // Es formato local, copiar directamente
+            // Copiar datos del formato local
             if (reportToLoad.basic) {
                 reportData.basic = { ...reportToLoad.basic };
+                // Asegurar que los números sean strings
+                reportData.basic.sectorsCount = String(reportData.basic.sectorsCount || '0');
+                reportData.basic.radiosInstalled = String(reportData.basic.radiosInstalled || '0');
+                reportData.basic.antennasInstalled = String(reportData.basic.antennasInstalled || '0');
+                reportData.basic.cablesInstalled = String(reportData.basic.cablesInstalled || '0');
             }
             
             if (reportToLoad.gps) {
@@ -1511,9 +1512,8 @@ function loadReportForEdit(reportKey) {
         
         console.log('Normalized report data:', reportData);
         
-        // Ahora rellenar los campos del formulario
+        // Rellenar los campos del formulario
         if (reportData.basic) {
-            // Lista de campos y sus IDs
             const fieldMappings = [
                 { id: 'siteId', value: reportData.basic.siteId },
                 { id: 'siteName', value: reportData.basic.siteName },
@@ -1528,7 +1528,7 @@ function loadReportForEdit(reportKey) {
                 { id: 'completionDate', value: reportData.basic.completionDate }
             ];
             
-            // Asignar valores a cada campo
+            // Asignar valores a los campos
             fieldMappings.forEach(({ id, value }) => {
                 const element = document.getElementById(id);
                 if (element) {
@@ -1539,36 +1539,35 @@ function loadReportForEdit(reportKey) {
                 }
             });
             
-            // Esperar un momento y luego actualizar los elementos dinámicos
+            // Actualizar elementos dinámicos después de un delay
             setTimeout(() => {
-                // Actualizar requisitos basados en los valores cargados
-                if (reportData.basic.sectorsCount) {
+                // Actualizar sectores si hay valor
+                if (reportData.basic.sectorsCount && reportData.basic.sectorsCount !== '0') {
                     updateSectorRequirements();
-                    updatePhotoTypes(); // Importante: actualizar tipos de fotos
+                    updatePhotoTypes();
                     
-                    // Después de crear los campos dinámicos, cargar los tape drops
+                    // Cargar tape drops después de crear los campos
                     setTimeout(() => {
                         const sectorsCount = parseInt(reportData.basic.sectorsCount) || 0;
                         for (let i = 1; i <= sectorsCount; i++) {
                             const tapeDrop = document.getElementById(`sector${i}TapeDrop`);
                             if (tapeDrop && reportData.measurements[`sector${i}TapeDrop`]) {
                                 tapeDrop.value = reportData.measurements[`sector${i}TapeDrop`];
-                                console.log(`Set sector${i}TapeDrop to:`, reportData.measurements[`sector${i}TapeDrop`]);
                             }
                         }
                     }, 300);
                 }
                 
+                // Actualizar requisitos de medición
                 if (reportData.basic.towerTop) {
                     updateMeasurementRequirements();
                     
-                    // Cargar mediciones de torre
+                    // Cargar mediciones
                     setTimeout(() => {
                         if (reportData.measurements.towerHeight) {
                             const towerHeight = document.getElementById('towerHeight');
                             if (towerHeight) {
                                 towerHeight.value = reportData.measurements.towerHeight;
-                                console.log('Set towerHeight to:', reportData.measurements.towerHeight);
                             }
                         }
                         
@@ -1576,7 +1575,6 @@ function loadReportForEdit(reportKey) {
                             const tallestPoint = document.getElementById('tallestPoint');
                             if (tallestPoint) {
                                 tallestPoint.value = reportData.measurements.tallestPoint;
-                                console.log('Set tallestPoint to:', reportData.measurements.tallestPoint);
                             }
                         }
                     }, 300);
@@ -1587,48 +1585,45 @@ function loadReportForEdit(reportKey) {
             }, 200);
         }
         
-        // Cargar GPS
+        // Mostrar GPS si existe
         if (reportData.gps && reportData.gps.latitude && reportData.gps.latitude !== 0) {
-            showGPSStatus(true);
+            // Usar setTimeout para asegurar que showGPSStatus esté disponible
+            setTimeout(() => {
+                showGPSStatus(true);
+            }, 500);
         }
         
         // Actualizar lista de equipos
         if (reportData.appurtenances && reportData.appurtenances.length > 0) {
             updateAppurtenanceList();
-            updateEquipmentCounter();
         }
         
-        // Cargar fotos si existen
+        // Cargar fotos
         if (reportData.photos && Object.keys(reportData.photos).length > 0) {
             console.log('Loading photos:', Object.keys(reportData.photos));
+            updatePhotoCounts();
             
-            // Asegurarse de que los tipos de fotos estén actualizados antes de mostrar
-            setTimeout(() => {
-                updatePhotoCounts();
-                
-                // Si estamos en el paso 3, regenerar la grilla
-                if (currentStep === 3) {
-                    generatePhotoGrid();
-                    setTimeout(() => {
-                        Object.keys(reportData.photos).forEach(typeId => {
-                            if (reportData.photos[typeId] && reportData.photos[typeId].length > 0) {
-                                updatePhotoPreview(typeId);
-                            }
-                        });
-                    }, 500);
-                }
-            }, 600);
+            // Si estamos en el paso 3, regenerar la grilla
+            if (currentStep === 3) {
+                generatePhotoGrid();
+                setTimeout(() => {
+                    Object.keys(reportData.photos).forEach(typeId => {
+                        if (reportData.photos[typeId] && reportData.photos[typeId].length > 0) {
+                            updatePhotoPreview(typeId);
+                        }
+                    });
+                }, 500);
+            }
         }
         
         // Marcar si es un reporte de SharePoint
         const editSource = sessionStorage.getItem('editReportSource');
-        if (editSource === 'sharepoint' || isSharePointFormat) {
+        if (editSource === 'sharepoint') {
             reportData.isSharePointReport = true;
-            reportData.sharePointId = sessionStorage.getItem('sharePointReportId') || reportToLoad.sharePointId;
-            console.log('SharePoint report marked for update');
+            reportData.sharePointId = sessionStorage.getItem('sharePointReportId');
         }
         
-        // Actualizar el título
+        // Actualizar título
         const headerTitle = document.querySelector('.header h1');
         if (headerTitle) {
             headerTitle.textContent = 'Tower Provider Report - EDITANDO';
@@ -1636,11 +1631,10 @@ function loadReportForEdit(reportKey) {
         
         showNotification(`Reporte ${reportKey} cargado para edición`, 'success');
         
-        // Limpiar sessionStorage después de usar
+        // Limpiar sessionStorage
         sessionStorage.removeItem('editReportData');
-        sessionStorage.removeItem('editReportKey');
         
-        // Guardar datos actualizados
+        // Guardar datos
         saveCurrentStep();
         
     } catch (error) {
@@ -1705,35 +1699,22 @@ function showMainApp() {
     sessionStorage.setItem('appState', 'mainApp');
 }
 // También actualizar showStep para manejar mejor la navegación durante edición
-const originalShowStep = showStep;
 showStep = function(step) {
-    // Llamar a la función original
-    originalShowStep.apply(this, arguments);
+    document.querySelectorAll('.form-section').forEach(section => {
+        section.classList.remove('active');
+    });
     
-    // Si estamos en el paso 3 y tenemos fotos cargadas, actualizar las previsualizaciones
-    if (step === 3) {
-        // Asegurar que los tipos de fotos estén actualizados
-        updatePhotoTypes();
-        
-        // Generar la grilla de fotos
-        setTimeout(() => {
-            generatePhotoGrid();
-            
-            // Si hay fotos guardadas, mostrarlas
-            if (reportData.photos && Object.keys(reportData.photos).length > 0) {
-                setTimeout(() => {
-                    Object.keys(reportData.photos).forEach(typeId => {
-                        if (reportData.photos[typeId] && reportData.photos[typeId].length > 0) {
-                            updatePhotoPreview(typeId);
-                        }
-                    });
-                    updatePhotoCounts();
-                }, 100);
-            }
-        }, 100);
-    }
-};
-
+    document.getElementById('section' + step).classList.add('active');
+    
+    document.querySelectorAll('.step').forEach((stepEl, index) => {
+        stepEl.classList.remove('active', 'completed');
+        if (index + 1 < step) {
+            stepEl.classList.add('completed');
+        } else if (index + 1 === step) {
+            stepEl.classList.add('active');
+        }
+    });
+    
 // Agregar función para detectar si estamos en modo edición al cargar la página
 window.addEventListener('DOMContentLoaded', function() {
     // Si hay parámetros de edición en la URL, guardarlos para después del login
