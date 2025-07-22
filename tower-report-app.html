@@ -7,7 +7,7 @@
 <meta name="author" content="Newcomm Management Services Corp.">
 <meta name="copyright" content="© 2025 Newcomm Management Services Corp.">
 <meta name="description" content="Tower Provider Report - Professional Mobile Application">
-<title>Tower Report Mobile v9.30 - SharePoint Auth</title>
+<title>Tower Report Mobile v9.31 - SharePoint Auth</title>
 
 <!-- MSAL.js desde CDN -->
 <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
@@ -707,7 +707,7 @@ Iniciar sesión con Microsoft
 <div id="loginError" style="display: none;" class="login-error"></div>
 
 <div style="margin-top: 20px; font-size: 12px; color: #666;">
-<p>Versión 9.30 - Fotos Mejoradas</p>
+<p>Versión 9.31 - Fotos Mejoradas</p>
 </div>
 </div>
 </div>
@@ -721,7 +721,7 @@ Iniciar sesión con Microsoft
 
 <header class="header">
 <h1>Tower Provider Report</h1>
-<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 9.30 - Fotos Mejoradas</div>
+<div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Versión 9.31 - Fotos Mejoradas</div>
 </header>
 
 <div class="step-indicator">
@@ -744,7 +744,7 @@ Iniciar sesión con Microsoft
 Limpiar datos
 </button>
 </div>
-<div style="font-size: 11px; color: #666; margin-top: 5px;">App v9.30 - Fotos Mejoradas</div>
+<div style="font-size: 11px; color: #666; margin-top: 5px;">App v9.31 - Fotos Mejoradas</div>
 </div>
 
 <div class="form-group">
@@ -1030,7 +1030,7 @@ Al enviar, se generará un reporte y se enviará automáticamente a accounting@n
 
 <!-- Copyright Footer -->
 <div class="copyright-footer">
-© 2025 Newcomm Management Services Corp. • All rights reserved • v9.30
+© 2025 Newcomm Management Services Corp. • All rights reserved • v9.31
 </div>
 </div>
 
@@ -1077,7 +1077,7 @@ appurtenances: [],
 photos: {},
 measurements: {},
 metadata: {
-appVersion: '9.30',
+appVersion: '9.31',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -1359,10 +1359,7 @@ try {
 // Esperar a que MSAL esté completamente inicializado
 await msalInstance.initialize();
 
-// Reemplazar la función loadReportForEdit en tower-report-app.html con esta versión actualizada
-
 // Reemplazar la función loadReportForEdit con esta versión mejorada
-
 function loadReportForEdit(reportKey) {
     try {
         console.log('Loading report for edit:', reportKey);
@@ -1387,10 +1384,10 @@ function loadReportForEdit(reportKey) {
             console.error('Report not found:', reportKey);
             return;
         }
-
+        
         console.log('Raw report data:', reportToLoad);
-
-        // Normalizar la estructura de datos para manejar tanto formato local como SharePoint
+        
+        // Inicializar reportData con estructura vacía
         reportData = {
             basic: {},
             gps: {},
@@ -1398,89 +1395,122 @@ function loadReportForEdit(reportKey) {
             photos: {},
             measurements: {},
             metadata: {
-                appVersion: '9.20',
+                appVersion: '9.31',
                 deviceInfo: navigator.userAgent,
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                submittedBy: currentAccount?.name || 'Unknown User',
+                submittedByEmail: currentAccount?.username || 'unknown@email.com'
             }
         };
-
-        // Mapear datos básicos - manejar ambos formatos
-        if (reportToLoad.basic) {
-            // Formato local
-            reportData.basic = reportToLoad.basic;
-        } else {
-            // Formato SharePoint - mapear campos individuales
+        
+        // Determinar si es un reporte de SharePoint basado en la estructura
+        const isSharePointFormat = reportToLoad.hasOwnProperty('TowerProviderSiteID') || 
+                                  reportToLoad.hasOwnProperty('RadiosInstalled') ||
+                                  reportToLoad.hasOwnProperty('TeamLeader');
+        
+        if (isSharePointFormat) {
+            console.log('Processing SharePoint format');
+            
+            // Mapear datos básicos desde formato SharePoint
             reportData.basic = {
-                siteId: reportToLoad.TowerProviderSiteID || reportToLoad.siteId || '',
-                siteName: reportToLoad.TowerProviderSiteName || reportToLoad.siteName || '',
-                customerSiteId: reportToLoad.CustomerSiteID || reportToLoad.customerSiteId || '',
-                customerSiteName: reportToLoad.CustomerSiteName || reportToLoad.customerSiteName || '',
-                sectorsCount: reportToLoad.SectorsCount || reportToLoad.sectorsCount || '',
-                radiosInstalled: reportToLoad.RadiosInstalled || reportToLoad.radiosInstalled || '',
-                antennasInstalled: reportToLoad.AntennasInstalled || reportToLoad.antennasInstalled || '',
-                cablesInstalled: reportToLoad.CablesInstalled || reportToLoad.cablesInstalled || '',
-                teamLeader: reportToLoad.TeamLeader || reportToLoad.teamLeader || '',
-                towerTop: reportToLoad.towerTop || (reportToLoad.TowerTopInstallation ? 'yes' : 'no') || 'no',
-                completionDate: reportToLoad.CompletionDate || reportToLoad.completionDate || '',
-                submittedBy: reportToLoad.SubmittedBy || reportToLoad.submittedBy || currentAccount?.name || '',
-                submittedByEmail: reportToLoad.SubmittedByEmail || reportToLoad.submittedByEmail || currentAccount?.username || ''
+                siteId: reportToLoad.TowerProviderSiteID || '',
+                siteName: reportToLoad.TowerProviderSiteName || '',
+                customerSiteId: reportToLoad.CustomerSiteID || '',
+                customerSiteName: reportToLoad.CustomerSiteName || '',
+                sectorsCount: String(reportToLoad.SectorsCount || ''),
+                radiosInstalled: String(reportToLoad.RadiosInstalled || ''),
+                antennasInstalled: String(reportToLoad.AntennasInstalled || ''),
+                cablesInstalled: String(reportToLoad.CablesInstalled || ''),
+                teamLeader: reportToLoad.TeamLeader || '',
+                towerTop: reportToLoad.TowerTopInstallationDetails || (reportToLoad.TowerTopInstallation ? 'yes' : 'no'),
+                completionDate: reportToLoad.CompletionDate || '',
+                submittedBy: reportToLoad.SubmittedBy || currentAccount?.name || '',
+                submittedByEmail: reportToLoad.SubmittedByEmail || currentAccount?.username || '',
+                submissionTimestamp: reportToLoad.SubmissionTimestamp || new Date().toISOString(),
+                uniqueReportId: reportToLoad.ReportID || reportKey
             };
-        }
-
-        // Mapear GPS
-        if (reportToLoad.gps) {
-            reportData.gps = reportToLoad.gps;
-        } else {
+            
+            // Mapear GPS
             reportData.gps = {
-                latitude: parseFloat(reportToLoad.Latitude || reportToLoad.latitude) || 0,
-                longitude: parseFloat(reportToLoad.Longitude || reportToLoad.longitude) || 0,
+                latitude: parseFloat(reportToLoad.Latitude) || 0,
+                longitude: parseFloat(reportToLoad.Longitude) || 0,
                 altitude: 0,
                 accuracy: 0,
                 manual: false
             };
-        }
-
-        // Mapear appurtenances
-        if (reportToLoad.appurtenances) {
-            reportData.appurtenances = reportToLoad.appurtenances;
-        } else if (reportToLoad.AppurtenanceData) {
-            // Si viene de SharePoint, puede estar en formato JSON string
-            try {
-                const appData = typeof reportToLoad.AppurtenanceData === 'string' 
-                    ? JSON.parse(reportToLoad.AppurtenanceData) 
-                    : reportToLoad.AppurtenanceData;
-                reportData.appurtenances = appData.appurtenances || [];
-                reportData.measurements = appData.measurements || {};
-            } catch (e) {
-                console.error('Error parsing AppurtenanceData:', e);
+            
+            // Mapear appurtenances y measurements desde AppurtenanceData
+            if (reportToLoad.AppurtenanceData) {
+                try {
+                    const appData = typeof reportToLoad.AppurtenanceData === 'string' 
+                        ? JSON.parse(reportToLoad.AppurtenanceData) 
+                        : reportToLoad.AppurtenanceData;
+                    
+                    reportData.appurtenances = appData.appurtenances || [];
+                    reportData.measurements = appData.measurements || {};
+                    
+                    // Si GPS está en appData, actualizar
+                    if (appData.gpsDetails) {
+                        reportData.gps = {
+                            ...reportData.gps,
+                            ...appData.gpsDetails
+                        };
+                    }
+                } catch (e) {
+                    console.error('Error parsing AppurtenanceData:', e);
+                }
+            }
+            
+            // Mapear photos desde PhotoLinks
+            if (reportToLoad.PhotoLinks) {
+                try {
+                    const photoData = typeof reportToLoad.PhotoLinks === 'string' 
+                        ? JSON.parse(reportToLoad.PhotoLinks) 
+                        : reportToLoad.PhotoLinks;
+                    
+                    // Si photoData tiene la estructura photoData, usar eso
+                    if (photoData.photoData) {
+                        reportData.photos = photoData.photoData;
+                    } else {
+                        // Intentar reconstruir desde las fotos individuales
+                        reportData.photos = {};
+                    }
+                } catch (e) {
+                    console.error('Error parsing PhotoLinks:', e);
+                }
+            }
+            
+        } else {
+            console.log('Processing local format');
+            
+            // Es formato local, copiar directamente
+            if (reportToLoad.basic) {
+                reportData.basic = { ...reportToLoad.basic };
+            }
+            
+            if (reportToLoad.gps) {
+                reportData.gps = { ...reportToLoad.gps };
+            }
+            
+            if (reportToLoad.appurtenances) {
+                reportData.appurtenances = [...reportToLoad.appurtenances];
+            }
+            
+            if (reportToLoad.photos) {
+                reportData.photos = { ...reportToLoad.photos };
+            }
+            
+            if (reportToLoad.measurements) {
+                reportData.measurements = { ...reportToLoad.measurements };
+            }
+            
+            if (reportToLoad.metadata) {
+                reportData.metadata = { ...reportData.metadata, ...reportToLoad.metadata };
             }
         }
-
-        // Mapear measurements
-        if (reportToLoad.measurements) {
-            reportData.measurements = reportToLoad.measurements;
-        }
-
-        // Mapear photos
-        if (reportToLoad.photos) {
-            reportData.photos = reportToLoad.photos;
-        } else if (reportToLoad.PhotoLinks) {
-            try {
-                reportData.photos = typeof reportToLoad.PhotoLinks === 'string' 
-                    ? JSON.parse(reportToLoad.PhotoLinks) 
-                    : reportToLoad.PhotoLinks;
-            } catch (e) {
-                console.error('Error parsing PhotoLinks:', e);
-            }
-        }
-
-        // Mapear metadata
-        if (reportToLoad.metadata) {
-            reportData.metadata = { ...reportData.metadata, ...reportToLoad.metadata };
-        }
-
+        
         console.log('Normalized report data:', reportData);
-
+        
         // Ahora rellenar los campos del formulario
         if (reportData.basic) {
             // Lista de campos y sus IDs
@@ -1497,7 +1527,7 @@ function loadReportForEdit(reportKey) {
                 { id: 'towerTop', value: reportData.basic.towerTop },
                 { id: 'completionDate', value: reportData.basic.completionDate }
             ];
-
+            
             // Asignar valores a cada campo
             fieldMappings.forEach(({ id, value }) => {
                 const element = document.getElementById(id);
@@ -1508,12 +1538,13 @@ function loadReportForEdit(reportKey) {
                     console.warn(`Element not found: ${id}`);
                 }
             });
-
+            
             // Esperar un momento y luego actualizar los elementos dinámicos
             setTimeout(() => {
                 // Actualizar requisitos basados en los valores cargados
                 if (reportData.basic.sectorsCount) {
                     updateSectorRequirements();
+                    updatePhotoTypes(); // Importante: actualizar tipos de fotos
                     
                     // Después de crear los campos dinámicos, cargar los tape drops
                     setTimeout(() => {
@@ -1555,58 +1586,63 @@ function loadReportForEdit(reportKey) {
                 updateEquipmentCounter();
             }, 200);
         }
-
+        
         // Cargar GPS
-        if (reportData.gps && reportData.gps.latitude) {
+        if (reportData.gps && reportData.gps.latitude && reportData.gps.latitude !== 0) {
             showGPSStatus(true);
         }
-
+        
         // Actualizar lista de equipos
         if (reportData.appurtenances && reportData.appurtenances.length > 0) {
             updateAppurtenanceList();
+            updateEquipmentCounter();
         }
-
+        
         // Cargar fotos si existen
         if (reportData.photos && Object.keys(reportData.photos).length > 0) {
             console.log('Loading photos:', Object.keys(reportData.photos));
-            updatePhotoTypes();
-            updatePhotoCounts();
             
-            // Si estamos en el paso 3, regenerar la grilla
-            if (currentStep === 3) {
-                generatePhotoGrid();
-                setTimeout(() => {
-                    Object.keys(reportData.photos).forEach(typeId => {
-                        if (reportData.photos[typeId] && reportData.photos[typeId].length > 0) {
-                            updatePhotoPreview(typeId);
-                        }
-                    });
-                }, 500);
-            }
+            // Asegurarse de que los tipos de fotos estén actualizados antes de mostrar
+            setTimeout(() => {
+                updatePhotoCounts();
+                
+                // Si estamos en el paso 3, regenerar la grilla
+                if (currentStep === 3) {
+                    generatePhotoGrid();
+                    setTimeout(() => {
+                        Object.keys(reportData.photos).forEach(typeId => {
+                            if (reportData.photos[typeId] && reportData.photos[typeId].length > 0) {
+                                updatePhotoPreview(typeId);
+                            }
+                        });
+                    }, 500);
+                }
+            }, 600);
         }
-
+        
         // Marcar si es un reporte de SharePoint
         const editSource = sessionStorage.getItem('editReportSource');
-        if (editSource === 'sharepoint') {
+        if (editSource === 'sharepoint' || isSharePointFormat) {
             reportData.isSharePointReport = true;
-            reportData.sharePointId = sessionStorage.getItem('sharePointReportId');
+            reportData.sharePointId = sessionStorage.getItem('sharePointReportId') || reportToLoad.sharePointId;
             console.log('SharePoint report marked for update');
         }
-
+        
         // Actualizar el título
         const headerTitle = document.querySelector('.header h1');
         if (headerTitle) {
             headerTitle.textContent = 'Tower Provider Report - EDITANDO';
         }
-
+        
         showNotification(`Reporte ${reportKey} cargado para edición`, 'success');
-
+        
         // Limpiar sessionStorage después de usar
         sessionStorage.removeItem('editReportData');
+        sessionStorage.removeItem('editReportKey');
         
         // Guardar datos actualizados
         saveCurrentStep();
-
+        
     } catch (error) {
         console.error('Error loading report for edit:', error);
         showNotification('Error al cargar el reporte: ' + error.message, 'error');
@@ -1668,21 +1704,32 @@ function showMainApp() {
     
     sessionStorage.setItem('appState', 'mainApp');
 }
-// Función adicional para regenerar la vista de fotos cuando se navega al paso 3
+// También actualizar showStep para manejar mejor la navegación durante edición
 const originalShowStep = showStep;
 showStep = function(step) {
     // Llamar a la función original
     originalShowStep.apply(this, arguments);
     
     // Si estamos en el paso 3 y tenemos fotos cargadas, actualizar las previsualizaciones
-    if (step === 3 && reportData.photos && Object.keys(reportData.photos).length > 0) {
+    if (step === 3) {
+        // Asegurar que los tipos de fotos estén actualizados
+        updatePhotoTypes();
+        
+        // Generar la grilla de fotos
         setTimeout(() => {
-            Object.keys(reportData.photos).forEach(typeId => {
-                if (reportData.photos[typeId] && reportData.photos[typeId].length > 0) {
-                    updatePhotoPreview(typeId);
-                }
-            });
-            updatePhotoCounts();
+            generatePhotoGrid();
+            
+            // Si hay fotos guardadas, mostrarlas
+            if (reportData.photos && Object.keys(reportData.photos).length > 0) {
+                setTimeout(() => {
+                    Object.keys(reportData.photos).forEach(typeId => {
+                        if (reportData.photos[typeId] && reportData.photos[typeId].length > 0) {
+                            updatePhotoPreview(typeId);
+                        }
+                    });
+                    updatePhotoCounts();
+                }, 100);
+            }
         }, 100);
     }
 };
@@ -2730,7 +2777,7 @@ updateEquipmentCounter();
 saveCurrentStep();
 }
 
-// Photo Functions - MEJORADAS PARA v9.30
+// Photo Functions - MEJORADAS PARA v9.31
 function generatePhotoGrid() {
 const grid = document.getElementById('photoGrid');
 grid.innerHTML = '';
@@ -3087,7 +3134,7 @@ photoReview.innerHTML = `
 `;
 }
 
-// Submit and SharePoint Functions - ACTUALIZADO PARA v9.30 CON MAPEO DINÁMICO
+// Submit and SharePoint Functions - ACTUALIZADO PARA v9.31 CON MAPEO DINÁMICO
 async function sendToSharePoint(reportData) {
 const POWER_AUTOMATE_URL = 'https://prod-19.westus.logic.azure.com:443/workflows/1170c524ac7e4e9c98e817550c91f1d0/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JdS7ZO75Zm5eCaImMEoyGfDp3qzLUlNYLlo1J_dHGjE';
 
@@ -3226,7 +3273,7 @@ statusDiv.innerHTML = `
 <p style="margin-top: 15px;">
 <strong>✓ Guardado localmente</strong><br>
 <strong>✓ Enviado a SharePoint</strong><br>
-<strong>✓ Fotos con funcionalidad mejorada (v9.30)</strong>
+<strong>✓ Fotos con funcionalidad mejorada (v9.31)</strong>
 </p>
 <div style="display: flex; gap: 10px; margin-top: 20px;">
 <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
@@ -3288,7 +3335,7 @@ if (sent) {
 statusDiv.innerHTML = `
 <div style="background: #e8f5e9; padding: 20px; border-radius: 6px;">
 <h3 style="color: #2e7d32;">✓ Enviado Exitosamente</h3>
-<p>El reporte se envió a SharePoint con fotos mejoradas (v9.30).</p>
+<p>El reporte se envió a SharePoint con fotos mejoradas (v9.31).</p>
 <div style="display: flex; gap: 10px; margin-top: 15px;">
 <button class="btn btn-success" onclick="startNewReport()" style="flex: 1;">
 ➕ Crear Nuevo Reporte
@@ -3333,7 +3380,7 @@ photos: {},
 measurements: {},
 metadata: {
 ...userInfo,
-appVersion: '9.30',
+appVersion: '9.31',
 deviceInfo: navigator.userAgent,
 createdAt: new Date().toISOString()
 }
@@ -3382,7 +3429,7 @@ tapeDrpsHTML += `<p><strong>Sector ${i} Tape Drop:</strong> ${reportData.measure
 
 const summaryHTML = `
 <div style="background: #f5f5f5; padding: 20px; border-radius: 6px; margin: 20px 0;">
-<h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte v9.30</h3>
+<h3 style="color: #0066cc; margin-bottom: 15px;">Resumen del Reporte v9.31</h3>
 
 <div style="margin-bottom: 15px;">
 <h4 style="color: #333;">Información del Sitio</h4>
@@ -3428,7 +3475,7 @@ ${!reportData.gps.manual && reportData.gps.accuracy ? `<p><strong>Precisión:</s
 <div>
 <h4 style="color: #333;">Documentación</h4>
 <p><strong>Total de fotos:</strong> ${totalPhotos}</p>
-<p><strong>Versión del reporte:</strong> 9.30 - Fotos Mejoradas</p>
+<p><strong>Versión del reporte:</strong> 9.31 - Fotos Mejoradas</p>
 </div>
 
 <button class="btn btn-secondary" onclick="closeReportSummary()" style="margin-top: 15px;">
@@ -3453,10 +3500,10 @@ for (let i = 1; i <= sectorsCount; i++) {
 sectorMeasurements += `- Sector ${i} Tape Drop: ${reportData.measurements[`sector${i}TapeDrop`] || 'N/A'} (REQUIRED)\n`;
 }
 
-const emailSubject = `Tower Provider Report v9.30 - ${reportData.basic.siteName || reportId}`;
+const emailSubject = `Tower Provider Report v9.31 - ${reportData.basic.siteName || reportId}`;
 
 const emailBody = `
-TOWER PROVIDER REPORT v9.30 - FOTOS MEJORADAS
+TOWER PROVIDER REPORT v9.31 - FOTOS MEJORADAS
 =============================================
 
 SITE INFORMATION:
@@ -3491,7 +3538,7 @@ ${reportData.appurtenances.map((app, i) =>
 `${i + 1}. ${app.type} - ${app.manufacturer} ${app.model} (Qty: ${app.quantity}, Coax: ${app.coaxSize})`
 ).join('\n')}
 
-PHOTO DOCUMENTATION (v9.30 - Enhanced Photos):
+PHOTO DOCUMENTATION (v9.31 - Enhanced Photos):
 - Total Photos: ${Object.values(reportData.photos).reduce((sum, arr) => sum + (arr ? arr.length : 0), 0)}
 ${Object.entries(reportData.photos).map(([category, photos]) => {
 const catName = photoTypes.find(t => t.id === category)?.name || category;
@@ -3503,7 +3550,7 @@ REPORT DETAILS:
 - Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 - Email: ${reportData.basic.submittedByEmail || 'N/A'}
 - Submission Time: ${new Date().toLocaleString()}
-- Report Version: 9.30 - Enhanced Photos (Camera + Gallery, Delete Individual Photos)
+- Report Version: 9.31 - Enhanced Photos (Camera + Gallery, Delete Individual Photos)
 
 ---
 This report has been submitted to SharePoint with enhanced photo functionality.
@@ -3522,7 +3569,7 @@ const mailtoLink = `mailto:accounting@newcomm2000.com?subject=${encodeURICompone
 
 if (mailtoLink.length > 2000) {
 const shortBody = `
-Tower Provider Report v9.30 - ${reportData.basic.siteName || 'N/A'}
+Tower Provider Report v9.31 - ${reportData.basic.siteName || 'N/A'}
 Site ID: ${reportData.basic.siteId || 'N/A'}
 Sectors: ${sectorsCount}
 Report ID: ${reportId}
@@ -3533,7 +3580,7 @@ Submitted by: ${reportData.basic.submittedBy || 'Field Technician'}
 Please check SharePoint for the complete report with all details and enhanced photo functionality.
 
 Date: ${new Date().toLocaleString()}
-Version: 9.30 - Enhanced Photos
+Version: 9.31 - Enhanced Photos
 `.trim();
 
 window.location.href = `mailto:accounting@newcomm2000.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(shortBody)}`;
